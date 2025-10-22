@@ -39,7 +39,7 @@ export default function App() {
 
     <div className="w-full h-screen bg-white">
       <Canvas gl={{ outputColorSpace: THREE.SRGBColorSpace }}
-        camera={{ position: [0, 0, 0.7], fov: 50, near: 0.01, far: 100 }}>
+        camera={{ position: [0, 0, 2], fov: 50, near: 0.01, far: 100 }}>
         <ambientLight intensity={0.2} />
         <directionalLight position={[2, 3, 4]} intensity={0.8} />
         <Environment preset="studio" />
