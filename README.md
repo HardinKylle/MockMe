@@ -1,46 +1,62 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-# MockMe
-=======
-=======
->>>>>>> 7cf1e83f99cca9e5a273a393fb9bb8f600b32118
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📱 MockMe
 
-## Getting Started
+**MockMe** is a 3D phone mockup web app built with **Next.js**, **React Three Fiber**, and **TypeScript**. It lets you upload an app UI or image, view it inside a realistic 3D phone model, animate the scene, and capture creative screenshots for design showcases, social media, or portfolios.
 
-First, run the development server:
+---
 
+## 🚀 Features
+
+- 📤 Upload UI images and place them into the phone mockup.
+- 🧩 Realistic 3D phone model using Three.js + React Three Fiber.
+- 🎥 Animations & rotations for interactive previews.
+- 📸 Capture mode to export screenshots of mockups.
+- ⚙️ Customizable scene (camera, lighting, background).
+
+---
+
+## 🧰 Tech Stack
+
+| Technology | Purpose |
+|-----------:|:--------|
+| **Next.js 14+** | App framework for React |
+| **React Three Fiber (R3F)** | 3D rendering and scene management |
+| **@react-three/drei** | Useful 3D helpers and presets |
+| **TypeScript** | Type safety and better DX |
+| **Three.js** | Core 3D engine |
+---
+
+## 🛠️ Getting Started
+
+1. Clone the repository
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/HardinKylle/MockMe.git
+cd mockme
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies
+```bash
+npm install
+# or
+yarn install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Run the development server
+```bash
+npm run dev
+# then visit:
+# http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 🎯 Intended Users
 
-To learn more about Next.js, take a look at the following resources:
+- 🎨 Designers — create beautiful device mockups of app UIs.  
+- 📱 Developers — showcase mobile apps or UI prototypes.  
+- 📣 Marketers — produce high-quality visuals for social media.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🧾 License
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-<<<<<<< HEAD
->>>>>>> 7cf1e83 (Initial commit from Create Next App)
-=======
->>>>>>> 7cf1e83f99cca9e5a273a393fb9bb8f600b32118
+This project is open source and available under the MIT License. 

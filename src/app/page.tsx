@@ -47,7 +47,7 @@ export default function App() {
         <PhoneModel textureUrl={uploadedImageUrl} />
 
 
-        <OrbitControls enableZoom={true} minDistance={2.2} maxDistance={4} makeDefault target={[0, 0, 0]} />
+        <OrbitControls enableZoom={true} minDistance={0.5} maxDistance={6} makeDefault target={[0, 0, 0]} />
       </Canvas>
 
       {/* Floating upload control  */}
