@@ -7,12 +7,12 @@ import * as THREE from 'three';
 import { SceneApi } from '@/components/Scene';
 
 export const SceneCaptureController = forwardRef<SceneApi>((props, ref) => {
-  
+
   const { gl, scene, camera } = useThree();
 
   useImperativeHandle(ref, () => ({
     capture: (aspectRatio: string) => {
-      
+
       // Add a type guard to ensure we have the right camera
       if (!(camera instanceof THREE.PerspectiveCamera)) {
         console.error("Capture controller only works with a PerspectiveCamera.");
@@ -22,11 +22,12 @@ export const SceneCaptureController = forwardRef<SceneApi>((props, ref) => {
       // --- Save original state ---
       const originalSize = new THREE.Vector2();
       gl.getSize(originalSize);
-      // Now TypeScript knows camera.aspect is valid
-      const originalAspect = camera.aspect; 
+
+      const originalAspect = camera.aspect;
 
       // --- Calculate new dimensions ---
-      const CAPTURE_WIDTH_BASE = 1920; 
+      const CAPTURE_WIDTH_BASE = 1920;
+      const captureDPR = 2;
       let width, height;
 
       switch (aspectRatio) {
@@ -58,9 +59,9 @@ export const SceneCaptureController = forwardRef<SceneApi>((props, ref) => {
       // These are now type-safe
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
-      gl.setSize(width, height, false); 
+      gl.setSize(width * captureDPR, height * captureDPR, false);
 
-      gl.render(scene, camera); 
+      gl.render(scene, camera);
       const dataUrl = gl.domElement.toDataURL('image/png');
 
       // --- Restore original state ---
