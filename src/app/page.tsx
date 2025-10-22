@@ -5,17 +5,17 @@ import Scene, { SceneApi } from '@/components/Scene';
 import CaptureControls from '@/components/CaptureControls';
 import { useRef, useState } from 'react';
 import PreviewModal from '@/components/PreviewModal';
-
+import { useModelSwitcher } from '@/hooks/useModelSwitcher';
 export default function App() {
 
   const { uploadedImageUrl, handleImageUpload } = useUploadedImage();
   const sceneRef = useRef<SceneApi>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [capturedImageUrl, setCapturedImageUrl] = useState<string | null>(null);
+  const { selectedModel, switchModel, nextModelName } = useModelSwitcher();
 
   const handleCapture = (aspectRatio: string) => {
     setIsLoading(true);
-    console.log('Capture requested with aspect ratio:', aspectRatio);
 
     try {
       const dataUrl = sceneRef.current?.capture(aspectRatio);
@@ -38,10 +38,20 @@ export default function App() {
 
     <div className="w-full h-screen bg-white">
       {/* 3D Scene with the uploaded texture */}
-      <Scene ref={sceneRef} textureUrl={uploadedImageUrl} />
-      
+      <Scene
+        ref={sceneRef}
+        textureUrl={uploadedImageUrl}
+        model={selectedModel}
+      />
       {/* Floating container for all controls */}
       <div className="fixed bottom-4 right-4 z-10 flex items-center gap-2">
+
+        <button
+          onClick={switchModel}
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full shadow-lg"
+        >
+          Switch to {nextModelName}
+        </button>
 
         {/* Capture controls */}
         <CaptureControls onCapture={handleCapture} />

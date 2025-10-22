@@ -1,25 +1,28 @@
 'use client';
 import { forwardRef } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Environment } from '@react-three/drei';
+import { OrbitControls, Environment, useGLTF } from '@react-three/drei';
 import PhoneModel from '@/components/PhoneModel';
 import * as THREE from 'three';
 import { SceneCaptureController } from './SceneCaptureController';
-
+import { ModelData, models } from '@/configs/models';
 interface SceneProps {
   textureUrl: string | null;
+  model: ModelData;
 }
 
 export interface SceneApi {
   capture: (aspectRatio: string) => string | undefined;
 }
 
-export default forwardRef<SceneApi, SceneProps>(function Scene({ textureUrl }, ref) {
+models.forEach(model => useGLTF.preload(model.path));
+
+export default forwardRef<SceneApi, SceneProps>(function Scene({ textureUrl, model }, ref) {
   return (
     <Canvas
       gl={{
         outputColorSpace: THREE.SRGBColorSpace,
-        preserveDrawingBuffer: true // Still needed for screenshots
+        preserveDrawingBuffer: true 
       }}
       camera={{ position: [0, 0, 2], fov: 50, near: 0.01, far: 100 }}
     >
@@ -27,7 +30,18 @@ export default forwardRef<SceneApi, SceneProps>(function Scene({ textureUrl }, r
       <directionalLight position={[2, 3, 4]} intensity={0.4} />
       <Environment preset="studio" environmentIntensity={0.5} />
 
-      <PhoneModel textureUrl={textureUrl} />
+    {model && (
+        <PhoneModel
+          key={model.path} 
+          modelUrl={model.path}
+          screenMaterialName={model.screenMaterial}
+          textureUrl={textureUrl}
+          scale={model.scale}
+          flipY={model.flipY}
+          textureRepeat={model.textureRepeat}
+          textureOffset={model.textureOffset}
+        />
+      )}
 
       <OrbitControls
         enableZoom={true}
@@ -37,7 +51,6 @@ export default forwardRef<SceneApi, SceneProps>(function Scene({ textureUrl }, r
         target={[0, 0, 0]}
       />
 
-      {/* 6. Add the controller and pass the ref to it */}
       <SceneCaptureController ref={ref} />
     </Canvas>
   );
