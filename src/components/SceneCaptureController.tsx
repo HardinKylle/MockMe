@@ -1,0 +1,77 @@
+// src/components/SceneCaptureController.tsx
+'use client';
+
+import { useImperativeHandle, forwardRef } from 'react';
+import { useThree } from '@react-three/fiber';
+import * as THREE from 'three';
+import { SceneApi } from '@/components/Scene';
+
+export const SceneCaptureController = forwardRef<SceneApi>((props, ref) => {
+  
+  const { gl, scene, camera } = useThree();
+
+  useImperativeHandle(ref, () => ({
+    capture: (aspectRatio: string) => {
+      
+      // Add a type guard to ensure we have the right camera
+      if (!(camera instanceof THREE.PerspectiveCamera)) {
+        console.error("Capture controller only works with a PerspectiveCamera.");
+        return;
+      }
+
+      // --- Save original state ---
+      const originalSize = new THREE.Vector2();
+      gl.getSize(originalSize);
+      // Now TypeScript knows camera.aspect is valid
+      const originalAspect = camera.aspect; 
+
+      // --- Calculate new dimensions ---
+      const CAPTURE_WIDTH_BASE = 1920; 
+      let width, height;
+
+      switch (aspectRatio) {
+        case '16:9':
+          width = CAPTURE_WIDTH_BASE;
+          height = CAPTURE_WIDTH_BASE * (9 / 16);
+          break;
+        case '9:16':
+          width = CAPTURE_WIDTH_BASE * (9 / 16);
+          height = CAPTURE_WIDTH_BASE;
+          break;
+        case '1:1':
+          width = CAPTURE_WIDTH_BASE;
+          height = CAPTURE_WIDTH_BASE;
+          break;
+        case '4:3':
+          width = CAPTURE_WIDTH_BASE;
+          height = CAPTURE_WIDTH_BASE * (3 / 4);
+          break;
+      }
+
+      // --- ADD A CHECK FOR SAFETY ---
+      if (!width || !height) {
+        console.error("Invalid aspect ratio selected:", aspectRatio);
+        return;
+      }
+
+      // --- Apply new state for capture ---
+      // These are now type-safe
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      gl.setSize(width, height, false); 
+
+      gl.render(scene, camera); 
+      const dataUrl = gl.domElement.toDataURL('image/png');
+
+      // --- Restore original state ---
+      // These are also type-safe
+      camera.aspect = originalAspect;
+      camera.updateProjectionMatrix();
+      gl.setSize(originalSize.width, originalSize.height, false);
+
+      return dataUrl;
+    }
+  }));
+
+  return null;
+});

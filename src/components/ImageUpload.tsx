@@ -63,7 +63,6 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ OnImageUpload, previewUrl }) 
         className="hidden"
       />
       <div
-        className="absolute bottom-8 right-8 z-10"
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
