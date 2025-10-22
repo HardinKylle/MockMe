@@ -1,5 +1,5 @@
 
-import React, { useLayoutEffect, useRef, useEffect, use } from 'react';
+import React, { useLayoutEffect, useRef, useEffect } from 'react';
 import { useGLTF, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 
@@ -15,8 +15,6 @@ const PhoneModel: React.FC<PhoneModelProps> = ({ textureUrl }) => {
 
     // Refs to store the *original* material properties
     const originalMapRef = useRef<THREE.Texture | null>(null);
-    const originalEmissiveMapRef = useRef<THREE.Texture | null>(null);
-    const originalEmissiveColorRef = useRef<THREE.Color | null>(null);
 
     //load the texture from the URL
     const texture = useTexture(textureUrl || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=');
