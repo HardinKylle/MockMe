@@ -2,6 +2,7 @@
 import React, { useLayoutEffect, useRef, useEffect } from 'react';
 import { useGLTF, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
+import { useThree } from '@react-three/fiber';
 
 interface PhoneModelProps {
     textureUrl: string | null;
@@ -9,7 +10,7 @@ interface PhoneModelProps {
 
 const PhoneModel: React.FC<PhoneModelProps> = ({ textureUrl }) => {
     const { scene } = useGLTF('/models/iphone_air_.glb');
-
+    const { gl } = useThree();
     //create a ref to store the screen material
     const screenMaterialRef = useRef<THREE.Material | null>(null);
 
@@ -26,11 +27,17 @@ const PhoneModel: React.FC<PhoneModelProps> = ({ textureUrl }) => {
         const mat = screenMaterialRef.current as THREE.MeshBasicMaterial;
 
         if (textureUrl) {
-            texture.flipY = false;
+            texture.flipY = true;
             texture.colorSpace = THREE.SRGBColorSpace;
-            texture.minFilter = THREE.LinearFilter;
+            texture.minFilter = THREE.LinearMipmapLinearFilter;
             texture.magFilter = THREE.LinearFilter;
-            texture.anisotropy = 16;
+
+            const maxAnisotropy = gl.capabilities.getMaxAnisotropy();
+            texture.anisotropy = maxAnisotropy;
+
+            // Force texture to generate mipmaps
+            texture.generateMipmaps = true;
+            texture.needsUpdate = true;
 
             mat.map = texture;
             mat.needsUpdate = true;
@@ -42,7 +49,7 @@ const PhoneModel: React.FC<PhoneModelProps> = ({ textureUrl }) => {
                 mat.needsUpdate = true;
             }
         }
-    }, [texture, textureUrl]);
+    }, [texture, textureUrl, gl]);
     useLayoutEffect(() => {
 
         //Create a bounding box
