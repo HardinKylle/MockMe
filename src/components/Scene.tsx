@@ -32,7 +32,6 @@ export default forwardRef<SceneApi, SceneProps>(function Scene({ textureUrl, mod
 
     {model && (
         <PhoneModel
-          key={model.path} 
           modelUrl={model.path}
           screenMaterialName={model.screenMaterial}
           textureUrl={textureUrl}

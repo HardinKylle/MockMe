@@ -4,10 +4,9 @@ export function useUploadedImage() {
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
 
   const handleImageUpload = (file: File | null) => {
-   //Clean up the previous object URL to prevent memory leaks
-    if (uploadedImageUrl) {
-      URL.revokeObjectURL(uploadedImageUrl);
-    }
+    // if (uploadedImageUrl) {
+    //   URL.revokeObjectURL(uploadedImageUrl);
+    // }
 
     if (file) {
       // Create a new temporary URL for the selected file
@@ -21,8 +20,8 @@ export function useUploadedImage() {
 
   //The cleanup effect is also inside the hook
   useEffect(() => {
-    // This is the cleanup function that runs when the hook is "destroyed"
-    // or when uploadedImageUrl changes.
+    // This cleanup function will run when uploadedImageUrl changes
+    // or when the hook unmounts. This is the *correct* place.
     return () => {
       if (uploadedImageUrl) {
         URL.revokeObjectURL(uploadedImageUrl);

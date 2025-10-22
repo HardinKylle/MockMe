@@ -34,6 +34,11 @@ export default function App() {
     }
   };
 
+  const handleSwitchModel = () => {
+    switchModel();        
+    handleImageUpload(null); 
+  };
+
   return (
 
     <div className="w-full h-screen bg-white">
@@ -47,7 +52,7 @@ export default function App() {
       <div className="fixed bottom-4 right-4 z-10 flex items-center gap-2">
 
         <button
-          onClick={switchModel}
+          onClick={handleSwitchModel}
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full shadow-lg"
         >
           Switch to {nextModelName}

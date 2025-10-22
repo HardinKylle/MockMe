@@ -9,9 +9,9 @@ interface PhoneModelProps {
     screenMaterialName: string;
     textureUrl: string | null;
     scale: number;
-    flipY: boolean; 
-    textureRepeat: [number, number]; 
-    textureOffset: [number, number]; 
+    flipY: boolean;
+    textureRepeat: [number, number];
+    textureOffset: [number, number];
 }
 
 const PhoneModel: React.FC<PhoneModelProps> = ({
@@ -19,9 +19,9 @@ const PhoneModel: React.FC<PhoneModelProps> = ({
     screenMaterialName,
     textureUrl,
     scale,
-    flipY, 
-    textureRepeat, 
-    textureOffset  
+    flipY,
+    textureRepeat,
+    textureOffset
 }) => {
     const { scene } = useGLTF(modelUrl);
     const { gl } = useThree();
@@ -72,6 +72,8 @@ const PhoneModel: React.FC<PhoneModelProps> = ({
         }
     }, [texture, textureUrl, gl]);
     useLayoutEffect(() => {
+        // Create a map to store the original materials
+        const originalMaterials = new Map<THREE.Mesh, THREE.Material>();
 
         //Create a bounding box
         const box = new THREE.Box3().setFromObject(scene);
@@ -92,6 +94,8 @@ const PhoneModel: React.FC<PhoneModelProps> = ({
 
                 if (material) {
                     if (material.name === screenMaterialName) {
+                        originalMaterials.set(child, material);
+
                         const mat = material as THREE.MeshStandardMaterial;
 
                         originalMapRef.current = mat.map || mat.emissiveMap || null;
@@ -121,6 +125,17 @@ const PhoneModel: React.FC<PhoneModelProps> = ({
                 }
             }
         });
+
+        return () => {
+            // Restore all original materials on unmount
+            originalMaterials.forEach((originalMat, mesh) => {
+                mesh.material = originalMat;
+            });
+            // Clear the refs
+            screenMaterialRef.current = null;
+            originalMapRef.current = null;
+        };
+
     }, [scene, screenMaterialName, modelUrl, scale]);
 
     return <primitive object={scene} />;
