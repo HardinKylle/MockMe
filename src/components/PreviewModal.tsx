@@ -115,7 +115,7 @@ return (
         <div className="px-8 pb-8">
           {/* Premium Image Preview */}
           <div className="relative mb-6 group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-2xl opacity-20 group-hover:opacity-30 blur transition-opacity duration-500" />
+            <div className="absolute -inset-1 bg-linear-to-r from-blue-500 via-purple-500 to-pink-500 rounded-2xl opacity-20 group-hover:opacity-30 blur transition-opacity duration-500" />
             <div className="relative rounded-2xl overflow-hidden border border-neutral-200 bg-neutral-100">
               <div className="max-h-[60vh] flex items-center justify-center">
                 <img
@@ -134,7 +134,7 @@ return (
                 <div
                   className={`w-5 h-5 rounded-md border-2 transition-all duration-300 flex items-center justify-center cursor-pointer ${
                     includeBackground
-                      ? 'bg-gradient-to-br from-blue-500 to-purple-600 border-transparent'
+                      ? 'bg-linear-to-br from-blue-500 to-purple-600 border-transparent'
                       : 'border-neutral-400 hover:border-neutral-500 bg-white'
                   }`}
                   onClick={() => setIncludeBackground(!includeBackground)}
@@ -177,9 +177,9 @@ return (
             <button
               onClick={handleDownload}
               disabled={isDownloading || downloaded}
-              className="flex-1 h-12 rounded-xl font-semibold text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 relative overflow-hidden group shadow-lg shadow-blue-500/30"
+              className="flex-1 h-12 rounded-xl font-semibold text-white bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 relative overflow-hidden group shadow-lg shadow-blue-500/30"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+              <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
 
               {downloaded ? (
                 <>

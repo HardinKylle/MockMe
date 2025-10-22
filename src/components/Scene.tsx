@@ -17,16 +17,15 @@ export interface SceneApi {
 export default forwardRef<SceneApi, SceneProps>(function Scene({ textureUrl }, ref) {
   return (
     <Canvas
-      gl={{ 
+      gl={{
         outputColorSpace: THREE.SRGBColorSpace,
         preserveDrawingBuffer: true // Still needed for screenshots
       }}
       camera={{ position: [0, 0, 2], fov: 50, near: 0.01, far: 100 }}
-      // 5. We no longer need onCreated
     >
-      <ambientLight intensity={0.2} />
-      <directionalLight position={[2, 3, 4]} intensity={0.8} />
-      <Environment preset="studio" />
+      <ambientLight intensity={0.1} />
+      <directionalLight position={[2, 3, 4]} intensity={0.4} />
+      <Environment preset="studio" environmentIntensity={0.5} />
 
       <PhoneModel textureUrl={textureUrl} />
 
@@ -37,7 +36,7 @@ export default forwardRef<SceneApi, SceneProps>(function Scene({ textureUrl }, r
         makeDefault
         target={[0, 0, 0]}
       />
-      
+
       {/* 6. Add the controller and pass the ref to it */}
       <SceneCaptureController ref={ref} />
     </Canvas>
