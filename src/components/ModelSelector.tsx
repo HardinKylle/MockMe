@@ -1,7 +1,8 @@
 'use client';
 import { useState } from 'react';
 import { Smartphone, ChevronUp } from 'lucide-react';
-import { ModelData } from '@/configs/models'; // Import the type
+import { ModelData } from '@/configs/models'; 
+import { Button } from '@/components/ui/Button';
 
 interface ModelSelectorProps {
   allModels: ModelData[];
@@ -31,11 +32,10 @@ export default function ModelSelector({
               <button
                 key={model.name}
                 onClick={() => handleSelect(model.name)}
-                className={`flex items-center w-full text-left px-4 py-2 text-sm ${
-                  model.name === selectedModel.name
-                    ? 'bg-blue-100 text-blue-700' // Highlight selected
+                className={`flex items-center w-full text-left px-4 py-2 text-sm ${model.name === selectedModel.name
+                    ? 'bg-blue-100 text-blue-700'
                     : 'text-gray-700 hover:bg-gray-100'
-                }`}
+                  }`}
                 role="menuitem"
               >
                 {model.name}
@@ -45,19 +45,19 @@ export default function ModelSelector({
         </div>
       )}
 
-      {/* --- Main Button --- */}
-      <button
+      <Button
         onClick={() => setIsOpen(!isOpen)}
-        className="bg-blue-950 text-white p-4 rounded-full shadow-lg hover:shadow-xl hover:bg-blue-900 transform transition-all duration-200 hover:scale-105 flex items-center gap-2"
-        title="Switch device"
+        variant="primary"
+        size="default"
+        tooltip="Switch Model"
+        className="gap-2" 
       >
         <Smartphone size={24} />
-        {/* Arrow to show open/closed state */}
         <ChevronUp
           size={16}
           className={`transition-transform ${isOpen ? 'rotate-0' : 'rotate-180'}`}
         />
-      </button>
+      </Button>
     </div>
   );
 }

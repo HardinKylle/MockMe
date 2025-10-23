@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { X, Download, Check, Sparkles } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
 
 interface PreviewModalProps {
   imageUrl: string;
@@ -75,13 +76,14 @@ export default function PreviewModal({ imageUrl, onClose }: PreviewModalProps) {
               </div>
             </div>
 
-            <button
+            <Button
               onClick={onClose}
-              className="w-10 h-10 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-neutral-500 hover:text-neutral-800 transition-all duration-200 flex items-center justify-center border border-neutral-200"
-              title="Close"
+              variant="ghost"
+              size="sm"
+              className="absolute right-2" // Use absolute positioning
             >
               <X size={20} strokeWidth={2} />
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -102,12 +104,16 @@ export default function PreviewModal({ imageUrl, onClose }: PreviewModalProps) {
 
           {/* Action Buttons */}
           <div className="flex gap-3">
-            <button
+            <Button
               onClick={onClose}
-              className="flex-1 h-12 rounded-full font-medium text-neutral-700  shadow-lg transform transition-all duration-200 hover:scale-105 border border-gray-200 "
+              variant="secondary" // Use the white button style
+              size="full"
+              className="rounded-full" // This is now handled by the base style
             >
               Cancel
-            </button>
+            </Button>
+
+            {/* THIS IS THE BUTTON TO FIX */}
             <button
               onClick={handleDownload}
               disabled={isDownloading || downloaded}

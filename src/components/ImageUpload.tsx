@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Upload, X, UploadCloud } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
 
 interface ImageUploadProps {
-    OnImageUpload: (file: File | null) => void;
-    previewUrl: string | null;
+  OnImageUpload: (file: File | null) => void;
+  previewUrl: string | null;
 }
 
 const ImageUpload: React.FC<ImageUploadProps> = ({ OnImageUpload, previewUrl }) => {
@@ -39,7 +40,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ OnImageUpload, previewUrl }) 
     };
   }, []);
 
-const handleDrop = (e: DragEvent) => {
+  const handleDrop = (e: DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
@@ -58,7 +59,7 @@ const handleDrop = (e: DragEvent) => {
   const handleDragLeave = (e: DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     // This check prevents flickering when dragging over child elements
     if (e.relatedTarget && (e.currentTarget as Node).contains(e.relatedTarget as Node)) {
       return;
@@ -80,13 +81,13 @@ const handleDrop = (e: DragEvent) => {
 
   return (
     <>
-     {isDragging && (
+      {isDragging && (
         <div className="fixed inset-0 z-20 flex items-center justify-center pointer-events-none">
           {/* Blurred background overlay */}
           <div className="absolute inset-0 bg-black/30 backdrop-blur-md"></div>
 
           <UploadCloud
-            size={96} 
+            size={96}
             className="relative z-10 text-white"
           />
         </div>
@@ -99,33 +100,29 @@ const handleDrop = (e: DragEvent) => {
         onChange={handleInputChange}
         className="hidden"
       />
-     <div>
+      <div>
         {/* We now use the 'previewUrl' prop instead of local state */}
         {previewUrl ? (
-          <div className="relative group">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleRemove();
-              }}
-              className="bg-red-500 text-white p-4 rounded-full shadow-lg hover:shadow-xl hover:bg-red-600 transform transition-all duration-200 hover:scale-105"
-              title="Remove image"
-            >
-              <X size={24} />
-            </button>
-            {/* Tooltip... */}
-          </div>
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleRemove();
+            }}
+            variant="danger"
+            size="default"
+            tooltip="Remove image"
+          >
+            <X size={24} />
+          </Button>
         ) : (
-          <div className="relative group">
-            <button
-              onClick={handleClick}
-              className="bg-blue-950 text-white p-4 rounded-full shadow-lg hover:shadow-xl hover:bg-blue-900 transform transition-all duration-200 hover:scale-105"
-              title="Upload image"
-            >
-              <Upload size={24} />
-            </button>
-            {/* Tooltip... */}
-          </div>
+          <Button
+            onClick={handleClick}
+            variant="primary"
+            size="default"
+            tooltip="Upload image"
+          >
+            <Upload size={24} />
+          </Button>
         )}
       </div>
     </>

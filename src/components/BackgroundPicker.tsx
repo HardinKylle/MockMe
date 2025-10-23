@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Palette, Check } from 'lucide-react';
 import { HexColorPicker } from 'react-colorful';
+import { Button } from '@/components/ui/Button';
 
 interface PickerProps {
   color: string;
@@ -87,23 +88,23 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
 
   return (
     <div className="relative">
-      <button
+     <Button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="w-14 h-14 rounded-full shadow-lg transform transition-all duration-200 hover:scale-105 border border-gray-200  flex items-center justify-center"
-        title="Change background color"
+        variant="secondary" 
+        size="default"    
+        tooltip="Change background color" 
         style={{
           backgroundColor: color,
           ...(color === 'transparent' && checkerboardStyle)
         }}
       >
-        <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity duration-200" />
         <Palette
           size={24}
           className="relative z-10 transition-transform duration-200 group-hover:rotate-12"
           style={{ color: getContrastColor(color) }}
         />
-      </button>
+      </Button>
 
       {isOpen && (
         <div

@@ -10,6 +10,7 @@ import ModelSelector from '@/components/ModelSelector';
 import BackgroundPicker from '@/components/BackgroundPicker';
 import { presetViews } from '@/configs/views';
 import { ViewfinderCircleIcon } from '@heroicons/react/24/outline';
+import { Button } from '@/components/ui/Button';
 
 export default function App() {
 
@@ -64,30 +65,33 @@ export default function App() {
 
       {/* Floating container for Preset Views */}
       <div className="fixed top-4 right-4 z-10 flex flex-col items-end gap-2">
-        {/* Main Toggle Button */}
-        <button
+        
+        {/* REFACTOR THE MAIN TOGGLE BUTTON */}
+        <Button
           onClick={() => setShowViews(!showViews)}
-          className="bg-white text-gray-900 p-4 rounded-full shadow-lg border border-gray-200 transform  hover:scale-105 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200"
+          variant="secondary"
+          size="default"
+          tooltip="Preset Views" 
+          tooltipSide="bottom"
         >
-
           <ViewfinderCircleIcon className="h-5 w-5 text-gray-700" />
-        </button>
+        </Button>
 
         {/* Conditionally rendered list of views */}
         {showViews && (
-          <div className="flex flex-col">
+          // 3. Added a container for consistent dropdown styling
+          <div className="w-48 rounded-md shadow-lg bg-white ring-1 ring-opacity-5 overflow-hidden">
             {presetViews.map((view) => (
-              <button
+              // 4. REFACTOR THE LIST BUTTONS
+              <Button
                 key={view.name}
                 onClick={() => handlePresetClick(view)}
-                className="
-                    w-full px-3 py-2 border-t border-gray-300 text-sm font-medium 
-                    text-gray-700 hover:bg-gray-50 focus:outline-none 
-                    focus:ring-2 focus:ring-offset-0 focus:ring-indigo-500
-                  "
+                variant="menu-item"
+                size="menu-item"
+                className="border-t border-gray-100 first:border-t-0" 
               >
                 {view.name}
-              </button>
+              </Button>
             ))}
           </div>
         )}
