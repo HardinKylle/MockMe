@@ -9,8 +9,9 @@ interface PickerProps {
 }
 
 const presetColors = [
-  '#333333',
   '#FFFFFF',
+  '#9e9e9e',
+  '#333333',
   '#f44336',
   '#e91e63',
   '#9c27b0',
@@ -24,15 +25,12 @@ const presetColors = [
   '#8bc34a',
   '#cddc39',
   '#ffeb3b',
-  '#ffc107',
   '#ff9800',
-  '#9e9e9e',
 ];
 
 export default function BackgroundColorPicker({ color, onChange }: PickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState(color);
-  
   const pickerRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
@@ -52,7 +50,7 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
         setIsOpen(false);
       }
     }
-    
+
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
@@ -94,15 +92,15 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
         onClick={() => setIsOpen(!isOpen)}
         className="w-14 h-14 rounded-full shadow-lg transform transition-all duration-200 hover:scale-105 border border-gray-200  flex items-center justify-center"
         title="Change background color"
-        style={{ 
+        style={{
           backgroundColor: color,
-          ...(color === 'transparent' && checkerboardStyle) 
+          ...(color === 'transparent' && checkerboardStyle)
         }}
       >
         <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity duration-200" />
-        <Palette 
-          size={24} 
-          className="relative z-10 transition-transform duration-200 group-hover:rotate-12" 
+        <Palette
+          size={24}
+          className="relative z-10 transition-transform duration-200 group-hover:rotate-12"
           style={{ color: getContrastColor(color) }}
         />
       </button>
@@ -125,16 +123,16 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
               }
             }
           `}</style>
-          
+
           {/* Header */}
           <div className="px-4 pt-4 pb-3 border-b border-gray-100">
             <h3 className="text-sm font-semibold text-gray-900 mb-3">Pick a color</h3>
-            
+
             {/* Color Preview & Hex Input */}
             <div className="flex items-center gap-3">
-              <div 
+              <div
                 className="w-12 h-12 rounded-lg border-2 border-gray-200 shadow-sm shrink-0"
-                style={{ 
+                style={{
                   backgroundColor: color,
                   ...(color === 'transparent' && checkerboardStyle)
                 }}
@@ -188,7 +186,7 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
                 <button
                   key={preset}
                   className="relative w-full aspect-square rounded-lg border-2 transition-all hover:scale-110 hover:shadow-md active:scale-95"
-                  style={{ 
+                  style={{
                     backgroundColor: preset,
                     borderColor: color === preset ? '#3b82f6' : '#e5e7eb'
                   }}

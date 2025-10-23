@@ -20,6 +20,16 @@ export const models: ModelData[] = [
     textureOffset: [0, 0],
     rotation: [0, 0, 0]
   },
+    {
+    name: 'Iphone 17 Pro Max',
+    path: '/models/iphone_17_pro_max_.glb',
+    screenMaterial: 'BsXHDwLKqtDOfrW',
+    scale: 10,
+    flipY: false,
+    textureRepeat: [1, 1],
+    textureOffset: [0, 0],
+    rotation: [0, 0, 0]
+  },
   {
     name: 'Samsung Galaxy S21 Ultra',
     path: '/models/samsung_galaxy_s21_ultra_.glb',
