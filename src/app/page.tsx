@@ -6,13 +6,15 @@ import CaptureControls from '@/components/CaptureControls';
 import { useRef, useState } from 'react';
 import PreviewModal from '@/components/PreviewModal';
 import { useModelSwitcher } from '@/hooks/useModelSwitcher';
+import ModelSelector from '@/components/ModelSelector';
+
 export default function App() {
 
   const { uploadedImageUrl, handleImageUpload } = useUploadedImage();
   const sceneRef = useRef<SceneApi>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [capturedImageUrl, setCapturedImageUrl] = useState<string | null>(null);
-  const { selectedModel, switchModel, nextModelName } = useModelSwitcher();
+  const { selectedModel, setModel, allModels } = useModelSwitcher();
 
   const handleCapture = (aspectRatio: string) => {
     setIsLoading(true);
@@ -34,9 +36,9 @@ export default function App() {
     }
   };
 
-  const handleSwitchModel = () => {
-    switchModel();        
-    handleImageUpload(null); 
+  const handleModelChange = (modelName: string) => {
+    setModel(modelName);
+    handleImageUpload(null); // Clear image, just like before
   };
 
   return (
@@ -51,12 +53,11 @@ export default function App() {
       {/* Floating container for all controls */}
       <div className="fixed bottom-4 right-4 z-10 flex items-center gap-2">
 
-        <button
-          onClick={handleSwitchModel}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full shadow-lg"
-        >
-          Switch to {nextModelName}
-        </button>
+        <ModelSelector
+          allModels={allModels}
+          selectedModel={selectedModel}
+          onModelSelect={handleModelChange}
+        />
 
         {/* Capture controls */}
         <CaptureControls onCapture={handleCapture} />

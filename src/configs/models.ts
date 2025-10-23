@@ -10,7 +10,7 @@ export interface ModelData {
 
 export const models: ModelData[] = [
   {
-    name: 'iPhone',
+    name: 'iPhone Air',
     path: '/models/iphone_air_.glb',
     screenMaterial: 'Material.004',
     scale: 1,
@@ -19,7 +19,7 @@ export const models: ModelData[] = [
     textureOffset: [0, 0]
   },
   {
-    name: 'Samsung',
+    name: 'Samsung Galaxy S21 Ultra',
     path: '/models/samsung_galaxy_s21_ultra_.glb',
     screenMaterial: 'Display_ActiveArea', 
     scale: 10, 

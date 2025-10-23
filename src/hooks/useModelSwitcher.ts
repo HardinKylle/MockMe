@@ -2,19 +2,22 @@
 import { useState } from 'react';
 import { models, ModelData } from '@/configs/models'; 
 
-export const useModelSwitcher = () => {
-  const [modelIndex, setModelIndex] = useState(0);
+export function useModelSwitcher() {
+  // Set the default model
+  const [selectedModel, setSelectedModel] = useState<ModelData>(models[0]);
 
-  const switchModel = () => {
-    setModelIndex((currentIndex) => (currentIndex + 1) % models.length);
+  // New function to set the model by its name
+  const setModel = (modelName: string) => {
+    const newModel = models.find(m => m.name === modelName);
+    if (newModel) {
+      setSelectedModel(newModel);
+    }
   };
 
-  const selectedModel = models[modelIndex];
-  const nextModelName = models[(modelIndex + 1) % models.length].name;
-
+  // Return the new setter and the full models array
   return {
     selectedModel,
-    switchModel,
-    nextModelName,
+    setModel,
+    allModels: models 
   };
-};
+}
