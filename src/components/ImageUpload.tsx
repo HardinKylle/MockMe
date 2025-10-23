@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { Upload, X } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Upload, X, UploadCloud } from 'lucide-react';
 
 interface ImageUploadProps {
     OnImageUpload: (file: File | null) => void;
@@ -25,20 +25,45 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ OnImageUpload, previewUrl }) 
     handleFileChange(file);
   };
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+  useEffect(() => {
+    // We use 'window' to capture events anywhere on the page
+    window.addEventListener('dragover', handleDragOver);
+    window.addEventListener('dragleave', handleDragLeave);
+    window.addEventListener('drop', handleDrop);
+
+    // Cleanup function to remove listeners when component unmounts
+    return () => {
+      window.removeEventListener('dragover', handleDragOver);
+      window.removeEventListener('dragleave', handleDragLeave);
+      window.removeEventListener('drop', handleDrop);
+    };
+  }, []);
+
+const handleDrop = (e: DragEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setIsDragging(false);
-    const file = e.dataTransfer.files?.[0] ?? null;
+
+    // Check if files were dropped
+    const file = e.dataTransfer?.files?.[0] ?? null;
     handleFileChange(file);
   };
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
+  const handleDragOver = (e: DragEvent) => {
+    e.preventDefault(); // Necessary to allow dropping
+    e.stopPropagation();
     setIsDragging(true);
   };
 
-  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDragLeave = (e: DragEvent) => {
     e.preventDefault();
+    e.stopPropagation();
+    
+    // This check prevents flickering when dragging over child elements
+    if (e.relatedTarget && (e.currentTarget as Node).contains(e.relatedTarget as Node)) {
+      return;
+    }
+
     setIsDragging(false);
   };
 
@@ -55,6 +80,18 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ OnImageUpload, previewUrl }) 
 
   return (
     <>
+     {isDragging && (
+        <div className="fixed inset-0 z-20 flex items-center justify-center pointer-events-none">
+          {/* Blurred background overlay */}
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-md"></div>
+
+          <UploadCloud
+            size={96} 
+            className="relative z-10 text-white"
+          />
+        </div>
+      )}
+
       <input
         ref={fileInputRef}
         type="file"
@@ -62,11 +99,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ OnImageUpload, previewUrl }) 
         onChange={handleInputChange}
         className="hidden"
       />
-      <div
-        onDrop={handleDrop}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-      >
+     <div>
         {/* We now use the 'previewUrl' prop instead of local state */}
         {previewUrl ? (
           <div className="relative group">
