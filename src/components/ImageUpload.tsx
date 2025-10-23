@@ -111,6 +111,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ OnImageUpload, previewUrl }) 
             variant="danger"
             size="default"
             tooltip="Remove image"
+            
           >
             <X size={24} />
           </Button>
@@ -120,6 +121,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ OnImageUpload, previewUrl }) 
             variant="primary"
             size="default"
             tooltip="Upload image"
+            
           >
             <Upload size={24} />
           </Button>

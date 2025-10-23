@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { Camera, Loader2 } from 'lucide-react'; 
+import { Camera, Loader2, Check } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
 
@@ -20,42 +20,53 @@ interface CaptureControlsProps {
 
 export default function CaptureControls({ onCapture, isLoading = false }: CaptureControlsProps) {
   const [aspectRatio, setAspectRatio] = useState(aspectRatios[0].value);
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleCaptureClick = () => {
     onCapture(aspectRatio);
   };
 
- return (
-    <>
-      {/* Aspect Ratio Selector */}
-      <div className="relative group">
-        <select
-          id="aspect-ratio"
-          value={aspectRatio}
-          onChange={(e) => setAspectRatio(e.target.value)}
-          disabled={isLoading}
-          className={cn(
-            buttonVariants({ variant: 'secondary', size: 'default' }),
-            'appearance-none', 
-            'pr-12' 
-          )}
-        >
-          {aspectRatios.map((ratio) => (
-            <option key={ratio.value} value={ratio.value}>
-              {ratio.label}
-            </option>
-          ))}
-        </select>
-        {/* Custom arrow for the select */}
-        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-700">
-          <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
-        </div>
+  const handleSelect = (value: string) => {
+    setAspectRatio(value);
+    setIsOpen(false);
+  };
 
-        {!isLoading && (
-          <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-3 py-2 text-sm text-white bg-gray-900 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
-            Aspect Ratio
-          </span>
+  return (
+    <>
+      <div className="relative">
+        {/* Dropdown Menu */}
+        {isOpen && (
+          <div className="absolute bottom-14 right-0 mb-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 overflow-hidden">
+            {aspectRatios.map((ratio) => (
+              <Button
+                key={ratio.value}
+                onClick={() => handleSelect(ratio.value)}
+                variant="menu-item"
+                size="menu-item"
+                className={cn(
+                  'flex justify-between items-center',
+                  ratio.value === aspectRatio ? 'bg-blue-100 text-blue-700' : ''
+                )}
+              >
+                {ratio.label}
+                {ratio.value === aspectRatio && <Check size={16} />}
+              </Button>
+            ))}
+          </div>
         )}
+
+        {/* Main Button */}
+        <Button
+          onClick={() => setIsOpen(!isOpen)}
+          disabled={isLoading}
+          variant="secondary"
+          size="default"
+          isActive={isOpen}
+          tooltip={!isLoading ? 'Aspect Ratio' : undefined}
+          className="w-28 justify-center"
+        >
+          {aspectRatio}
+        </Button>
       </div>
 
       {/* Capture Button */}

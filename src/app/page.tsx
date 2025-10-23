@@ -73,16 +73,15 @@ export default function App() {
           size="default"
           tooltip="Preset Views" 
           tooltipSide="bottom"
+          isActive={showViews}
         >
           <ViewfinderCircleIcon className="h-5 w-5 text-gray-700" />
         </Button>
 
         {/* Conditionally rendered list of views */}
         {showViews && (
-          // 3. Added a container for consistent dropdown styling
           <div className="w-48 rounded-md shadow-lg bg-white ring-1 ring-opacity-5 overflow-hidden">
             {presetViews.map((view) => (
-              // 4. REFACTOR THE LIST BUTTONS
               <Button
                 key={view.name}
                 onClick={() => handlePresetClick(view)}
@@ -113,8 +112,8 @@ export default function App() {
 
         {/* Capture controls */}
         <CaptureControls onCapture={handleCapture} />
-        {/* Floating upload control */}
 
+        {/* Floating upload control */}
         <ImageUpload OnImageUpload={handleImageUpload} previewUrl={uploadedImageUrl} />
 
         {capturedImageUrl && (

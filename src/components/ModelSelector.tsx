@@ -51,6 +51,7 @@ export default function ModelSelector({
         size="default"
         tooltip="Switch Model"
         className="gap-2" 
+        isActive={isOpen}
       >
         <Smartphone size={24} />
         <ChevronUp

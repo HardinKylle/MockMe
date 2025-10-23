@@ -94,6 +94,7 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
         variant="secondary" 
         size="default"    
         tooltip="Change background color" 
+        isActive={isOpen}
         style={{
           backgroundColor: color,
           ...(color === 'transparent' && checkerboardStyle)

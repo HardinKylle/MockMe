@@ -40,52 +40,55 @@ const buttonVariants = cva(
 
 // Define the component's props
 export interface ButtonProps
-    extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
-    tooltip?: string;
-    tooltipSide?: 'top' | 'bottom' | 'left' | 'right'; 
+  tooltip?: string;
+  tooltipSide?: 'top' | 'bottom' | 'left' | 'right';
+  isActive?: boolean; // <-- 1. Add the new prop
 }
-//  Create the component
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-    (
-        {
-            className,
-            variant,
-            size,
-            tooltip,
-            tooltipSide = 'top', 
-            children,
-            ...props
-        },
-        ref
-    ) => {
-        const tooltipPositionClasses = {
-            top: 'bottom-full mb-2 left-1/2 -translate-x-1/2',
-            bottom: 'top-full mt-2 left-1/2 -translate-x-1/2',
-            left: 'right-full mr-2 top-1/2 -translate-y-1/2',
-            right: 'left-full ml-2 top-1/2 -translate-y-1/2',
-        };
-        return (
-            <button
-                className={cn(buttonVariants({ variant, size, className }))}
-                ref={ref}
-                {...props}
-            >
-                {children}
+  (
+    {
+      className,
+      variant,
+      size,
+      tooltip,
+      tooltipSide = 'top',
+      isActive = false, // <-- 2. Get the prop (default to false)
+      children,
+      ...props
+    },
+    ref
+  ) => {
+    const tooltipPositionClasses = {
+      top: 'bottom-full mb-2 left-1/2 -translate-x-1/2',
+      bottom: 'top-full mt-2 left-1/2 -translate-x-1/2',
+      left: 'right-full mr-2 top-1/2 -translate-y-1/2',
+      right: 'left-full ml-2 top-1/2 -translate-y-1/2',
+    };
 
-                {tooltip && (
-                    <span
-                        className={cn(
-                            'absolute px-3 py-2 text-sm text-white bg-gray-900 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50',
-                            tooltipPositionClasses[tooltipSide] 
-                        )}
-                    >
-                        {tooltip}
-                    </span>
-                )}
-            </button>
-        );
-    }
+    return (
+      <button
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        {...props}
+      >
+        {children}
+
+        {tooltip && !isActive && ( 
+          <span
+            className={cn(
+              'absolute px-3 py-2 text-sm text-white bg-gray-900 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50',
+              'pointer-events-none',
+              tooltipPositionClasses[tooltipSide]
+            )}
+          >
+            {tooltip}
+          </span>
+        )}
+      </button>
+    );
+  }
 );
 Button.displayName = 'Button';
 
