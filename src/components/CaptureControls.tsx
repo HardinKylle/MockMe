@@ -33,7 +33,7 @@ export default function CaptureControls({ onCapture, isLoading = false }: Captur
           value={aspectRatio}
           onChange={(e) => setAspectRatio(e.target.value)}
           disabled={isLoading}
-          className="bg-white text-gray-900 p-4 rounded-full shadow-lg border border-gray-200 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200"
+   className="bg-white text-gray-900 p-4 rounded-full shadow-lg border border-gray-200 transform transition-all duration-200 hover:scale-105 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200"
           style={{ paddingRight: '3rem' }} // Add space for the arrow
         >
           {aspectRatios.map((ratio) => (

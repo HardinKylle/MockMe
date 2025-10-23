@@ -34,7 +34,7 @@ export const models: ModelData[] = [
     name: 'Ipad Mini',
     path: '/models/ipad_mini_.glb',
     screenMaterial: 'Screen',
-    scale: 1.2,
+    scale: 1.7,
     flipY: true,
     textureRepeat: [-1, 1],
     textureOffset: [0, 0],

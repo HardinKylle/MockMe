@@ -97,7 +97,7 @@ return (
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <h3 className="text-2xl font-semibold text-neutral-900">
-                  Preview Mockup
+                  Mockup Preview
                 </h3>
               </div>
             </div>

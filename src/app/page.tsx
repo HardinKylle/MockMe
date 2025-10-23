@@ -7,6 +7,8 @@ import { useRef, useState } from 'react';
 import PreviewModal from '@/components/PreviewModal';
 import { useModelSwitcher } from '@/hooks/useModelSwitcher';
 import ModelSelector from '@/components/ModelSelector';
+import BackgroundPicker from '@/components/BackgroundPicker';
+import BackgroundColorPicker from '@/components/BackgroundPicker';
 
 export default function App() {
 
@@ -15,6 +17,7 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [capturedImageUrl, setCapturedImageUrl] = useState<string | null>(null);
   const { selectedModel, setModel, allModels } = useModelSwitcher();
+  const [backgroundColor, setBackgroundColor] = useState('#ffffff');
 
   const handleCapture = (aspectRatio: string) => {
     setIsLoading(true);
@@ -49,9 +52,15 @@ export default function App() {
         ref={sceneRef}
         textureUrl={uploadedImageUrl}
         model={selectedModel}
+        backgroundColor={backgroundColor}
       />
       {/* Floating container for all controls */}
       <div className="fixed bottom-4 right-4 z-10 flex items-center gap-2">
+
+         <BackgroundPicker
+          color={backgroundColor}
+          onChange={setBackgroundColor}
+        />
 
         <ModelSelector
           allModels={allModels}
