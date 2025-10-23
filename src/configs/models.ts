@@ -6,6 +6,7 @@ export interface ModelData {
   flipY: boolean; 
   textureRepeat: [number, number]; 
   textureOffset: [number, number]; 
+  rotation: [number, number, number];
 }
 
 export const models: ModelData[] = [
@@ -16,7 +17,8 @@ export const models: ModelData[] = [
     scale: 1,
     flipY: true, 
     textureRepeat: [1, 1],
-    textureOffset: [0, 0]
+    textureOffset: [0, 0],
+    rotation: [0, 0, 0]
   },
   {
     name: 'Samsung Galaxy S21 Ultra',
@@ -25,6 +27,17 @@ export const models: ModelData[] = [
     scale: 10, 
     flipY: false, 
     textureRepeat: [2.2, 1], 
-    textureOffset: [0, 0]
+    textureOffset: [0, 0],
+    rotation: [0, 0, 0]
+  },
+  {
+    name: 'Ipad Mini',
+    path: '/models/ipad_mini_.glb',
+    screenMaterial: 'Screen',
+    scale: 1.2,
+    flipY: true,
+    textureRepeat: [-1, 1],
+    textureOffset: [0, 0],
+    rotation: [0, Math.PI, 0]
   }
 ];

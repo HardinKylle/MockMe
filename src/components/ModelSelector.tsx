@@ -48,7 +48,7 @@ export default function ModelSelector({
       {/* --- Main Button --- */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="bg-blue-500 text-white p-4 rounded-full shadow-lg hover:shadow-xl hover:bg-blue-600 transform transition-all duration-200 hover:scale-105 flex items-center gap-2"
+        className="bg-blue-950 text-white p-4 rounded-full shadow-lg hover:shadow-xl hover:bg-blue-900 transform transition-all duration-200 hover:scale-105 flex items-center gap-2"
         title="Switch device"
       >
         <Smartphone size={24} />

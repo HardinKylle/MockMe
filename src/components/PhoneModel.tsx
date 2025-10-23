@@ -12,6 +12,7 @@ interface PhoneModelProps {
     flipY: boolean;
     textureRepeat: [number, number];
     textureOffset: [number, number];
+    rotation: [number, number, number];
 }
 
 const PhoneModel: React.FC<PhoneModelProps> = ({
@@ -21,7 +22,8 @@ const PhoneModel: React.FC<PhoneModelProps> = ({
     scale,
     flipY,
     textureRepeat,
-    textureOffset
+    textureOffset,
+    rotation
 }) => {
     const { scene } = useGLTF(modelUrl);
     const { gl } = useThree();
@@ -85,12 +87,15 @@ const PhoneModel: React.FC<PhoneModelProps> = ({
         scene.position.sub(center);
         scene.scale.set(scale, scale, scale);
 
-
+        if (rotation) {
+            scene.rotation.set(rotation[0], rotation[1], rotation[2]);
+        }
         // Fix material transparency and depth issues
         scene.traverse((child) => {
             if (child instanceof THREE.Mesh) {
                 // Get the material from the mesh
                 const material = child.material;
+                console.log(`Mesh: "${child.name}", Material: "${child.material.name}"`);
 
                 if (material) {
                     if (material.name === screenMaterialName) {

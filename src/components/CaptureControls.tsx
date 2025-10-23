@@ -52,7 +52,7 @@ export default function CaptureControls({ onCapture, isLoading = false }: Captur
         <button
           onClick={handleCaptureClick}
           disabled={isLoading}
-          className="bg-blue-500 text-white p-4 rounded-full shadow-lg hover:shadow-xl hover:bg-blue-600 transform transition-all duration-200 hover:scale-105 disabled:bg-gray-400 disabled:scale-100 disabled:shadow-lg disabled:cursor-not-allowed"
+          className="bg-blue-950 text-white p-4 rounded-full shadow-lg hover:shadow-xl hover:bg-blue-900 transform transition-all duration-200 hover:scale-105 disabled:bg-gray-400 disabled:scale-100 disabled:shadow-lg disabled:cursor-not-allowed"
           title="Capture Image"
         >
           {isLoading ? (

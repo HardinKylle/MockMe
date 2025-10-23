@@ -119,7 +119,7 @@ const handleDrop = (e: DragEvent) => {
           <div className="relative group">
             <button
               onClick={handleClick}
-              className="bg-blue-500 text-white p-4 rounded-full shadow-lg hover:shadow-xl hover:bg-blue-600 transform transition-all duration-200 hover:scale-105"
+              className="bg-blue-950 text-white p-4 rounded-full shadow-lg hover:shadow-xl hover:bg-blue-900 transform transition-all duration-200 hover:scale-105"
               title="Upload image"
             >
               <Upload size={24} />

@@ -28,7 +28,7 @@ export default forwardRef<SceneApi, SceneProps>(function Scene({ textureUrl, mod
     >
       <ambientLight intensity={0.1} />
       <directionalLight position={[2, 3, 4]} intensity={0.4} />
-      <Environment preset="studio" environmentIntensity={0.5} />
+      <Environment preset="city" environmentIntensity={0.5} />
 
     {model && (
         <PhoneModel
@@ -39,6 +39,7 @@ export default forwardRef<SceneApi, SceneProps>(function Scene({ textureUrl, mod
           flipY={model.flipY}
           textureRepeat={model.textureRepeat}
           textureOffset={model.textureOffset}
+          rotation={model.rotation}
         />
       )}
 
