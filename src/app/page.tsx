@@ -8,7 +8,6 @@ import PreviewModal from '@/components/PreviewModal';
 import { useModelSwitcher } from '@/hooks/useModelSwitcher';
 import ModelSelector from '@/components/ModelSelector';
 import BackgroundPicker from '@/components/BackgroundPicker';
-import BackgroundColorPicker from '@/components/BackgroundPicker';
 
 export default function App() {
 

@@ -71,6 +71,9 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
   };
 
   const getContrastColor = (hexColor: string) => {
+    if (hexColor === 'transparent') {
+      return '#000000'; // Default to black for contrast
+    }
     const r = parseInt(hexColor.slice(1, 3), 16);
     const g = parseInt(hexColor.slice(3, 5), 16);
     const b = parseInt(hexColor.slice(5, 7), 16);
@@ -78,14 +81,23 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
     return luminance > 0.5 ? '#000000' : '#FFFFFF';
   };
 
+  const checkerboardStyle = {
+    backgroundImage: 'linear-gradient(45deg, #f0f0f0 25%, transparent 25%), linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #f0f0f0 75%), linear-gradient(-45deg, transparent 75%, #f0f0f0 75%)',
+    backgroundSize: '8px 8px',
+    backgroundPosition: '0 0, 0 4px, 4px -4px, -4px 0px',
+  };
+
   return (
     <div className="relative">
       <button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="w-14 h-14 rounded-full shadow-lg transform transition-all duration-200 hover:scale-110 active:scale-95 border-2 border-white flex items-center justify-center group relative overflow-hidden"
+        className="w-14 h-14 rounded-full shadow-lg transform transition-all duration-200 hover:scale-105 border border-gray-200  flex items-center justify-center"
         title="Change background color"
-        style={{ backgroundColor: color }}
+        style={{ 
+          backgroundColor: color,
+          ...(color === 'transparent' && checkerboardStyle) 
+        }}
       >
         <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity duration-200" />
         <Palette 
@@ -121,8 +133,11 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
             {/* Color Preview & Hex Input */}
             <div className="flex items-center gap-3">
               <div 
-                className="w-12 h-12 rounded-lg border-2 border-gray-200 shadow-sm flex-shrink-0"
-                style={{ backgroundColor: color }}
+                className="w-12 h-12 rounded-lg border-2 border-gray-200 shadow-sm shrink-0"
+                style={{ 
+                  backgroundColor: color,
+                  ...(color === 'transparent' && checkerboardStyle)
+                }}
               />
               <div className="flex-1">
                 <label className="text-xs text-gray-500 block mb-1">Hex Code</label>
@@ -141,9 +156,9 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
           {/* Color Picker */}
           <div className="p-4">
             <HexColorPicker
-              color={color}
+              color={color === 'transparent' ? '#FFFFFF' : color} // HexColorPicker can't handle 'transparent'
               onChange={handleColorChange}
-              className="w-full !shadow-none"
+              className="w-full shadow-none!"
               style={{ height: '180px' }}
             />
           </div>
@@ -152,6 +167,23 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
           <div className="px-4 pb-4">
             <h4 className="text-xs font-medium text-gray-500 mb-2">Preset Colors</h4>
             <div className="grid grid-cols-9 gap-2">
+              <button
+                key="transparent"
+                className="relative w-full aspect-square rounded-lg border-2 transition-all hover:scale-110 hover:shadow-md active:scale-95"
+                style={{
+                  ...checkerboardStyle,
+                  borderColor: color === 'transparent' ? '#3b82f6' : '#e5e7eb'
+                }}
+                onClick={() => handleColorChange('transparent')}
+                title="Transparent"
+              >
+                {color === 'transparent' && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Check size={14} style={{ color: '#000000' }} strokeWidth={3} />
+                  </div>
+                )}
+              </button>
+
               {presetColors.map((preset) => (
                 <button
                   key={preset}

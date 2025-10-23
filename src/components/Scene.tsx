@@ -1,6 +1,6 @@
 'use client';
-import { forwardRef } from 'react';
-import { Canvas } from '@react-three/fiber';
+import { forwardRef, useEffect } from 'react';
+import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls, Environment, useGLTF } from '@react-three/drei';
 import PhoneModel from '@/components/PhoneModel';
 import * as THREE from 'three';
@@ -19,17 +19,20 @@ export interface SceneApi {
 
 models.forEach(model => useGLTF.preload(model.path));
 
-export default forwardRef<SceneApi, SceneProps>(function Scene({ textureUrl, model, backgroundColor }, ref) {
-  return (
-    <Canvas
-      gl={{
-        outputColorSpace: THREE.SRGBColorSpace,
-        preserveDrawingBuffer: true
-      }}
-      camera={{ position: [0, 0, 2], fov: 50, near: 0.01, far: 100 }}
-    >
-      <color attach="background" args={[backgroundColor]} />
+function SceneContent({ backgroundColor, model, textureUrl }: Omit<SceneProps, 'backgroundColor'> & { backgroundColor: string }) {
+  const { gl } = useThree();
 
+  useEffect(() => {
+    if (backgroundColor === 'transparent') {
+      gl.setClearAlpha(0);
+    } else {
+      gl.setClearAlpha(1);
+      gl.setClearColor(new THREE.Color(backgroundColor));
+    }
+  }, [gl, backgroundColor]);
+
+  return (
+    <>
       <ambientLight intensity={0.1} />
       <directionalLight position={[2, 3, 4]} intensity={0.4} />
       <Environment preset="studio" environmentIntensity={0.5} />
@@ -53,6 +56,26 @@ export default forwardRef<SceneApi, SceneProps>(function Scene({ textureUrl, mod
         maxDistance={6}
         makeDefault
         target={[0, 0, 0]}
+      />
+    </>
+  );
+}
+
+export default forwardRef<SceneApi, SceneProps>(function Scene({ textureUrl, model, backgroundColor }, ref) {
+  return (
+    <Canvas
+      gl={{
+        outputColorSpace: THREE.SRGBColorSpace,
+        preserveDrawingBuffer: true,
+        alpha: true
+      }}
+      camera={{ position: [0, 0, 2], fov: 50, near: 0.01, far: 100 }}
+    >
+
+      <SceneContent
+        backgroundColor={backgroundColor}
+        model={model}
+        textureUrl={textureUrl}
       />
 
       <SceneCaptureController ref={ref} />
