@@ -5,10 +5,12 @@ import { useImperativeHandle, forwardRef } from 'react';
 import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { SceneApi } from '@/components/Scene';
+// Import OrbitControls type for type safety
+import { OrbitControls } from 'three-stdlib';
 
 export const SceneCaptureController = forwardRef<SceneApi>((props, ref) => {
-
-  const { gl, scene, camera } = useThree();
+  // Get controls from useThree
+  const { gl, scene, camera, controls } = useThree();
 
   useImperativeHandle(ref, () => ({
     capture: (aspectRatio: string) => {
@@ -64,13 +66,29 @@ export const SceneCaptureController = forwardRef<SceneApi>((props, ref) => {
       gl.render(scene, camera);
       const dataUrl = gl.domElement.toDataURL('image/png');
 
-      // --- Restore original state ---
-      // These are also type-safe
       camera.aspect = originalAspect;
       camera.updateProjectionMatrix();
       gl.setSize(originalSize.width, originalSize.height, false);
 
       return dataUrl;
+    },
+
+    setView: (position: readonly [number, number, number], target: readonly [number, number, number]) => {
+      if (!controls) {
+        console.error("OrbitControls not found.");
+        return;
+      }
+
+      // Cast controls to OrbitControls type
+      const orbitControls = controls as unknown as OrbitControls;
+
+      // Set camera position
+      camera.position.set(...position);
+
+      // Set controls target
+      orbitControls.target.set(...target);
+
+      orbitControls.update();
     }
   }));
 

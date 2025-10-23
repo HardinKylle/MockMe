@@ -15,6 +15,7 @@ interface SceneProps {
 
 export interface SceneApi {
   capture: (aspectRatio: string) => string | undefined;
+  setView: (position: readonly [number, number, number], target: readonly [number, number, number]) => void;
 }
 
 models.forEach(model => useGLTF.preload(model.path));
