@@ -36,7 +36,7 @@ export default function CaptureControls({ onCapture, isLoading = false }: Captur
       <div className="relative">
         {/* Dropdown Menu */}
         {isOpen && (
-          <div className="absolute bottom-14 right-0 mb-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 overflow-hidden">
+          <div className="absolute bottom-14 right-0 mb-2 w-30 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 overflow-hidden">
             {aspectRatios.map((ratio) => (
               <Button
                 key={ratio.value}

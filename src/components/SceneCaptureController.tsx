@@ -92,5 +92,7 @@ export const SceneCaptureController = forwardRef<SceneApi>((props, ref) => {
     }
   }));
 
+  SceneCaptureController.displayName = 'SceneCaptureController';
+
   return null;
 });
