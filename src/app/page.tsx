@@ -224,6 +224,7 @@ export default function App() {
           selectedSceneId={selectedSceneId}
           onSelectScene={setSelectedSceneId}
           totalVideoDuration={totalVideoDuration}
+          setTotalVideoDuration={setTotalVideoDuration}
         />
       </div>
     </div>
