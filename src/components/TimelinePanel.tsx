@@ -2,123 +2,166 @@
 
 import { clsx } from 'clsx';
 import { Button } from './ui/Button';
-import { PlusIcon, PlayIcon, PauseIcon } from 'lucide-react';
+import { Plus, Play, Pause } from 'lucide-react';
 import { AnimationScene } from '@/types/animation';
 
 
 interface TimelinePanelProps {
   isVisible: boolean;
   scenes: AnimationScene[];
-  onAddScene: () => void; 
+  onAddScene: () => void;
   isPlaying: boolean;
-  onTogglePlay: () => void; 
+  onTogglePlay: () => void;
   currentTime: number;
+  selectedSceneId: string | null;
+  onSelectScene: (id: string) => void;
+  totalVideoDuration: number;
+
 }
 
 export default function TimelinePanel({
   isVisible,
   scenes,
   onAddScene,
-  isPlaying, 
+  isPlaying,
   onTogglePlay,
-  currentTime 
+  currentTime,
+  selectedSceneId,
+  onSelectScene,
+  totalVideoDuration,
 }: TimelinePanelProps) {
+
+
 
   const totalDuration = scenes.reduce((acc, scene) => acc + scene.duration, 0);
   // Calculate playhead position as a percentage
   const playheadPercent =
-    totalDuration > 0 ? (currentTime / totalDuration) * 100 : 0;
+    totalVideoDuration > 0 ? (currentTime / totalVideoDuration) * 100 : 0;
 
-  let timeSoFar = 0;
-  const activeScene = scenes.find((scene) => {
-    const sceneEndTime = timeSoFar + scene.duration;
-    const isActive = currentTime >= timeSoFar && currentTime < sceneEndTime;
-    timeSoFar = sceneEndTime;
-    return isActive;
-  });
+  const getClipWidthPercent = (duration: number) => {
+    return (duration / totalVideoDuration) * 100;
+  };
+
+  const getClipLeftPercent = (sceneIndex: number) => {
+    const previousDuration = scenes.slice(0, sceneIndex).reduce((acc, s) => acc + s.duration, 0);
+    return (previousDuration / totalVideoDuration) * 100;
+  };
+
+  // Format time to one decimal place (e.g., "0.0s")
+  const formatTime = (time: number) => time.toFixed(1);
+
   return (
     <div
-      className={clsx(
-        'fixed bottom-3 left-1/2 z-20',
-        'w-[480px] max-w-[90vw]',
-        'p-2.5 rounded-xl border shadow-lg',
-        'bg-linear-to-br from-[#0b1733]/90 to-[#0e1d3f]/90',
-        'border-[#1b2b4a]/60 backdrop-blur-md',
-        'flex flex-col gap-2',
-        'transition-all duration-300 ease-in-out',
-        {
-          'opacity-100 -translate-x-1/2 translate-y-0': isVisible,
-          'opacity-0 -translate-x-1/2 translate-y-10 pointer-events-none':
-            !isVisible,
-        }
-      )}
+      className={`fixed bottom-4 left-1/2 z-20 w-[480px] max-w-[90vw] rounded-lg border shadow-xl bg-gradient-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 backdrop-blur-xl transition-all duration-300 ease-out ${isVisible
+        ? 'opacity-100 -translate-x-1/2 translate-y-0'
+        : 'opacity-0 -translate-x-1/2 translate-y-10 pointer-events-none'
+        }`}
     >
-      {/* --- Track: Animation Layer --- */}
-      <div className="h-10 w-full bg-[#0f2547]/70 rounded-lg border border-[#1e3a65]/40 p-1.5 flex items-center gap-2 overflow-x-auto relative">
-        {/* --- 3. Playhead Element --- */}
-        <div
-          className="absolute top-0 bottom-0 w-0.5 bg-red-500 z-10"
-          style={{
-            left: `${playheadPercent}%`,
-          }}
-        />
-
-        {/* --- Play/Pause Button --- */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-6 w-6 p-0 rounded-full bg-blue-900/40 border border-blue-700/30 hover:bg-blue-700/60 hover:border-blue-500/50 transition-all shrink-0 z-20" 
-          onClick={onTogglePlay}
-        >
-          {isPlaying ? (
-            <PauseIcon className="h-3.5 w-3.5 text-blue-200" />
-          ) : (
-            <PlayIcon className="h-3.5 w-3.5 text-blue-200" />
-          )}
-        </Button>
-
-        {/* Dynamic Scenes */}
-        {scenes.map((scene) => (
-          <div
-            key={scene.id}
-            className={clsx(
-              'h-6 bg-linear-to-r from-blue-500 to-indigo-200 rounded-md shrink-0 flex items-center justify-center px-2 shadow shadow-blue-900/30 hover:shadow-blue-600/30 transition cursor-pointer z-20', 
-              {
-                'ring-2 ring-blue-300 ring-offset-2 ring-offset-gray-900': 
-                  activeScene?.id === scene.id,
-              }
-            )}
+      {/* Header with time display and controls */}
+      <div className="flex items-center justify-between px-3 py-1.5 border-b border-slate-700/50">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 w-6 rounded bg-blue-600 hover:bg-blue-500 transition-colors"
+            onClick={onTogglePlay}
           >
-            <span className="text-[10px] font-medium text-white">
-              {scene.name}
-            </span>
-          </div>
-        ))}
-
-        {/* Add Scene Button */}
+            {isPlaying ? (
+              <Pause className="h-3 w-3 text-white" />
+            ) : (
+              <Play className="h-3 w-3 text-white ml-0.5" />
+            )}
+          </Button>
+          <span className="text-[10px] font-mono text-slate-300">
+            {formatTime(currentTime)}s / {formatTime(totalVideoDuration)}s
+          </span>
+        </div>
         <Button
           variant="ghost"
           size="sm"
-          className="h-6 w-6 p-0 rounded-full bg-blue-900/40 border border-blue-700/30 hover:bg-blue-700/60 hover:border-blue-500/50 transition-all shrink-0 z-20" 
+          className="h-6 px-2 rounded bg-slate-700/50 hover:bg-slate-600/50 transition-colors flex items-center gap-1.5"
           onClick={onAddScene}
         >
-          <PlusIcon className="h-3.5 w-3.5 text-blue-200" />
+          <div className="flex items-center space-x-2">
+            <Plus className="h-4 w-4 text-slate-300" />
+          </div>
         </Button>
       </div>
 
-      <div className="h-8 w-full bg-[#0f2547]/70 rounded-lg border border-[#1e3a65]/40 p-1.5 flex items-center gap-2 overflow-x-auto relative">
-        <div
-          className="absolute top-0 bottom-0 w-0.5 bg-red-500 z-10"
-          style={{
-            left: `${playheadPercent}%`,
-          }}
-        />
+      {/* Timeline tracks */}
+      <div className="p-2.5 space-y-2">
+        {/* Animation Track */}
+        <div className="flex items-stretch gap-2">
+          {/* Track label */}
+          <div className="w-16 flex-shrink-0 flex items-center">
+            <span className="text-[10px] font-medium text-slate-400">Animation</span>
+          </div>
 
-        <span className="text-[10px] text-blue-300 font-medium shrink-0 z-20">
-          Image
-        </span>
+          {/* Track content area */}
+          <div className="flex-1 relative">
+            {/* Timeline ruler background */}
+            <div className="absolute inset-0 bg-slate-800/50 rounded border border-slate-700/50" />
 
-        <div className="h-1.5 w-48 bg-linear-to-r from-pink-500 to-rose-600 rounded-full shadow shadow-pink-900/30 z-20" />
+            {/* Clips container */}
+            <div className="relative h-8 rounded overflow-hidden">
+              {/* Scene clips */}
+              {scenes.map((scene, index) => (
+                <div
+                  key={scene.id}
+                  onClick={() => onSelectScene(scene.id)}
+                  className={`absolute top-1 bottom-1 rounded cursor-pointer transition-all bg-gradient-to-r from-blue-500 to-blue-600 border border-blue-400/30 hover:border-blue-300/60 flex items-center justify-center px-2 shadow hover:shadow-lg ${selectedSceneId === scene.id
+                    ? 'ring-1 ring-blue-400 ring-offset-1 ring-offset-slate-900 z-10'
+                    : ''
+                    }`}
+                  style={{
+                    left: `${getClipLeftPercent(index)}%`,
+                    width: `${getClipWidthPercent(scene.duration)}%`,
+                  }}
+                >
+                  <span className="text-[10px] font-medium text-white truncate">
+                    {scene.name}
+                  </span>
+                </div>
+              ))}
+
+              {/* Playhead */}
+              <div
+                className="absolute top-0 bottom-0 w-0.5 bg-red-500 z-20 pointer-events-none"
+                style={{ left: `${playheadPercent}%` }}
+              >
+                <div className="absolute -top-0.5 -left-1 w-2 h-2 bg-red-500 rounded-sm" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Content Track */}
+        <div className="flex items-stretch gap-2">
+          {/* Track label */}
+          <div className="w-16 flex-shrink-0 flex items-center">
+            <span className="text-[10px] font-medium text-slate-400">Content</span>
+          </div>
+
+          {/* Track content area */}
+          <div className="flex-1 relative">
+            {/* Timeline ruler background */}
+            <div className="absolute inset-0 bg-slate-800/50 rounded border border-slate-700/50" />
+
+            {/* Clips container */}
+            <div className="relative h-6 rounded overflow-hidden">
+              {/* Content clip spanning full duration */}
+              <div className="absolute top-1 bottom-1 left-0.5 right-0.5 rounded bg-gradient-to-r from-pink-500 to-rose-500 border border-pink-400/30" />
+
+              {/* Playhead */}
+              <div
+                className="absolute top-0 bottom-0 w-0.5 bg-red-500 z-20 pointer-events-none"
+                style={{ left: `${playheadPercent}%` }}
+              >
+                <div className="absolute -top-0.5 -left-1 w-2 h-2 bg-red-500 rounded-sm" />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

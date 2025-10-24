@@ -35,13 +35,16 @@ export default function App() {
   const [showViews, setShowViews] = useState(false);
   const [aspectRatio, setAspectRatio] = useState('16:9');
   const [showTimeline, setShowTimeline] = useState(false);
-
   const { width: windowWidth, height: windowHeight } = useWindowSize();
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [animationScenes, setAnimationScenes] = useState<AnimationScene[]>([
     defaultScene,
   ]);
+  const [selectedSceneId, setSelectedSceneId] = useState<string | null>(
+    defaultScene.id
+  );
+  const [totalVideoDuration, setTotalVideoDuration] = useState(10);
 
   const handleCapture = () => {
     setIsLoading(true);
@@ -77,13 +80,12 @@ export default function App() {
       id: generateId(),
       name: `Scene ${animationScenes.length + 1}`,
       duration: 3,
-      animationType: 'static', 
+      animationType: 'static',
     };
     setAnimationScenes([...animationScenes, newScene]);
   };
 
   const handleTogglePlay = () => {
-    // When we start playing from the beginning, reset time
     if (!isPlaying) {
       setCurrentTime(0);
     }
@@ -142,9 +144,10 @@ export default function App() {
           backgroundColor={backgroundColor}
           isPlaying={isPlaying}
           setIsPlaying={setIsPlaying}
-          scenes={animationScenes} 
-          currentTime={currentTime} 
+          scenes={animationScenes}
+          currentTime={currentTime}
           setCurrentTime={setCurrentTime}
+          totalVideoDuration={totalVideoDuration}
         />
       </div>
 
@@ -211,14 +214,17 @@ export default function App() {
           />
         )}
 
-      <TimelinePanel
-        isVisible={showTimeline}
-        scenes={animationScenes}
-        onAddScene={handleAddScene}
-        isPlaying={isPlaying}
-        onTogglePlay={handleTogglePlay} 
-        currentTime={currentTime}
-      />
+        <TimelinePanel
+          isVisible={showTimeline}
+          scenes={animationScenes}
+          onAddScene={handleAddScene}
+          isPlaying={isPlaying}
+          onTogglePlay={handleTogglePlay}
+          currentTime={currentTime}
+          selectedSceneId={selectedSceneId}
+          onSelectScene={setSelectedSceneId}
+          totalVideoDuration={totalVideoDuration}
+        />
       </div>
     </div>
   );

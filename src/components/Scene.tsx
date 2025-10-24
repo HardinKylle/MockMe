@@ -16,6 +16,7 @@ interface SceneProps {
   scenes: AnimationScene[];
   currentTime: number;
   setCurrentTime: (time: number | ((prevTime: number) => number)) => void;
+  totalVideoDuration: number;
 }
 
 export interface SceneApi {
@@ -34,6 +35,7 @@ function SceneContent({
   scenes,
   currentTime,
   setCurrentTime,
+  totalVideoDuration,
 }: Omit<SceneProps, 'backgroundColor'> & { backgroundColor: string }) {
   const { gl } = useThree();
   const modelRef = useRef<THREE.Group>(null);
@@ -47,40 +49,51 @@ function SceneContent({
     }
   }, [gl, backgroundColor]);
 
-  useFrame((state, delta) => {
-    if (!isPlaying) return; // Not playing, do nothing
+ useFrame((state, delta) => {
+    if (!isPlaying) return;
 
-    // Increment the playhead time
-    const newTime = currentTime + delta;
-    setCurrentTime(newTime);
+    setCurrentTime((prevTime) => {
+      const newTime = prevTime + delta;
 
-    // Find the total duration of the animation
-    const totalDuration = scenes.reduce((acc, scene) => acc + scene.duration, 0);
-
-    // Stop playing if we reach the end
-    if (newTime > totalDuration) {
-      setIsPlaying(false);
-      setCurrentTime(0);
-      return;
-    }
-
-    // Find the currently active scene
-    let timeSoFar = 0;
-    const activeScene = scenes.find((scene) => {
-      const sceneEndTime = timeSoFar + scene.duration;
-      const isActive = newTime >= timeSoFar && newTime < sceneEndTime;
-      timeSoFar = sceneEndTime;
-      return isActive;
-    });
-
-    //Apply animation based on the active scene
-    if (modelRef.current) {
-      if (activeScene?.animationType === 'spin') {
-        modelRef.current.rotation.y += delta * 0.5;
-      } else {
-
+      if (newTime > totalVideoDuration) {
+        setIsPlaying(false);
+        return 0;
       }
-    }
+
+      let timeSoFar = 0;
+      let sceneFound = false;
+
+      for (const scene of scenes) {
+        const sceneStartTime = timeSoFar;
+        const sceneEndTime = sceneStartTime + scene.duration;
+        
+        // Check if the playhead is in this scene
+        if (newTime >= sceneStartTime && newTime < sceneEndTime) {
+          sceneFound = true;
+          if (modelRef.current) {
+            if (scene.animationType === 'spin') {
+              // Find progress (0.0 to 1.0)
+              const timeInScene = newTime - sceneStartTime;
+              const sceneProgress = timeInScene / scene.duration;
+
+              // Calculate target rotation (0 to 360 degrees)
+              const targetRotation = sceneProgress * (2 * Math.PI); // 2*PI = 360 degrees
+
+              // Set the rotation directly
+              modelRef.current.rotation.y = targetRotation;
+            }
+          }
+          break; // Stop searching once we find the active scene
+        }
+        timeSoFar = sceneEndTime; // Move to the next scene's start time
+      }
+
+      // If no scene is active (e.g., in a gap), do nothing
+      if (!sceneFound) {
+      }
+
+      return newTime;
+    });
   });
 
   return (
@@ -126,6 +139,7 @@ export default forwardRef<SceneApi, SceneProps>(function Scene(
     scenes,
     currentTime,
     setCurrentTime,
+    totalVideoDuration
   },
   ref
 ) {
@@ -147,6 +161,7 @@ export default forwardRef<SceneApi, SceneProps>(function Scene(
         scenes={scenes}
         currentTime={currentTime}
         setCurrentTime={setCurrentTime}
+        totalVideoDuration={totalVideoDuration}
       />
 
       <SceneCaptureController ref={ref} />
