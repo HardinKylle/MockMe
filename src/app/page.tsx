@@ -81,8 +81,8 @@ export default function App() {
     }
 
     return {
-      width: `${frameWidth}px`,
-      height: `${frameHeight}px`,
+      width: `${Math.round(frameWidth)}px`,
+      height: `${Math.round(frameHeight)}px`,
     };
   };
 
@@ -90,14 +90,14 @@ export default function App() {
 
   return (
 
-    <div className="w-full h-screen bg-gray-950 relative overflow-hidden">
-    
+    <div className="w-full h-screen bg-gray-950 relative overflow-hidden flex items-center justify-center">
+
       <div
         style={{
           ...frameStyle,
-          backgroundColor: backgroundColor 
+          backgroundColor: backgroundColor
         }}
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+        className=""
       >
         <Scene
           ref={sceneRef}
