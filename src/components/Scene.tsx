@@ -38,10 +38,15 @@ function SceneContent({
   const { gl } = useThree();
   const modelRef = useRef<THREE.Group>(null);
 
-  useEffect(() => {
-    // ... (gl.setClear... unchanged)
+ useEffect(() => {
+    if (backgroundColor === 'transparent') {
+      gl.setClearAlpha(0);
+    } else {
+      gl.setClearAlpha(1);
+      gl.setClearColor(new THREE.Color(backgroundColor));
+    }
   }, [gl, backgroundColor]);
-
+  
   // --- UPDATED ANIMATION LOOP ---
   useFrame((state, delta) => {
     if (!isPlaying) return; // Not playing, do nothing
