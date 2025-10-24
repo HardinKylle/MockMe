@@ -11,6 +11,12 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ OnImageUpload, previewUrl }) 
   const [isDragging, setIsDragging] = React.useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  useEffect(() => {
+    if (previewUrl === null && fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  }, [previewUrl]);
+
   const handleFileChange = (file: File | null) => {
     if (file && file.type.startsWith('image/')) {
       OnImageUpload(file); // Forward the file to the parent hook
