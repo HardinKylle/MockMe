@@ -22,6 +22,7 @@ const defaultScene: AnimationScene = {
   id: generateId(),
   name: 'Default Spin',
   duration: 3,
+  animationType: 'spin', // <--- Add this
 };
 
 export default function App() {
@@ -37,7 +38,7 @@ export default function App() {
 
   const { width: windowWidth, height: windowHeight } = useWindowSize();
   const [isPlaying, setIsPlaying] = useState(false);
-
+  const [currentTime, setCurrentTime] = useState(0);
   const [animationScenes, setAnimationScenes] = useState<AnimationScene[]>([
     defaultScene,
   ]);
@@ -75,9 +76,18 @@ export default function App() {
     const newScene: AnimationScene = {
       id: generateId(),
       name: `Scene ${animationScenes.length + 1}`,
-      duration: 3, // Default duration
+      duration: 3,
+      animationType: 'static', // <--- Add this
     };
     setAnimationScenes([...animationScenes, newScene]);
+  };
+
+  const handleTogglePlay = () => {
+    // When we start playing from the beginning, reset time
+    if (!isPlaying) {
+      setCurrentTime(0);
+    }
+    setIsPlaying(!isPlaying);
   };
 
   const getFrameStyle = () => {
@@ -130,7 +140,11 @@ export default function App() {
           textureUrl={uploadedImageUrl}
           model={selectedModel}
           backgroundColor={backgroundColor}
-          isPlaying={isPlaying} // <--- PASS isPlaying TO SCENE
+          isPlaying={isPlaying}
+          setIsPlaying={setIsPlaying} // <--- Pass this
+          scenes={animationScenes} // <--- Pass this
+          currentTime={currentTime} // <--- Pass this
+          setCurrentTime={setCurrentTime} // <--- Pass this
         />
       </div>
 
@@ -197,12 +211,12 @@ export default function App() {
           />
         )}
 
-       <TimelinePanel
+      <TimelinePanel
         isVisible={showTimeline}
         scenes={animationScenes}
         onAddScene={handleAddScene}
-        isPlaying={isPlaying} // <--- Pass isPlaying
-        onTogglePlay={() => setIsPlaying(!isPlaying)} // <--- Pass handler
+        isPlaying={isPlaying}
+        onTogglePlay={handleTogglePlay} // <--- Use the new handler
       />
       </div>
     </div>
