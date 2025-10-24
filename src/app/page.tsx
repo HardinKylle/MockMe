@@ -13,7 +13,16 @@ import { ViewfinderCircleIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/Button';
 import { useWindowSize } from '@/hooks/useWindowSize';
 import TimelinePanel from '@/components/TimelinePanel';
-import { clsx } from 'clsx';
+import { AnimationScene } from '@/types/animation';
+
+const generateId = () => `scene_${Math.random().toString(36).substr(2, 9)}`;
+
+// Define the default "spin" scene
+const defaultScene: AnimationScene = {
+  id: generateId(),
+  name: 'Default Spin',
+  duration: 3,
+};
 
 export default function App() {
   const { uploadedImageUrl, handleImageUpload } = useUploadedImage();
@@ -27,6 +36,11 @@ export default function App() {
   const [showTimeline, setShowTimeline] = useState(false);
 
   const { width: windowWidth, height: windowHeight } = useWindowSize();
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const [animationScenes, setAnimationScenes] = useState<AnimationScene[]>([
+    defaultScene,
+  ]);
 
   const handleCapture = () => {
     setIsLoading(true);
@@ -55,6 +69,15 @@ export default function App() {
   const handlePresetClick = (view: typeof presetViews[number]) => {
     sceneRef.current?.setView(view.position, view.target);
     setShowViews(false);
+  };
+
+  const handleAddScene = () => {
+    const newScene: AnimationScene = {
+      id: generateId(),
+      name: `Scene ${animationScenes.length + 1}`,
+      duration: 3, // Default duration
+    };
+    setAnimationScenes([...animationScenes, newScene]);
   };
 
   const getFrameStyle = () => {
@@ -107,6 +130,7 @@ export default function App() {
           textureUrl={uploadedImageUrl}
           model={selectedModel}
           backgroundColor={backgroundColor}
+          isPlaying={isPlaying} // <--- PASS isPlaying TO SCENE
         />
       </div>
 
@@ -157,7 +181,7 @@ export default function App() {
           isLoading={isLoading}
           aspectRatio={aspectRatio}
           onAspectRatioChange={setAspectRatio}
-          showTimeline={showTimeline} 
+          showTimeline={showTimeline}
           onToggleTimeline={() => setShowTimeline(!showTimeline)}
         />
 
@@ -173,7 +197,13 @@ export default function App() {
           />
         )}
 
-        <TimelinePanel isVisible={showTimeline} />
+       <TimelinePanel
+        isVisible={showTimeline}
+        scenes={animationScenes}
+        onAddScene={handleAddScene}
+        isPlaying={isPlaying} // <--- Pass isPlaying
+        onTogglePlay={() => setIsPlaying(!isPlaying)} // <--- Pass handler
+      />
       </div>
     </div>
   );

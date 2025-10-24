@@ -1,6 +1,6 @@
 'use client';
-import { forwardRef, useEffect } from 'react';
-import { Canvas, useThree } from '@react-three/fiber';
+import { forwardRef, useEffect, useRef } from 'react';
+import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { OrbitControls, Environment, useGLTF } from '@react-three/drei';
 import PhoneModel from '@/components/PhoneModel';
 import * as THREE from 'three';
@@ -11,6 +11,7 @@ interface SceneProps {
   textureUrl: string | null;
   model: ModelData;
   backgroundColor: string;
+  isPlaying: boolean;
 }
 
 export interface SceneApi {
@@ -20,8 +21,9 @@ export interface SceneApi {
 
 models.forEach(model => useGLTF.preload(model.path));
 
-function SceneContent({ backgroundColor, model, textureUrl }: Omit<SceneProps, 'backgroundColor'> & { backgroundColor: string }) {
+function SceneContent({ backgroundColor, model, textureUrl, isPlaying }: Omit<SceneProps, 'backgroundColor'> & { backgroundColor: string }) {
   const { gl } = useThree();
+  const modelRef = useRef<THREE.Group>(null);
 
   useEffect(() => {
     if (backgroundColor === 'transparent') {
@@ -32,6 +34,17 @@ function SceneContent({ backgroundColor, model, textureUrl }: Omit<SceneProps, '
     }
   }, [gl, backgroundColor]);
 
+  useFrame((state, delta) => {
+    // delta is the time since the last frame
+    if (isPlaying) {
+      // (We'll check for "Default Spin" scene later)
+      // For now, let's just spin the model
+      if (modelRef.current) {
+        modelRef.current.rotation.y += delta * 0.5; // Adjust 0.5 to change speed
+      }
+    }
+  });
+
   return (
     <>
       <ambientLight intensity={0.1} />
@@ -39,16 +52,18 @@ function SceneContent({ backgroundColor, model, textureUrl }: Omit<SceneProps, '
       <Environment preset="studio" environmentIntensity={0.5} />
 
       {model && (
-        <PhoneModel
-          modelUrl={model.path}
-          screenMaterialName={model.screenMaterial}
-          textureUrl={textureUrl}
-          scale={model.scale}
-          flipY={model.flipY}
-          textureRepeat={model.textureRepeat}
-          textureOffset={model.textureOffset}
-          rotation={model.rotation}
-        />
+        <group ref={modelRef}> {/* <--- Wrap PhoneModel in a group */}
+          <PhoneModel
+            modelUrl={model.path}
+            screenMaterialName={model.screenMaterial}
+            textureUrl={textureUrl}
+            scale={model.scale}
+            flipY={model.flipY}
+            textureRepeat={model.textureRepeat}
+            textureOffset={model.textureOffset}
+            rotation={model.rotation}
+          />
+        </group>
       )}
 
       <OrbitControls
@@ -62,21 +77,24 @@ function SceneContent({ backgroundColor, model, textureUrl }: Omit<SceneProps, '
   );
 }
 
-export default forwardRef<SceneApi, SceneProps>(function Scene({ textureUrl, model, backgroundColor }, ref) {
+export default forwardRef<SceneApi, SceneProps>(function Scene(
+  { textureUrl, model, backgroundColor, isPlaying }, // <--- Get isPlaying
+  ref
+) {
   return (
     <Canvas
       gl={{
         outputColorSpace: THREE.SRGBColorSpace,
         preserveDrawingBuffer: true,
-        alpha: true
+        alpha: true,
       }}
       camera={{ position: [0, 0, 2], fov: 50, near: 0.01, far: 100 }}
     >
-
       <SceneContent
         backgroundColor={backgroundColor}
         model={model}
         textureUrl={textureUrl}
+        isPlaying={isPlaying} // <--- Pass to SceneContent
       />
 
       <SceneCaptureController ref={ref} />
