@@ -12,6 +12,8 @@ import { presetViews } from '@/configs/views';
 import { ViewfinderCircleIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/Button';
 import { useWindowSize } from '@/hooks/useWindowSize';
+import TimelinePanel from '@/components/TimelinePanel';
+import { clsx } from 'clsx';
 
 export default function App() {
   const { uploadedImageUrl, handleImageUpload } = useUploadedImage();
@@ -22,6 +24,7 @@ export default function App() {
   const [backgroundColor, setBackgroundColor] = useState('#ffffff');
   const [showViews, setShowViews] = useState(false);
   const [aspectRatio, setAspectRatio] = useState('16:9');
+  const [showTimeline, setShowTimeline] = useState(false);
 
   const { width: windowWidth, height: windowHeight } = useWindowSize();
 
@@ -154,6 +157,8 @@ export default function App() {
           isLoading={isLoading}
           aspectRatio={aspectRatio}
           onAspectRatioChange={setAspectRatio}
+          showTimeline={showTimeline} 
+          onToggleTimeline={() => setShowTimeline(!showTimeline)}
         />
 
         <ImageUpload
@@ -167,6 +172,8 @@ export default function App() {
             onClose={() => setCapturedImageUrl(null)}
           />
         )}
+
+        <TimelinePanel isVisible={showTimeline} />
       </div>
     </div>
   );

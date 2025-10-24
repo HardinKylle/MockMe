@@ -1,7 +1,8 @@
 'use client';
 import { useState } from 'react';
-import { Camera, Loader2, Check } from 'lucide-react';
+import { Camera, Loader2, Check, Video, CircleStop } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/Button';
+import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
 // aspect ratio options
@@ -16,19 +17,21 @@ const aspectRatios = [
 interface CaptureControlsProps {
   onCapture: () => void;
   isLoading?: boolean;
-  aspectRatio: string; 
+  aspectRatio: string;
   onAspectRatioChange: (value: string) => void;
+  showTimeline: boolean; // Add this prop
+  onToggleTimeline: () => void; // Add this prop
 }
 
-export default function CaptureControls({ onCapture, isLoading = false, aspectRatio, onAspectRatioChange }: CaptureControlsProps) {
+export default function CaptureControls({ onCapture, isLoading = false, aspectRatio, onAspectRatioChange, showTimeline, onToggleTimeline }: CaptureControlsProps) {
   const [isOpen, setIsOpen] = useState(false);
 
- const handleCaptureClick = () => {
+  const handleCaptureClick = () => {
     onCapture();
   };
 
   const handleSelect = (value: string) => {
-    onAspectRatioChange(value); 
+    onAspectRatioChange(value);
     setIsOpen(false);
   };
 
@@ -56,6 +59,7 @@ export default function CaptureControls({ onCapture, isLoading = false, aspectRa
           </div>
         )}
 
+
         {/* Main Button */}
         <Button
           onClick={() => setIsOpen(!isOpen)}
@@ -69,6 +73,22 @@ export default function CaptureControls({ onCapture, isLoading = false, aspectRa
           {aspectRatio}
         </Button>
       </div>
+      <Button
+        onClick={onToggleTimeline}
+        variant="primary"
+        size="default"
+        tooltip="Video Animation"
+        isActive={showTimeline}
+      >
+        {showTimeline ? (
+          // Use CircleStop for the "Stop" icon
+          <CircleStop className=" text-red-500" size={24} />
+        ) : (
+          // Use Video for the "Record" icon
+          <Video size={24} />
+        )}
+      </Button>
+
 
       {/* Capture Button */}
       <Button
