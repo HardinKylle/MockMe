@@ -12,6 +12,7 @@ interface TimelinePanelProps {
   onAddScene: () => void; // <--- 2. Add handler prop
   isPlaying: boolean; // <--- Add this
   onTogglePlay: () => void; // <--- Add this
+  currentTime: number;
 }
 
 export default function TimelinePanel({
@@ -19,8 +20,23 @@ export default function TimelinePanel({
   scenes,
   onAddScene,
   isPlaying, // <--- Destructure
-  onTogglePlay, // <--- Destructure
+  onTogglePlay,
+  currentTime // <--- Destructure
 }: TimelinePanelProps) {
+
+  const totalDuration = scenes.reduce((acc, scene) => acc + scene.duration, 0);
+  // Calculate playhead position as a percentage
+  const playheadPercent =
+    totalDuration > 0 ? (currentTime / totalDuration) * 100 : 0;
+
+  // --- 2. Find the active scene ---
+  let timeSoFar = 0;
+  const activeScene = scenes.find((scene) => {
+    const sceneEndTime = timeSoFar + scene.duration;
+    const isActive = currentTime >= timeSoFar && currentTime < sceneEndTime;
+    timeSoFar = sceneEndTime;
+    return isActive;
+  });
   return (
     <div
       className={clsx(
@@ -39,12 +55,20 @@ export default function TimelinePanel({
       )}
     >
       {/* --- Track: Animation Layer --- */}
-      <div className="h-10 w-full bg-[#0f2547]/70 rounded-lg border border-[#1e3a65]/40 p-1.5 flex items-center gap-2 overflow-x-auto">
-        {/* --- NEW PLAY/PAUSE BUTTON --- */}
+      <div className="h-10 w-full bg-[#0f2547]/70 rounded-lg border border-[#1e3a65]/40 p-1.5 flex items-center gap-2 overflow-x-auto relative">
+        {/* --- 3. Playhead Element --- */}
+        <div
+          className="absolute top-0 bottom-0 w-0.5 bg-red-500 z-10"
+          style={{
+            left: `${playheadPercent}%`,
+          }}
+        />
+
+        {/* --- Play/Pause Button --- */}
         <Button
           variant="ghost"
           size="sm"
-          className="h-6 w-6 p-0 rounded-full bg-blue-900/40 border border-blue-700/30 hover:bg-blue-700/60 hover:border-blue-500/50 transition-all shrink-0"
+          className="h-6 w-6 p-0 rounded-full bg-blue-900/40 border border-blue-700/30 hover:bg-blue-700/60 hover:border-blue-500/50 transition-all shrink-0 z-20" // <-- Add z-20
           onClick={onTogglePlay}
         >
           {isPlaying ? (
@@ -54,15 +78,17 @@ export default function TimelinePanel({
           )}
         </Button>
 
-        <span className="text-[10px] text-blue-300 font-medium shrink-0 w-16 border-l border-gray-700 pl-2">
-          Animation
-        </span>
-
         {/* Dynamic Scenes */}
         {scenes.map((scene) => (
           <div
             key={scene.id}
-            className="h-6 bg-linear-to-r from-blue-500 to-indigo-200 rounded-md shrink-0 flex items-center justify-center px-2 shadow shadow-blue-900/30 hover:shadow-blue-600/30 transition cursor-pointer"
+            className={clsx(
+              'h-6 bg-linear-to-r from-blue-500 to-indigo-200 rounded-md shrink-0 flex items-center justify-center px-2 shadow shadow-blue-900/30 hover:shadow-blue-600/30 transition cursor-pointer z-20', // <-- Add z-20
+              {
+                'ring-2 ring-blue-300 ring-offset-2 ring-offset-gray-900': // --- 4. Active Style ---
+                  activeScene?.id === scene.id,
+              }
+            )}
           >
             <span className="text-[10px] font-medium text-white">
               {scene.name}
@@ -74,7 +100,7 @@ export default function TimelinePanel({
         <Button
           variant="ghost"
           size="sm"
-          className="h-6 w-6 p-0 rounded-full bg-blue-900/40 border border-blue-700/30 hover:bg-blue-700/60 hover:border-blue-500/50 transition-all shrink-0"
+          className="h-6 w-6 p-0 rounded-full bg-blue-900/40 border border-blue-700/30 hover:bg-blue-700/60 hover:border-blue-500/50 transition-all shrink-0 z-20" // <-- Add z-20
           onClick={onAddScene}
         >
           <PlusIcon className="h-3.5 w-3.5 text-blue-200" />
@@ -82,8 +108,20 @@ export default function TimelinePanel({
       </div>
 
       {/* --- Track: Image Layer (Unchanged) --- */}
-      <div className="h-8 w-full bg-[#0f2547]/70 rounded-lg border border-[#1e3a65]/40 p-1.5 flex items-center gap-2 overflow-x-auto">
-        {/* ... (rest of the track is unchanged) ... */}
+      <div className="h-8 w-full bg-[#0f2547]/70 rounded-lg border border-[#1e3a65]/40 p-1.5 flex items-center gap-2 overflow-x-auto relative">
+        {/* --- 3. Playhead Element (on Image Track) --- */}
+        <div
+          className="absolute top-0 bottom-0 w-0.5 bg-red-500 z-10"
+          style={{
+            left: `${playheadPercent}%`,
+          }}
+        />
+
+        <span className="text-[10px] text-blue-300 font-medium shrink-0 z-20">
+          Image
+        </span>
+
+        <div className="h-1.5 w-48 bg-linear-to-r from-pink-500 to-rose-600 rounded-full shadow shadow-pink-900/30 z-20" />
       </div>
     </div>
   );

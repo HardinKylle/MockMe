@@ -216,7 +216,8 @@ export default function App() {
         scenes={animationScenes}
         onAddScene={handleAddScene}
         isPlaying={isPlaying}
-        onTogglePlay={handleTogglePlay} // <--- Use the new handler
+        onTogglePlay={handleTogglePlay} 
+        currentTime={currentTime}
       />
       </div>
     </div>
