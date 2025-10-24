@@ -12,10 +12,10 @@ interface SceneProps {
   model: ModelData;
   backgroundColor: string;
   isPlaying: boolean;
-  setIsPlaying: (isPlaying: boolean) => void; // <--- Add this
-  scenes: AnimationScene[]; // <--- Add this
-  currentTime: number; // <--- Add this
-  setCurrentTime: (time: number | ((prevTime: number) => number)) => void; // <--- Add this
+  setIsPlaying: (isPlaying: boolean) => void;
+  scenes: AnimationScene[];
+  currentTime: number;
+  setCurrentTime: (time: number | ((prevTime: number) => number)) => void;
 }
 
 export interface SceneApi {
@@ -30,15 +30,15 @@ function SceneContent({
   model,
   textureUrl,
   isPlaying,
-  setIsPlaying, // <--- Destructure
-  scenes, // <--- Destructure
-  currentTime, // <--- Destructure
-  setCurrentTime, // <--- Destructure
+  setIsPlaying,
+  scenes,
+  currentTime,
+  setCurrentTime,
 }: Omit<SceneProps, 'backgroundColor'> & { backgroundColor: string }) {
   const { gl } = useThree();
   const modelRef = useRef<THREE.Group>(null);
 
- useEffect(() => {
+  useEffect(() => {
     if (backgroundColor === 'transparent') {
       gl.setClearAlpha(0);
     } else {
@@ -46,26 +46,25 @@ function SceneContent({
       gl.setClearColor(new THREE.Color(backgroundColor));
     }
   }, [gl, backgroundColor]);
-  
-  // --- UPDATED ANIMATION LOOP ---
+
   useFrame((state, delta) => {
     if (!isPlaying) return; // Not playing, do nothing
 
-    // 1. Increment the playhead time
+    // Increment the playhead time
     const newTime = currentTime + delta;
     setCurrentTime(newTime);
 
-    // 2. Find the total duration of the animation
+    // Find the total duration of the animation
     const totalDuration = scenes.reduce((acc, scene) => acc + scene.duration, 0);
 
-    // 3. Stop playing if we reach the end
+    // Stop playing if we reach the end
     if (newTime > totalDuration) {
       setIsPlaying(false);
       setCurrentTime(0);
       return;
     }
 
-    // 4. Find the currently active scene
+    // Find the currently active scene
     let timeSoFar = 0;
     const activeScene = scenes.find((scene) => {
       const sceneEndTime = timeSoFar + scene.duration;
@@ -74,14 +73,12 @@ function SceneContent({
       return isActive;
     });
 
-    // 5. Apply animation based on the active scene
+    //Apply animation based on the active scene
     if (modelRef.current) {
       if (activeScene?.animationType === 'spin') {
-        // Apply spin animation
-        modelRef.current.rotation.y += delta * 0.5; // Adjust 0.5 to change speed
+        modelRef.current.rotation.y += delta * 0.5;
       } else {
-        // It's 'static' or undefined, do nothing
-        // (We can reset rotation here later if we want)
+
       }
     }
   });
@@ -93,7 +90,7 @@ function SceneContent({
       <Environment preset="studio" environmentIntensity={0.5} />
 
       {model && (
-        <group ref={modelRef}> {/* <--- Wrap PhoneModel in a group */}
+        <group ref={modelRef}>
           <PhoneModel
             modelUrl={model.path}
             screenMaterialName={model.screenMaterial}
@@ -107,13 +104,12 @@ function SceneContent({
         </group>
       )}
 
-     <OrbitControls
+      <OrbitControls
         enableZoom={true}
         minDistance={0.5}
         maxDistance={6}
         makeDefault
         target={[0, 0, 0]}
-        // Disable orbit controls while animation is playing
         enabled={!isPlaying}
       />
     </>
@@ -126,10 +122,10 @@ export default forwardRef<SceneApi, SceneProps>(function Scene(
     model,
     backgroundColor,
     isPlaying,
-    setIsPlaying, // <--- Get prop
-    scenes, // <--- Get prop
-    currentTime, // <--- Get prop
-    setCurrentTime, // <--- Get prop
+    setIsPlaying,
+    scenes,
+    currentTime,
+    setCurrentTime,
   },
   ref
 ) {
@@ -142,15 +138,15 @@ export default forwardRef<SceneApi, SceneProps>(function Scene(
       }}
       camera={{ position: [0, 0, 2], fov: 50, near: 0.01, far: 100 }}
     >
-     <SceneContent
+      <SceneContent
         backgroundColor={backgroundColor}
         model={model}
         textureUrl={textureUrl}
         isPlaying={isPlaying}
-        setIsPlaying={setIsPlaying} // <--- Pass prop
-        scenes={scenes} // <--- Pass prop
-        currentTime={currentTime} // <--- Pass prop
-        setCurrentTime={setCurrentTime} // <--- Pass prop
+        setIsPlaying={setIsPlaying}
+        scenes={scenes}
+        currentTime={currentTime}
+        setCurrentTime={setCurrentTime}
       />
 
       <SceneCaptureController ref={ref} />

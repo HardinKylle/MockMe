@@ -22,7 +22,7 @@ const defaultScene: AnimationScene = {
   id: generateId(),
   name: 'Default Spin',
   duration: 3,
-  animationType: 'spin', // <--- Add this
+  animationType: 'spin',
 };
 
 export default function App() {
@@ -77,7 +77,7 @@ export default function App() {
       id: generateId(),
       name: `Scene ${animationScenes.length + 1}`,
       duration: 3,
-      animationType: 'static', // <--- Add this
+      animationType: 'static', 
     };
     setAnimationScenes([...animationScenes, newScene]);
   };
@@ -141,10 +141,10 @@ export default function App() {
           model={selectedModel}
           backgroundColor={backgroundColor}
           isPlaying={isPlaying}
-          setIsPlaying={setIsPlaying} // <--- Pass this
-          scenes={animationScenes} // <--- Pass this
-          currentTime={currentTime} // <--- Pass this
-          setCurrentTime={setCurrentTime} // <--- Pass this
+          setIsPlaying={setIsPlaying}
+          scenes={animationScenes} 
+          currentTime={currentTime} 
+          setCurrentTime={setCurrentTime}
         />
       </div>
 

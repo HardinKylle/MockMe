@@ -5,7 +5,7 @@ import { Button, buttonVariants } from '@/components/ui/Button';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
-// aspect ratio options
+// Aspect ratio options
 const aspectRatios = [
   { label: '16:9', value: '16:9' },
   { label: '9:16', value: '9:16' },
@@ -19,8 +19,8 @@ interface CaptureControlsProps {
   isLoading?: boolean;
   aspectRatio: string;
   onAspectRatioChange: (value: string) => void;
-  showTimeline: boolean; // Add this prop
-  onToggleTimeline: () => void; // Add this prop
+  showTimeline: boolean; 
+  onToggleTimeline: () => void; 
 }
 
 export default function CaptureControls({ onCapture, isLoading = false, aspectRatio, onAspectRatioChange, showTimeline, onToggleTimeline }: CaptureControlsProps) {

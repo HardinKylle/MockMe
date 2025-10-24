@@ -1,4 +1,3 @@
-// src/components/SceneCaptureController.tsx
 'use client';
 
 import { useImperativeHandle, forwardRef } from 'react';
@@ -57,7 +56,6 @@ export const SceneCaptureController = forwardRef<SceneApi>((props, ref) => {
         return;
       }
 
-      // --- Apply new state for capture ---
       // These are now type-safe
       camera.aspect = width / height;
       camera.updateProjectionMatrix();

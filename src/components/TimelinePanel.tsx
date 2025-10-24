@@ -3,15 +3,15 @@
 import { clsx } from 'clsx';
 import { Button } from './ui/Button';
 import { PlusIcon, PlayIcon, PauseIcon } from 'lucide-react';
-import { AnimationScene } from '@/types/animation'; // <--- 1. Import type
+import { AnimationScene } from '@/types/animation';
 
 
 interface TimelinePanelProps {
   isVisible: boolean;
-  scenes: AnimationScene[]; // <--- 2. Add scenes prop
-  onAddScene: () => void; // <--- 2. Add handler prop
-  isPlaying: boolean; // <--- Add this
-  onTogglePlay: () => void; // <--- Add this
+  scenes: AnimationScene[];
+  onAddScene: () => void; 
+  isPlaying: boolean;
+  onTogglePlay: () => void; 
   currentTime: number;
 }
 
@@ -19,9 +19,9 @@ export default function TimelinePanel({
   isVisible,
   scenes,
   onAddScene,
-  isPlaying, // <--- Destructure
+  isPlaying, 
   onTogglePlay,
-  currentTime // <--- Destructure
+  currentTime 
 }: TimelinePanelProps) {
 
   const totalDuration = scenes.reduce((acc, scene) => acc + scene.duration, 0);
@@ -29,7 +29,6 @@ export default function TimelinePanel({
   const playheadPercent =
     totalDuration > 0 ? (currentTime / totalDuration) * 100 : 0;
 
-  // --- 2. Find the active scene ---
   let timeSoFar = 0;
   const activeScene = scenes.find((scene) => {
     const sceneEndTime = timeSoFar + scene.duration;
@@ -68,7 +67,7 @@ export default function TimelinePanel({
         <Button
           variant="ghost"
           size="sm"
-          className="h-6 w-6 p-0 rounded-full bg-blue-900/40 border border-blue-700/30 hover:bg-blue-700/60 hover:border-blue-500/50 transition-all shrink-0 z-20" // <-- Add z-20
+          className="h-6 w-6 p-0 rounded-full bg-blue-900/40 border border-blue-700/30 hover:bg-blue-700/60 hover:border-blue-500/50 transition-all shrink-0 z-20" 
           onClick={onTogglePlay}
         >
           {isPlaying ? (
@@ -83,9 +82,9 @@ export default function TimelinePanel({
           <div
             key={scene.id}
             className={clsx(
-              'h-6 bg-linear-to-r from-blue-500 to-indigo-200 rounded-md shrink-0 flex items-center justify-center px-2 shadow shadow-blue-900/30 hover:shadow-blue-600/30 transition cursor-pointer z-20', // <-- Add z-20
+              'h-6 bg-linear-to-r from-blue-500 to-indigo-200 rounded-md shrink-0 flex items-center justify-center px-2 shadow shadow-blue-900/30 hover:shadow-blue-600/30 transition cursor-pointer z-20', 
               {
-                'ring-2 ring-blue-300 ring-offset-2 ring-offset-gray-900': // --- 4. Active Style ---
+                'ring-2 ring-blue-300 ring-offset-2 ring-offset-gray-900': 
                   activeScene?.id === scene.id,
               }
             )}
@@ -100,16 +99,14 @@ export default function TimelinePanel({
         <Button
           variant="ghost"
           size="sm"
-          className="h-6 w-6 p-0 rounded-full bg-blue-900/40 border border-blue-700/30 hover:bg-blue-700/60 hover:border-blue-500/50 transition-all shrink-0 z-20" // <-- Add z-20
+          className="h-6 w-6 p-0 rounded-full bg-blue-900/40 border border-blue-700/30 hover:bg-blue-700/60 hover:border-blue-500/50 transition-all shrink-0 z-20" 
           onClick={onAddScene}
         >
           <PlusIcon className="h-3.5 w-3.5 text-blue-200" />
         </Button>
       </div>
 
-      {/* --- Track: Image Layer (Unchanged) --- */}
       <div className="h-8 w-full bg-[#0f2547]/70 rounded-lg border border-[#1e3a65]/40 p-1.5 flex items-center gap-2 overflow-x-auto relative">
-        {/* --- 3. Playhead Element (on Image Track) --- */}
         <div
           className="absolute top-0 bottom-0 w-0.5 bg-red-500 z-10"
           style={{

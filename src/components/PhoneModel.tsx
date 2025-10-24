@@ -1,4 +1,3 @@
-
 import React, { useLayoutEffect, useRef, useEffect } from 'react';
 import { useGLTF, useTexture } from '@react-three/drei';
 import * as THREE from 'three';

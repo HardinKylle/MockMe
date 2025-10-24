@@ -113,7 +113,6 @@ export default function PreviewModal({ imageUrl, onClose }: PreviewModalProps) {
               Cancel
             </Button>
 
-            {/* THIS IS THE BUTTON TO FIX */}
             <button
               onClick={handleDownload}
               disabled={isDownloading || downloaded}

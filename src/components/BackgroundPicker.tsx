@@ -156,7 +156,7 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
           {/* Color Picker */}
           <div className="p-4">
             <HexColorPicker
-              color={color === 'transparent' ? '#FFFFFF' : color} // HexColorPicker can't handle 'transparent'
+              color={color === 'transparent' ? '#FFFFFF' : color} 
               onChange={handleColorChange}
               className="w-full shadow-none!"
               style={{ height: '180px' }}
