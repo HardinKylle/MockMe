@@ -14,20 +14,21 @@ const aspectRatios = [
 
 // Define the props interface
 interface CaptureControlsProps {
-  onCapture: (aspectRatio: string) => void;
+  onCapture: () => void;
   isLoading?: boolean;
+  aspectRatio: string; 
+  onAspectRatioChange: (value: string) => void;
 }
 
-export default function CaptureControls({ onCapture, isLoading = false }: CaptureControlsProps) {
-  const [aspectRatio, setAspectRatio] = useState(aspectRatios[0].value);
+export default function CaptureControls({ onCapture, isLoading = false, aspectRatio, onAspectRatioChange }: CaptureControlsProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleCaptureClick = () => {
-    onCapture(aspectRatio);
+ const handleCaptureClick = () => {
+    onCapture();
   };
 
   const handleSelect = (value: string) => {
-    setAspectRatio(value);
+    onAspectRatioChange(value); 
     setIsOpen(false);
   };
 
