@@ -6,8 +6,7 @@ import PhoneModel from '@/components/PhoneModel';
 import * as THREE from 'three';
 import { SceneCaptureController } from './SceneCaptureController';
 import { ModelData, models } from '@/configs/models';
-import { AnimationScene } from '@/types/animation';
-import { CameraView } from '@/types/animation';
+import { AnimationScene, CameraView } from '@/types/animation';
 interface SceneProps {
   textureUrl: string | null;
   model: ModelData;
@@ -28,6 +27,15 @@ export interface SceneApi {
 
 models.forEach(model => useGLTF.preload(model.path));
 
+const easeInOutCubic = (t: number) => {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+};
+
+const startPos = new THREE.Vector3();
+const endPos = new THREE.Vector3();
+const startTarget = new THREE.Vector3();
+const endTarget = new THREE.Vector3();
+
 function SceneContent({
   backgroundColor,
   model,
@@ -39,8 +47,30 @@ function SceneContent({
   setCurrentTime,
   totalVideoDuration,
 }: Omit<SceneProps, 'backgroundColor'> & { backgroundColor: string }) {
-  const { gl } = useThree();
+  const { gl, camera, controls } = useThree();
   const modelRef = useRef<THREE.Group>(null);
+
+  useEffect(() => {
+    if (isPlaying) {
+      // We just pressed Play
+      if (modelRef.current) {
+        // Reset the model's rotation to 0
+        modelRef.current.rotation.y = 0;
+      }
+
+      // Reset camera to the start of the *first* scene
+      const firstScene = scenes[0];
+      if (firstScene?.animationType === 'custom' && firstScene.startView) {
+        // If first scene is custom, set camera to its start view
+        camera.position.set(...firstScene.startView.position);
+        (controls as any).target.set(...firstScene.startView.target);
+      } else {
+        // Otherwise, set to default view (or whatever you like)
+        camera.position.set(0, 0, 2);
+        (controls as any).target.set(0, 0, 0);
+      }
+    }
+  }, [isPlaying, scenes, camera, controls]);
 
   useEffect(() => {
     if (backgroundColor === 'transparent') {
@@ -51,7 +81,7 @@ function SceneContent({
     }
   }, [gl, backgroundColor]);
 
- useFrame((state, delta) => {
+  useFrame((state, delta) => {
     if (!isPlaying) return;
 
     setCurrentTime((prevTime) => {
@@ -62,36 +92,53 @@ function SceneContent({
         return 0;
       }
 
-      let timeSoFar = 0;
+    let timeSoFar = 0;
       let sceneFound = false;
 
       for (const scene of scenes) {
         const sceneStartTime = timeSoFar;
         const sceneEndTime = sceneStartTime + scene.duration;
-        
-        // Check if the playhead is in this scene
+
         if (newTime >= sceneStartTime && newTime < sceneEndTime) {
           sceneFound = true;
-          if (modelRef.current) {
-            if (scene.animationType === 'spin') {
-              // Find progress (0.0 to 1.0)
-              const timeInScene = newTime - sceneStartTime;
-              const sceneProgress = timeInScene / scene.duration;
+          const timeInScene = newTime - sceneStartTime;
+          const sceneProgress = timeInScene / scene.duration;
+          const easedProgress = easeInOutCubic(sceneProgress);
 
-              // Calculate target rotation (0 to 360 degrees)
-              const targetRotation = sceneProgress * (2 * Math.PI); // 2*PI = 360 degrees
+          // --- Check for controls before doing any work ---
+          if (modelRef.current && controls) {
+            if (scene.animationType === 'custom') {
+              if (scene.startView && scene.endView) {
+                // ... (Custom view lerp logic - unchanged)
+                startPos.set(...scene.startView.position);
+                endPos.set(...scene.endView.position);
+                startTarget.set(...scene.startView.target);
+                endTarget.set(...scene.endView.target);
+                startPos.lerp(endPos, easedProgress);
+                camera.position.copy(startPos);
+                startTarget.lerp(endTarget, easedProgress);
+                (controls as any).target.copy(startTarget);
+                (controls as any).update();
+              }
+            } else if (scene.animationType === 'spin') {
+              // --- THIS IS THE FIX ---
+              // 1. Force camera to default position
+              camera.position.set(0, 0, 2);
+              (controls as any).target.set(0, 0, 0);
+              (controls as any).update();
+              // ---------------------
 
-              // Set the rotation directly
+              // 2. Set the model rotation
+              const targetRotation = sceneProgress * (2 * Math.PI);
               modelRef.current.rotation.y = targetRotation;
+            } else if (scene.animationType === 'static') {
+              // Do nothing, just hold the last position.
+              // We don't need to do anything here.
             }
           }
-          break; // Stop searching once we find the active scene
+          break;
         }
-        timeSoFar = sceneEndTime; // Move to the next scene's start time
-      }
-
-      // If no scene is active (e.g., in a gap), do nothing
-      if (!sceneFound) {
+        timeSoFar = sceneEndTime;
       }
 
       return newTime;
