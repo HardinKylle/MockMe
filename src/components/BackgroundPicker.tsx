@@ -9,6 +9,17 @@ interface PickerProps {
   onChange: (color: string) => void;
 }
 
+interface EyeDropperResult {
+  sRGBHex: string;
+}
+
+interface EyeDropper {
+  open: () => Promise<EyeDropperResult>;
+}
+
+interface EyeDropperConstructor {
+  new (): EyeDropper;
+}
 const presetColors = [
   '#FFFFFF',
   '#9e9e9e',
@@ -87,9 +98,11 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
     backgroundPosition: '0 0, 0 4px, 4px -4px, -4px 0px',
   };
 
-  const openEyeDropper = async () => {
-    // Check if the EyeDropper API is supported
-    const eyeDropperApi = (window as any).EyeDropper;
+ const openEyeDropper = async () => {
+    const eyeDropperApi = (
+      window as Window & { EyeDropper?: EyeDropperConstructor }
+    ).EyeDropper;
+
     if (!eyeDropperApi) {
       alert("Your browser doesn't support the EyeDropper API.");
       return;
@@ -97,17 +110,15 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
 
     try {
       const eyeDropper = new eyeDropperApi();
-      // Start the eyedropper and wait for the user to select a color
       const { sRGBHex } = await eyeDropper.open();
-
-      // Update the color with the result
       handleColorChange(sRGBHex);
-
-      // Close the picker popover after selection
       setIsOpen(false);
-    } catch (e) {
-      // This will catch if the user cancels the operation (e.g., presses ESC)
-      console.warn('EyeDropper cancelled or failed:', e);
+    } catch (e: unknown) { 
+      if (e instanceof Error) {
+        console.warn(`EyeDropper cancelled or failed: ${e.message}`);
+      } else {
+        console.warn('EyeDropper cancelled or failed:', e);
+      }
     }
   };
 
