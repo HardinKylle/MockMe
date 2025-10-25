@@ -21,7 +21,6 @@ interface TimelinePanelProps {
   onSelectScene: (id: string) => void;
   totalVideoDuration: number;
   setTotalVideoDuration: (duration: number) => void;
-  onReorderScenes: (scenes: AnimationScene[]) => void;
 }
 
 export default function TimelinePanel({
@@ -35,7 +34,6 @@ export default function TimelinePanel({
   onSelectScene,
   totalVideoDuration,
   setTotalVideoDuration,
-  onReorderScenes,
 }: TimelinePanelProps) {
 
 
@@ -137,7 +135,6 @@ return (
             getClipLeftPercent={getClipLeftPercent}
             getClipWidthPercent={getClipWidthPercent}
             playheadPercent={playheadPercent}
-            onReorderScenes={onReorderScenes}
           />
 
           {/* --- CONTENT TRACK --- */}

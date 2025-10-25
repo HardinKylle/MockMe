@@ -264,7 +264,6 @@ export default function App() {
           onSelectScene={setSelectedSceneId}
           totalVideoDuration={totalVideoDuration}
           setTotalVideoDuration={setTotalVideoDuration}
-          onReorderScenes={setAnimationScenes}
         />
 
         {selectedScene && (
@@ -275,6 +274,8 @@ export default function App() {
             sceneRef={sceneRef}
             onDeleteScene={handleDeleteScene}
             sceneCount={animationScenes.length}
+            scenes={animationScenes}
+            onReorderScenes={setAnimationScenes}
           />
         )}
       </div>

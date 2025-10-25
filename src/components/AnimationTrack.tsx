@@ -1,8 +1,6 @@
 'use client';
 
 import { AnimationScene } from '@/types/animation';
-import { useRef } from 'react';
-import { useAnimationDrag } from '@/hooks/useAnimationDrag'; 
 
 interface AnimationTrackProps {
   scenes: AnimationScene[];
@@ -12,7 +10,6 @@ interface AnimationTrackProps {
   getClipLeftPercent: (index: number, scenes: AnimationScene[]) => number;
   getClipWidthPercent: (duration: number) => number;
   playheadPercent: number;
-  onReorderScenes: (scenes: AnimationScene[]) => void;
 }
 
 export default function AnimationTrack({
@@ -23,22 +20,8 @@ export default function AnimationTrack({
   getClipLeftPercent,
   getClipWidthPercent,
   playheadPercent,
-  onReorderScenes,
 }: AnimationTrackProps) {
 
-  const trackAreaRef = useRef<HTMLDivElement>(null);
-  const {
-    visualScenes,
-    isDragging: isAnimationTrackDragging, 
-    draggedItemIndex,
-    bindAnimationDrag,
-  } = useAnimationDrag({
-    scenes,
-    onReorderScenes,
-    getClipLeftPercent,
-    getClipWidthPercent,
-    trackAreaRef,
-  });
 
   return (
     <div className="flex items-stretch gap-2">
@@ -49,36 +32,31 @@ export default function AnimationTrack({
         </span>
       </div>
 
-      {/* ---TRACK AREA  --- */}
-      <div ref={trackAreaRef} className="flex-1 relative">
+      {/* ---TRACK AREA --- */}
+      <div /* ref={trackAreaRef} */ className="flex-1 relative"> 
         {/* Timeline ruler background */}
         <div className="absolute inset-0 bg-slate-800/50 rounded border border-slate-700/50" />
 
         {/* Clips container */}
         <div className="relative h-8 rounded">
           {/* Scene clips */}
-          {visualScenes.map((scene, index) => (
+          {scenes.map((scene, index) => ( 
             <div
-              {...bindAnimationDrag(index)} 
               key={scene.id}
-              onClick={() => onSelectScene(scene.id)}
+              onClick={() => onSelectScene(scene.id)} 
               className={`absolute top-1 bottom-1 rounded cursor-pointer bg-linear-to-r from-blue-500 to-blue-600 border border-blue-400/30 hover:border-blue-300/60 flex items-center justify-center px-2 shadow hover:shadow-lg ${
                 selectedSceneId === scene.id
                   ? 'ring-1 ring-blue-400 ring-offset-1 ring-offset-slate-900 z-10'
                   : ''
               } ${
-                isContentTrackDragging || isAnimationTrackDragging
+                isContentTrackDragging
                   ? 'transition-none'
                   : 'transition-all'
-              } ${
-                isAnimationTrackDragging && draggedItemIndex.current === index
-                  ? 'opacity-70 scale-105 z-20'
-                  : 'z-10'
-              }`}
+              } 
+              z-10`}
               style={{
-                left: `${getClipLeftPercent(index, visualScenes)}%`,
+                left: `${getClipLeftPercent(index, scenes)}%`, 
                 width: `${getClipWidthPercent(scene.duration)}%`,
-                touchAction: 'none',
               }}
             >
               <span className="text-[10px] font-medium text-white truncate pointer-events-none">

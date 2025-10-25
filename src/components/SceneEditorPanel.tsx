@@ -5,7 +5,7 @@ import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 import { Label } from './ui/Label';
 import { Select } from './ui/Select';
-import { CameraIcon, SunsetIcon, ViewIcon, CheckIcon, Trash2Icon } from 'lucide-react';
+import { CameraIcon, SunsetIcon, ViewIcon, CheckIcon, Trash2Icon, ArrowLeft, ArrowRight } from 'lucide-react';
 import { SceneApi } from './Scene';
 import React, { useState, useEffect } from 'react';
 
@@ -20,6 +20,17 @@ interface SceneEditorPanelProps {
   sceneRef: React.RefObject<SceneApi | null>;
   onDeleteScene: (sceneId: string) => void;
   sceneCount: number;
+  scenes: AnimationScene[];
+  onReorderScenes: (scenes: AnimationScene[]) => void;
+  
+}
+
+// Helper function to reorder array
+function reorder<T>(list: T[], startIndex: number, endIndex: number): T[] {
+  const result = Array.from(list);
+  const [removed] = result.splice(startIndex, 1);
+  result.splice(endIndex, 0, removed);
+  return result;
 }
 
 
@@ -30,10 +41,25 @@ export default function SceneEditorPanel({
   sceneRef,
   onDeleteScene,
   sceneCount,
+  scenes,               // <-- new prop
+  onReorderScenes,
 }: SceneEditorPanelProps) {
   const [showSavedMessage, setShowSavedMessage] = useState(false);
+  const currentIndex = scenes.findIndex((s) => s.id === selectedScene.id);
 
   if (!isVisible) return null;
+
+  const handleMove = (direction: 'left' | 'right') => {
+    const newIndex = direction === 'left' ? currentIndex - 1 : currentIndex + 1;
+
+    // Check bounds
+    if (newIndex < 0 || newIndex >= scenes.length) {
+      return;
+    }
+
+    const newScenes = reorder(scenes, currentIndex, newIndex);
+    onReorderScenes(newScenes);
+  };
 
   const handleSetView = (type: 'startView' | 'endView') => {
     const view = sceneRef.current?.getView();
@@ -164,6 +190,32 @@ export default function SceneEditorPanel({
             </Button>
           </div>
         )}
+
+        <div className="flex items-center justify-between pt-3 border-t border-slate-700/50">
+          <Label>Reorder</Label>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7"
+              onClick={() => handleMove('left')}
+              disabled={currentIndex === 0} // Disable if first
+              tooltip="Move Left"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7"
+              onClick={() => handleMove('right')}
+              disabled={currentIndex === scenes.length - 1} // Disable if last
+              tooltip="Move Right"
+            >
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );
