@@ -76,14 +76,15 @@ export default function App() {
     setShowViews(false);
   };
 
-  const handleAddScene = () => {
+ const handleAddScene = () => {
     const newScene: AnimationScene = {
       id: generateId(),
       name: `Scene ${animationScenes.length + 1}`,
       duration: 3,
-      animationType: 'static',
+      animationType: 'hold',
     };
     setAnimationScenes([...animationScenes, newScene]);
+    setSelectedSceneId(newScene.id);
   };
 
   const handleUpdateScene = (

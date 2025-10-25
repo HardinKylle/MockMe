@@ -2,7 +2,7 @@ export interface AnimationScene {
   id: string;
   name: string;
   duration: number; 
-  animationType: 'spin' | 'static' | 'custom';
+  animationType: 'spin' | 'hold' | 'custom';
   startView?: CameraView; 
   endView?: CameraView; 
 }

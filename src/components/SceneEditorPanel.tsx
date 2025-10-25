@@ -5,10 +5,9 @@ import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 import { Label } from './ui/Label';
 import { Select } from './ui/Select';
-import { CameraIcon, SunsetIcon } from 'lucide-react';
+import { CameraIcon, SunsetIcon, ViewIcon, CheckIcon }from 'lucide-react';
 import { SceneApi } from './Scene';
-import React from 'react';
-
+import React, { useState, useEffect } from 'react';
 
 
 interface SceneEditorPanelProps {
@@ -28,12 +27,22 @@ export default function SceneEditorPanel({
   onUpdateScene,
   sceneRef,
 }: SceneEditorPanelProps) {
+  const [showSavedMessage, setShowSavedMessage] = useState(false);
+
   if (!isVisible) return null;
 
-  const handleSetView = (type: 'startView' | 'endView') => {
+ const handleSetView = (type: 'startView' | 'endView') => {
     const view = sceneRef.current?.getView();
     if (view) {
       onUpdateScene(selectedScene.id, { [type]: view });
+
+      // --- 3. TRIGGER THE "SAVED!" MESSAGE ---
+      setShowSavedMessage(true);
+      // Automatically hide it after 1.5 seconds
+      setTimeout(() => {
+        setShowSavedMessage(false);
+      }, 1500);
+      // ---------------------------------------
     }
   };
 
@@ -48,7 +57,19 @@ export default function SceneEditorPanel({
       {/* Header */}
       <div className="px-3 py-1.5 border-b border-slate-700/50">
         <h3 className="text-sm font-medium text-slate-100">Edit Scene</h3>
-      </div>
+
+        <div
+          className={`flex items-center gap-1 rounded-full bg-green-500/20 px-2 py-0.5 transition-all duration-300 ${
+            showSavedMessage ? 'opacity-100' : 'opacity-0'
+          }`}
+        >
+          <CheckIcon className="h-3 w-3 text-green-400" />
+          <span className="text-[10px] font-medium text-green-300">
+            Saved
+          </span>
+        </div>
+        {/* ---------------------------- */}
+      </div>      
 
       {/* Form */}
       <div className="p-3 space-y-3">
@@ -88,15 +109,28 @@ export default function SceneEditorPanel({
             value={selectedScene.animationType}
             onChange={(e) =>
               onUpdateScene(selectedScene.id, {
-                animationType: e.target.value as 'static' | 'spin' | 'custom',
+                animationType: e.target.value as 'spin' | 'hold' | 'custom',
               })
             }
           >
-            <option value="static">Static</option>
+            <option value="hold">Hold View</option>
             <option value="spin">Spin</option>
             <option value="custom">Custom View</option>
           </Select>
         </div>
+
+        {selectedScene.animationType === 'hold' && (
+          <div className="space-y-2 pt-2 border-t border-slate-700/50">
+            <Button
+              variant="secondary"
+              className="w-full"
+              onClick={() => handleSetView('startView')}
+            >
+              <ViewIcon className="h-4 w-4 mr-2" />
+              Set View
+            </Button>
+          </div>
+        )}
 
         {/* Start/End Views (Only show for 'custom' type) */}
         {selectedScene.animationType === 'custom' && (

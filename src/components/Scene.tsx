@@ -131,9 +131,17 @@ function SceneContent({
               // 2. Set the model rotation
               const targetRotation = sceneProgress * (2 * Math.PI);
               modelRef.current.rotation.y = targetRotation;
-            } else if (scene.animationType === 'static') {
-              // Do nothing, just hold the last position.
-              // We don't need to do anything here.
+            } else if (scene.animationType === 'hold') {
+              // --- 1. THIS IS THE NEW "HOLD" LOGIC ---
+              if (scene.startView) {
+                camera.position.set(...scene.startView.position);
+                (controls as any).target.set(...scene.startView.target);
+              } else {
+                camera.position.set(0, 0, 2);
+                (controls as any).target.set(0, 0, 0);
+              }
+              (controls as any).update();
+              modelRef.current.rotation.y = 0;
             }
           }
           break;
