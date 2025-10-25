@@ -26,6 +26,7 @@ const presetColors = [
   '#8bc34a',
   '#cddc39',
   '#ffeb3b',
+  '#ffc107',
   '#ff9800',
 ];
 
@@ -81,8 +82,8 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
   };
 
   const checkerboardStyle = {
-    backgroundImage: 'linear-gradient(45deg, #f0f0f0 25%, transparent 25%), linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #f0f0f0 75%), linear-gradient(-45deg, transparent 75%, #f0f0f0 75%)',
-    backgroundSize: '8px 8px',
+    backgroundImage: 'linear-gradient(45deg, #aaaaaa 25%, transparent 25%), linear-gradient(-45deg, #aaaaaa 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #aaaaaa 75%), linear-gradient(-45deg, transparent 75%, #aaaaaa 75%)',
+     backgroundSize: '8px 8px',
     backgroundPosition: '0 0, 0 4px, 4px -4px, -4px 0px',
   };
 
@@ -98,10 +99,10 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
       const eyeDropper = new eyeDropperApi();
       // Start the eyedropper and wait for the user to select a color
       const { sRGBHex } = await eyeDropper.open();
-      
+
       // Update the color with the result
       handleColorChange(sRGBHex);
-      
+
       // Close the picker popover after selection
       setIsOpen(false);
     } catch (e) {
@@ -111,13 +112,14 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
   };
 
   return (
+
     <div className="relative">
-     <Button
+      <Button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
-        variant="secondary" 
-        size="default"    
-        tooltip="Change background color" 
+        variant="secondary"
+        size="default"
+        tooltip="Change background color"
         isActive={isOpen}
         style={{
           backgroundColor: color,
@@ -150,14 +152,14 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
             }
           `}</style>
 
-        {/* Header */}
+          {/* Header */}
           <div className="px-4 pt-4 pb-3 border-b border-gray-100">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold text-gray-900">Pick a color</h3>
               <Button
                 type="button"
                 onClick={openEyeDropper}
-                variant="ghost" 
+                variant="ghost"
               >
                 <Pipette size={18} />
               </Button>
@@ -185,37 +187,38 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
               </div>
             </div>
           </div>
+
           {/* Color Picker */}
           <div className="p-4">
             <HexColorPicker
-              color={color === 'transparent' ? '#FFFFFF' : color} 
+              color={color === 'transparent' ? '#FFFFFF' : color}
               onChange={handleColorChange}
               className="w-full shadow-none!"
               style={{ height: '180px' }}
             />
           </div>
 
+          {/* Transparent*/}
+          <div className="px-4 pb-3">
+            <button
+              onClick={() => handleColorChange('transparent')}
+              className="relative w-full h-10 flex items-center justify-center gap-2 px-3 py-2 border-2 rounded-lg transition-all text-sm font-medium"
+              style={{
+                ...checkerboardStyle,
+                borderColor: color === 'transparent' ? '#3b82f6' : '#e5e7eb',
+                color: '#ffffff'
+              }}
+            >
+              {color === 'transparent' && (
+                <Check size={16} strokeWidth={3} />
+              )}
+            </button>
+          </div>
+
           {/* Preset Colors */}
           <div className="px-4 pb-4">
             <h4 className="text-xs font-medium text-gray-500 mb-2">Preset Colors</h4>
             <div className="grid grid-cols-9 gap-2">
-              <button
-                key="transparent"
-                className="relative w-full aspect-square rounded-lg border-2 transition-all hover:scale-110 hover:shadow-md active:scale-95"
-                style={{
-                  ...checkerboardStyle,
-                  borderColor: color === 'transparent' ? '#3b82f6' : '#e5e7eb'
-                }}
-                onClick={() => handleColorChange('transparent')}
-                title="Transparent"
-              >
-                {color === 'transparent' && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Check size={14} style={{ color: '#000000' }} strokeWidth={3} />
-                  </div>
-                )}
-              </button>
-
               {presetColors.map((preset) => (
                 <button
                   key={preset}
