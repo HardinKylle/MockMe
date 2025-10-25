@@ -15,6 +15,7 @@ import { useWindowSize } from '@/hooks/useWindowSize';
 import TimelinePanel from '@/components/TimelinePanel';
 import { AnimationScene } from '@/types/animation';
 import SceneEditorPanel from '@/components/SceneEditorPanel';
+import ContentEditorPanel from '@/components/ContentEditorPanel';
 
 const generateId = () => `scene_${Math.random().toString(36).substr(2, 9)}`;
 
@@ -263,7 +264,6 @@ export default function App() {
           selectedSceneId={selectedSceneId}
           onSelectScene={setSelectedSceneId}
           totalVideoDuration={totalVideoDuration}
-          setTotalVideoDuration={setTotalVideoDuration}
         />
 
         {selectedScene && (
@@ -278,6 +278,12 @@ export default function App() {
             onReorderScenes={setAnimationScenes}
           />
         )}
+
+        <ContentEditorPanel
+          isVisible={showTimeline}
+          totalVideoDuration={totalVideoDuration}
+          setTotalVideoDuration={setTotalVideoDuration}
+        />
       </div>
     </div>
   );

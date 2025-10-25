@@ -10,6 +10,8 @@ import { SceneApi } from './Scene';
 import React, { useState, useEffect } from 'react';
 
 
+const MIN_DURATION = 1;
+
 interface SceneEditorPanelProps {
   isVisible: boolean;
   selectedScene: AnimationScene;
@@ -22,7 +24,7 @@ interface SceneEditorPanelProps {
   sceneCount: number;
   scenes: AnimationScene[];
   onReorderScenes: (scenes: AnimationScene[]) => void;
-  
+
 }
 
 // Helper function to reorder array
@@ -45,7 +47,14 @@ export default function SceneEditorPanel({
   onReorderScenes,
 }: SceneEditorPanelProps) {
   const [showSavedMessage, setShowSavedMessage] = useState(false);
+  const [durationInput, setDurationInput] = useState(
+    selectedScene.duration.toString()
+  );
   const currentIndex = scenes.findIndex((s) => s.id === selectedScene.id);
+
+  useEffect(() => {
+    setDurationInput(selectedScene.duration.toString());
+  }, [selectedScene.duration]);
 
   if (!isVisible) return null;
 
@@ -74,6 +83,29 @@ export default function SceneEditorPanel({
     }
   };
 
+  const handleDurationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setDurationInput(val); // Allow user to type empty string, "1.", etc.
+
+    const parsedVal = parseFloat(val);
+    // If it's a valid number, update the parent state immediately
+    if (!isNaN(parsedVal) && parsedVal > 0) {
+      onUpdateScene(selectedScene.id, { duration: parsedVal });
+    }
+  };
+
+  const handleDurationBlur = () => {
+    const parsedVal = parseFloat(durationInput);
+    // If the value is invalid or empty when user clicks away,
+    // reset it to the minimum duration.
+    if (isNaN(parsedVal) || parsedVal < MIN_DURATION) {
+      onUpdateScene(selectedScene.id, { duration: MIN_DURATION });
+    } else {
+      // Otherwise, just make sure the parent is set
+      onUpdateScene(selectedScene.id, { duration: parsedVal });
+    }
+  };
+
   return (
     <div
       className={`fixed bottom-4 left-4 z-20 w-60 rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 backdrop-blur-xl transition-all duration-300 ease-out ${isVisible
@@ -82,7 +114,7 @@ export default function SceneEditorPanel({
         }`}
     >
       <div className="flex items-center justify-between px-3 py-1.5 border-b border-slate-700/50">
-        <div className="flex items-center gap-2"> 
+        <div className="flex items-center gap-2">
           <h3 className="text-sm font-medium text-slate-100">Edit Scene</h3>
           <div
             className={`flex items-center gap-1 rounded-full bg-green-500/20 px-2 py-0.5 transition-all duration-300 ${showSavedMessage ? 'opacity-100' : 'opacity-0'
@@ -97,14 +129,14 @@ export default function SceneEditorPanel({
 
         <Button
           variant="ghost"
-          size="sm" 
-          className="h-6 w-6 text-red-400 hover:bg-red-500/10 hover:text-red-300" 
+          size="sm"
+          className="h-6 w-6 text-red-400 hover:bg-red-500/10 hover:text-red-300"
           onClick={() => onDeleteScene(selectedScene.id)}
-          disabled={sceneCount <= 1} 
-          tooltip="Delete Scene" 
-          tooltipSide="bottom" 
+          disabled={sceneCount <= 1}
+          tooltip="Delete Scene"
+          tooltipSide="bottom"
         >
-          <Trash2Icon className="h-3.5 w-3.5" /> 
+          <Trash2Icon className="h-3.5 w-3.5" />
         </Button>
       </div>
 
@@ -129,12 +161,10 @@ export default function SceneEditorPanel({
             id="scene-duration"
             type="number"
             step="0.1"
-            value={selectedScene.duration}
-            onChange={(e) =>
-              onUpdateScene(selectedScene.id, {
-                duration: parseFloat(e.target.value) || 0,
-              })
-            }
+            min={MIN_DURATION} // Set min
+            value={durationInput} // Use local string state
+            onChange={handleDurationChange} // Use new handler
+            onBlur={handleDurationBlur} // Add blur handler
           />
         </div>
 

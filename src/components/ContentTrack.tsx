@@ -2,12 +2,10 @@
 
 interface ContentTrackProps {
   playheadPercent: number;
-  bindContentDrag: { [key: string]: any }; 
 }
 
 export default function ContentTrack({
   playheadPercent,
-  bindContentDrag,
 }: ContentTrackProps) {
   return (
     <div className="flex items-stretch gap-2">
@@ -28,15 +26,7 @@ export default function ContentTrack({
           {/* Content clip (stretches with parent) */}
           <div className="absolute top-1 bottom-1 left-0.5 right-0.5 rounded bg-linear-to-r from-pink-500 to-rose-500 border border-pink-400/30" />
 
-          {/* --- DRAG HANDLE --- */}
-          <div
-            {...bindContentDrag} 
-            className="absolute top-1/2 -translate-y-1/2 w-2 h-4 bg-white rounded-sm cursor-col-resize z-30"
-            style={{
-              right: '0px',
-              touchAction: 'none',
-            }}
-          />
+
 
           {/* Playhead */}
           <div

@@ -6,7 +6,6 @@ interface AnimationTrackProps {
   scenes: AnimationScene[];
   selectedSceneId: string | null;
   onSelectScene: (id: string) => void;
-  isContentTrackDragging: boolean;
   getClipLeftPercent: (index: number, scenes: AnimationScene[]) => number;
   getClipWidthPercent: (duration: number) => number;
   playheadPercent: number;
@@ -16,7 +15,6 @@ export default function AnimationTrack({
   scenes,
   selectedSceneId,
   onSelectScene,
-  isContentTrackDragging, 
   getClipLeftPercent,
   getClipWidthPercent,
   playheadPercent,
@@ -48,10 +46,6 @@ export default function AnimationTrack({
                 selectedSceneId === scene.id
                   ? 'ring-1 ring-blue-400 ring-offset-1 ring-offset-slate-900 z-10'
                   : ''
-              } ${
-                isContentTrackDragging
-                  ? 'transition-none'
-                  : 'transition-all'
               } 
               z-10`}
               style={{

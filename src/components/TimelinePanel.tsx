@@ -1,12 +1,9 @@
 'use client';
 
-import { clsx } from 'clsx';
 import { Button } from './ui/Button';
 import { Plus, Play, Pause } from 'lucide-react';
 import { AnimationScene } from '@/types/animation';
-import { useDrag } from '@use-gesture/react';
-import { useRef, useState, useEffect } from 'react';
-import { useContentDrag } from '@/hooks/useContentDrag';
+import { useRef } from 'react'; // Removed unused imports
 import ContentTrack from './ContentTrack';
 import AnimationTrack from './AnimationTrack';
 
@@ -20,7 +17,7 @@ interface TimelinePanelProps {
   selectedSceneId: string | null;
   onSelectScene: (id: string) => void;
   totalVideoDuration: number;
-  setTotalVideoDuration: (duration: number) => void;
+  // setTotalVideoDuration prop removed
 }
 
 export default function TimelinePanel({
@@ -33,24 +30,9 @@ export default function TimelinePanel({
   selectedSceneId,
   onSelectScene,
   totalVideoDuration,
-  setTotalVideoDuration,
 }: TimelinePanelProps) {
-
-
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const stretchWrapperRef = useRef<HTMLDivElement>(null);
-
-  const {
-    draftDuration,
-    isDragging: isContentTrackDragging,
-    draftPixelWidth,
-    bindContentDrag, 
-  } = useContentDrag({
-    totalVideoDuration,
-    setTotalVideoDuration,
-    scrollContainerRef,
-    stretchWrapperRef,
-  });
+  // stretchWrapperRef and useContentDrag hook call removed
 
   const playheadPercent =
     totalVideoDuration > 0 ? (currentTime / totalVideoDuration) * 100 : 0;
@@ -72,8 +54,7 @@ export default function TimelinePanel({
   // Format time to one decimal place (e.g., "0.0s")
   const formatTime = (time: number) => time.toFixed(1);
 
-
-return (
+  return (
     <div
       className={`fixed bottom-4 left-1/2 z-20 w-[480px] max-w-[90vw] rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 backdrop-blur-xl transition-all duration-300 ease-out ${
         isVisible
@@ -97,7 +78,8 @@ return (
             )}
           </Button>
           <span className="text-[10px] font-mono text-slate-300">
-            {formatTime(currentTime)}s / {formatTime(draftDuration)}s
+            {/* Updated to use totalVideoDuration directly */}
+            {formatTime(currentTime)}s / {formatTime(totalVideoDuration)}s
           </span>
         </div>
         <Button
@@ -116,22 +98,16 @@ return (
       <div
         ref={scrollContainerRef}
         className="overflow-x-auto"
-        style={{ scrollbarWidth: 'none' }}
       >
         <div
-          ref={stretchWrapperRef}
+          // ref and style related to drag-sizing removed
           className="p-2.5 space-y-2"
-          style={{
-            width: draftPixelWidth,
-            transition: isContentTrackDragging ? 'none' : 'width 0.3s ease-out',
-          }}
         >
           {/* --- ANIMATION TRACK --- */}
           <AnimationTrack
             scenes={scenes}
             selectedSceneId={selectedSceneId}
             onSelectScene={onSelectScene}
-            isContentTrackDragging={isContentTrackDragging} 
             getClipLeftPercent={getClipLeftPercent}
             getClipWidthPercent={getClipWidthPercent}
             playheadPercent={playheadPercent}
@@ -140,7 +116,6 @@ return (
           {/* --- CONTENT TRACK --- */}
           <ContentTrack
             playheadPercent={playheadPercent}
-            bindContentDrag={bindContentDrag()} 
           />
         </div>
       </div>
