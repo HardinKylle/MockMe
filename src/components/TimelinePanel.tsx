@@ -54,7 +54,7 @@ export default function TimelinePanel({
 
   return (
     <div
-      className={`fixed bottom-4 left-1/2 z-20 w-[480px] max-w-[90vw] rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 backdrop-blur-xl transition-all duration-300 ease-out ${
+   className={`fixed bottom-40 lg:bottom-4 left-1/2 z-20 w-[480px] max-w-[90vw] rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 backdrop-blur-xl transition-all duration-300 ease-out ${
         isVisible
           ? 'opacity-100 -translate-x-1/2 translate-y-0'
           : 'opacity-0 -translate-x-1/2 translate-y-10 pointer-events-none'

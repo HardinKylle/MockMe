@@ -165,7 +165,6 @@ export default function App() {
   };
 
   const frameStyle = getFrameStyle();
-
   return (
 
     <div className="w-full h-screen bg-gray-950 relative overflow-hidden flex items-center justify-center">
@@ -191,79 +190,90 @@ export default function App() {
         />
       </div>
 
-      {/* Floating container for Preset Views */}
-      <div className="fixed top-4 right-4 z-10 flex flex-col items-end gap-2">
-        <Button
-          onClick={() => setShowViews(!showViews)}
-          variant="secondary"
-          size="default"
-          tooltip="Preset Views"
-          tooltipSide="bottom"
-          isActive={showViews}
-        >
-          <ViewfinderCircleIcon className="h-5 w-5 text-gray-700" />
-        </Button>
-        {showViews && (
-          <div className="w-48 rounded-md shadow-lg bg-white ring-1 ring-opacity-5 overflow-hidden">
-            {presetViews.map((view) => (
-              <Button
-                key={view.name}
-                onClick={() => handlePresetClick(view)}
-                variant="menu-item"
-                size="menu-item"
-                className="border-t border-gray-100 first:border-t-0"
-              >
-                {view.name}
-              </Button>
-            ))}
-          </div>
-        )}
-      </div>
+      {/* Floating container for Preset Views, Model Selector, and Background Picker */}
+      <div className="fixed top-4 right-4 z-10 flex items-end gap-2">
 
-      {/* Floating container for all controls */}
-      <div className="fixed bottom-4 right-4 z-10 flex items-center gap-2">
+        {/* BackgroundPicker */}
         <BackgroundPicker
           color={backgroundColor}
           onChange={setBackgroundColor}
         />
 
+        {/* ModelSelector */}
         <ModelSelector
           allModels={allModels}
           selectedModel={selectedModel}
           onModelSelect={handleModelChange}
         />
 
-        <CaptureControls
-          onCapture={handleCapture}
-          isLoading={isLoading}
-          aspectRatio={aspectRatio}
-          onAspectRatioChange={setAspectRatio}
-          showTimeline={showTimeline}
-          onToggleTimeline={() => setShowTimeline(!showTimeline)}
-        />
+        <div className="relative">
+          <Button
+            onClick={() => setShowViews(!showViews)}
+            variant="primary"
+            size="default"
+            tooltip="Preset Views"
+            tooltipSide="bottom"
+            isActive={showViews}
+          >
+            <ViewfinderCircleIcon className="h-5 w-5 text-white" />
+          </Button>
+          {showViews && (
+            <div
+              className="absolute top-full right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-opacity-5 overflow-hidden"
+            >
+              {presetViews.map((view) => (
+                <Button
+                  key={view.name}
+                  onClick={() => handlePresetClick(view)}
+                  variant="menu-item"
+                  size="menu-item"
+                  className="border-t border-gray-100 first:border-t-0"
+                >
+                  {view.name}
+                </Button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
 
-        <ImageUpload
-          OnImageUpload={handleImageUpload}
-          previewUrl={uploadedImageUrl}
-        />
+      {/* Floating container for all controls (Buttons) */}
+      <div className="fixed bottom-4 right-4 z-10">
+        <div
+          className="flex flex-row items-center gap-2"
+        >
+          {/* BackgroundPicker and ModelSelector removed from here */}
 
-        {capturedImageUrl && (
-          <PreviewModal
-            imageUrl={capturedImageUrl}
-            onClose={() => setCapturedImageUrl(null)}
+          <CaptureControls
+            onCapture={handleCapture}
+            isLoading={isLoading}
+            aspectRatio={aspectRatio}
+            onAspectRatioChange={setAspectRatio}
+            showTimeline={showTimeline}
+            onToggleTimeline={() => setShowTimeline(!showTimeline)}
           />
-        )}
 
-        <TimelinePanel
+          <ImageUpload
+            OnImageUpload={handleImageUpload}
+            previewUrl={uploadedImageUrl}
+          />
+        </div>
+      </div>
+
+      {/* Modals and Panels */}
+
+      {capturedImageUrl && (
+        <PreviewModal
+          imageUrl={capturedImageUrl}
+          onClose={() => setCapturedImageUrl(null)}
+        />
+      )}
+
+      <div className="fixed bottom-4 left-4 z-20 flex flex-col-reverse items-end gap-2">
+        <ContentEditorPanel
           isVisible={showTimeline}
-          scenes={animationScenes}
-          onAddScene={handleAddScene}
-          isPlaying={isPlaying}
-          onTogglePlay={handleTogglePlay}
-          currentTime={currentTime}
-          selectedSceneId={selectedSceneId}
-          onSelectScene={setSelectedSceneId}
           totalVideoDuration={totalVideoDuration}
+          setTotalVideoDuration={setTotalVideoDuration}
         />
 
         {selectedScene && (
@@ -278,13 +288,19 @@ export default function App() {
             onReorderScenes={setAnimationScenes}
           />
         )}
-
-        <ContentEditorPanel
-          isVisible={showTimeline}
-          totalVideoDuration={totalVideoDuration}
-          setTotalVideoDuration={setTotalVideoDuration}
-        />
       </div>
+
+      <TimelinePanel
+        isVisible={showTimeline}
+        scenes={animationScenes}
+        onAddScene={handleAddScene}
+        isPlaying={isPlaying}
+        onTogglePlay={handleTogglePlay}
+        currentTime={currentTime}
+        selectedSceneId={selectedSceneId}
+        onSelectScene={setSelectedSceneId}
+        totalVideoDuration={totalVideoDuration}
+      />
     </div>
   );
 }

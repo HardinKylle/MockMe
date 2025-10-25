@@ -26,8 +26,8 @@ export default function ModelSelector({
     <div className="relative">
       {/* --- Dropdown Menu --- */}
       {isOpen && (
-        <div className="absolute bottom-14 right-0 mb-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
-          <div className="py-1" role="menu">
+        <div className="absolute top-full right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-opacity-5 overflow-hidden">
+          <div className="" role="menu">
             {allModels.map((model) => (
               <button
                 key={model.name}
@@ -47,11 +47,12 @@ export default function ModelSelector({
 
       <Button
         onClick={() => setIsOpen(!isOpen)}
-        variant="primary"
+        variant="secondary"
         size="default"
         tooltip="Switch Model"
         className="gap-2" 
         isActive={isOpen}
+        tooltipSide='bottom'
       >
         <Smartphone size={24} />
         <ChevronUp

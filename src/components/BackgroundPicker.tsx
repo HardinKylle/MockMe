@@ -131,6 +131,7 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
         variant="secondary"
         size="default"
         tooltip="Change background color"
+        tooltipSide='bottom'
         isActive={isOpen}
         style={{
           backgroundColor: color,
@@ -147,7 +148,7 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
       {isOpen && (
         <div
           ref={pickerRef}
-          className="absolute bottom-20 right-0 w-72 bg-white rounded-2xl shadow-2xl overflow-hidden z-20 border border-gray-100"
+          className="absolute top-full mt-2 right-0 w-72 bg-white rounded-2xl shadow-2xl overflow-hidden z-20 border border-gray-100"
           style={{ animation: 'slideUp 0.2s ease-out' }}
         >
           <style>{`
