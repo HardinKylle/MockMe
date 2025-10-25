@@ -264,6 +264,7 @@ export default function App() {
           onSelectScene={setSelectedSceneId}
           totalVideoDuration={totalVideoDuration}
           setTotalVideoDuration={setTotalVideoDuration}
+          onReorderScenes={setAnimationScenes}
         />
 
         {selectedScene && (

@@ -17,14 +17,10 @@ export function useContentDrag({
   stretchWrapperRef,
 }: UseContentDragProps) {
   
-  // Tracks the duration *during* the drag
   const [draftDuration, setDraftDuration] = useState(totalVideoDuration);
-  // Tracks if we are currently dragging
   const [isDragging, setIsDragging] = useState(false);
-  // Holds the pixel width of the track area during the drag
   const [draftPixelWidth, setDraftPixelWidth] = useState<string>('100%');
 
-  // Ref to store all initial drag info
   const dragInfoRef = useRef({
     initialWidth: 0,
     initialDuration: 10,
@@ -33,22 +29,19 @@ export function useContentDrag({
   });
 
   useEffect(() => {
-    // Sync draft duration when prop changes (e.g., on load or after drag)
     if (!isDragging) {
       setDraftDuration(totalVideoDuration);
       setDraftPixelWidth('100%');
     }
   }, [totalVideoDuration, isDragging]);
 
-  const bindDrag = useDrag(
+  const bindContentDrag = useDrag( // <-- RENAMED
     ({ first, down, movement: [mx] }) => {
       if (first) {
         setIsDragging(true);
-        // On drag start, get the track wrapper's *actual pixel width*
         const initialWidth = stretchWrapperRef.current?.clientWidth;
         if (!initialWidth) return;
 
-        // Store all initial drag info
         dragInfoRef.current = {
           initialWidth: initialWidth,
           initialDuration: totalVideoDuration,
@@ -65,25 +58,21 @@ export function useContentDrag({
       } = dragInfoRef.current;
 
       let newPixelWidth = initialWidth + mx;
-
       let newDuration = newPixelWidth / pixelsPerSecond;
       newDuration = Math.max(3, Math.min(newDuration, 60));
-
       newPixelWidth = newDuration * pixelsPerSecond;
 
       setDraftPixelWidth(`${newPixelWidth}px`);
       setDraftDuration(newDuration);
 
       if (scrollContainerRef.current) {
-        // We want to scroll by the *unconstrained* mouse movement
         scrollContainerRef.current.scrollLeft = initialScrollLeft + mx;
       }
 
       if (!down) {
         setIsDragging(false);
         setTotalVideoDuration(newDuration);
-        setDraftPixelWidth('100%'); // Snap back to 100%
-        // Reset scroll
+        setDraftPixelWidth('100%'); 
         if (scrollContainerRef.current) {
           scrollContainerRef.current.scrollLeft = 0;
         }
@@ -98,6 +87,6 @@ export function useContentDrag({
     draftDuration,
     isDragging,
     draftPixelWidth,
-    bindDrag,
+    bindContentDrag, // <-- RENAMED
   };
 }
