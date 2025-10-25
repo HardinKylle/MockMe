@@ -20,12 +20,12 @@ const presetAnimationTypes: PresetAnimationType[] = ['spin', 'dolly-pan-up', 're
 const isCustomAnim = (
   type: AnimationType
 ): type is CustomAnimationType =>
-  customAnimationTypes.includes(type as any);
+  customAnimationTypes.includes(type as CustomAnimationType);
 
 const isPresetAnim = (
   type: AnimationType
 ): type is PresetAnimationType =>
-  presetAnimationTypes.includes(type as any);
+  presetAnimationTypes.includes(type as PresetAnimationType);
 // --- End Helper Types ---
 
 

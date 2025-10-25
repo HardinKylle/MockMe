@@ -89,7 +89,7 @@ export const SceneCaptureController = forwardRef<SceneApi>((props, ref) => {
       if (!controls) return null;
       
       const position = camera.position.clone().toArray();
-      const target = (controls as any).target.clone().toArray();
+      const target = (controls as OrbitControls).target.clone().toArray();
       
       return { position, target } as CameraView;
     },

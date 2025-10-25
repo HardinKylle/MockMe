@@ -6,9 +6,10 @@ import PhoneModel from '@/components/PhoneModel';
 import * as THREE from 'three';
 import { SceneCaptureController } from './SceneCaptureController';
 import { ModelData, models } from '@/configs/models';
-
+import { type OrbitControls as OrbitControlsType } from 'three-stdlib';
 import { AnimationScene, CameraView, AnimationType } from '@/types/animation';
 import { presetAnimationMap, isPresetAnim } from '@/types/animation-presets';
+
 interface SceneProps {
   textureUrl: string | null;
   model: ModelData;
@@ -73,11 +74,11 @@ function SceneContent({
       ) {
         // If first scene is custom/hold, set camera to its start view
         camera.position.set(...firstScene.startView.position);
-        (controls as any).target.set(...firstScene.startView.target);
+        (controls as OrbitControlsType).target.set(...firstScene.startView.target);
       } else {
         // Otherwise, set to default view (or whatever the preset requires)
         camera.position.set(0, 0, 2);
-        (controls as any).target.set(0, 0, 0);
+        (controls as OrbitControlsType).target.set(0, 0, 0);
       }
       // --- END UPDATED LOGIC ---
     }
@@ -128,7 +129,7 @@ function SceneContent({
                 // Run the preset function from our new library
                 animFn({
                   camera,
-                  controls: controls as any,
+                  controls: controls as OrbitControlsType,
                   modelRef,
                   sceneProgress,
                   easedProgress,
@@ -145,8 +146,8 @@ function SceneContent({
                 startPos.lerp(endPos, easedProgress);
                 camera.position.copy(startPos);
                 startTarget.lerp(endTarget, easedProgress);
-                (controls as any).target.copy(startTarget);
-                (controls as any).update();
+                (controls as OrbitControlsType).target.copy(startTarget);
+                (controls as OrbitControlsType).update();
               }
               // Ensure model is not spinning
               if (modelRef.current) {
@@ -157,11 +158,11 @@ function SceneContent({
             else if (scene.animationType === 'hold') {
               if (scene.startView) {
                 camera.position.set(...scene.startView.position);
-                (controls as any).target.set(...scene.startView.target);
+                (controls as OrbitControlsType).target.set(...scene.startView.target);
               } else {
                 // Default hold view if none is set
                 camera.position.set(0, 0, 2);
-                (controls as any).target.set(0, 0, 0);
+                (controls as OrbitControlsType).target.set(0, 0, 0);
               }
               (controls as any).update();
               // Ensure model is not spinning

@@ -39,7 +39,7 @@ const presetTypes: PresetAnimationType[] = [
 export const isPresetAnim = (
   type: AnimationType
 ): type is PresetAnimationType => {
-  return presetTypes.includes(type as any);
+  return presetTypes.includes(type as PresetAnimationType);
 };
 
 // --- Preset Animation Logic ---
