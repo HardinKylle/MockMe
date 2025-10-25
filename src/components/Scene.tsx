@@ -109,7 +109,6 @@ function SceneContent({
           if (modelRef.current && controls) {
             if (scene.animationType === 'custom') {
               if (scene.startView && scene.endView) {
-                // ... (Custom view lerp logic - unchanged)
                 startPos.set(...scene.startView.position);
                 endPos.set(...scene.endView.position);
                 startTarget.set(...scene.startView.target);
@@ -121,18 +120,13 @@ function SceneContent({
                 (controls as any).update();
               }
             } else if (scene.animationType === 'spin') {
-              // --- THIS IS THE FIX ---
-              // 1. Force camera to default position
               camera.position.set(0, 0, 2);
               (controls as any).target.set(0, 0, 0);
               (controls as any).update();
-              // ---------------------
 
-              // 2. Set the model rotation
               const targetRotation = sceneProgress * (2 * Math.PI);
               modelRef.current.rotation.y = targetRotation;
             } else if (scene.animationType === 'hold') {
-              // --- 1. THIS IS THE NEW "HOLD" LOGIC ---
               if (scene.startView) {
                 camera.position.set(...scene.startView.position);
                 (controls as any).target.set(...scene.startView.target);

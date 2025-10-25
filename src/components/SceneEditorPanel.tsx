@@ -5,7 +5,7 @@ import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 import { Label } from './ui/Label';
 import { Select } from './ui/Select';
-import { CameraIcon, SunsetIcon, ViewIcon, CheckIcon }from 'lucide-react';
+import { CameraIcon, SunsetIcon, ViewIcon, CheckIcon, Trash2Icon } from 'lucide-react';
 import { SceneApi } from './Scene';
 import React, { useState, useEffect } from 'react';
 
@@ -17,7 +17,9 @@ interface SceneEditorPanelProps {
     sceneId: string,
     updates: Partial<AnimationScene>
   ) => void;
-  sceneRef: React.RefObject<SceneApi | null> ;
+  sceneRef: React.RefObject<SceneApi | null>;
+  onDeleteScene: (sceneId: string) => void;
+  sceneCount: number;
 }
 
 
@@ -26,50 +28,59 @@ export default function SceneEditorPanel({
   selectedScene,
   onUpdateScene,
   sceneRef,
+  onDeleteScene,
+  sceneCount,
 }: SceneEditorPanelProps) {
   const [showSavedMessage, setShowSavedMessage] = useState(false);
 
   if (!isVisible) return null;
 
- const handleSetView = (type: 'startView' | 'endView') => {
+  const handleSetView = (type: 'startView' | 'endView') => {
     const view = sceneRef.current?.getView();
     if (view) {
       onUpdateScene(selectedScene.id, { [type]: view });
 
-      // --- 3. TRIGGER THE "SAVED!" MESSAGE ---
       setShowSavedMessage(true);
       // Automatically hide it after 1.5 seconds
       setTimeout(() => {
         setShowSavedMessage(false);
       }, 1500);
-      // ---------------------------------------
     }
   };
 
   return (
     <div
-      className={`fixed bottom-4 left-4 z-20 w-60 rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 backdrop-blur-xl transition-all duration-300 ease-out ${
-        isVisible
-          ? 'opacity-100 translate-y-0'
-          : 'opacity-0 translate-y-10 pointer-events-none'
-      }`}
+      className={`fixed bottom-4 left-4 z-20 w-60 rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 backdrop-blur-xl transition-all duration-300 ease-out ${isVisible
+        ? 'opacity-100 translate-y-0'
+        : 'opacity-0 translate-y-10 pointer-events-none'
+        }`}
     >
-      {/* Header */}
-      <div className="px-3 py-1.5 border-b border-slate-700/50">
-        <h3 className="text-sm font-medium text-slate-100">Edit Scene</h3>
-
-        <div
-          className={`flex items-center gap-1 rounded-full bg-green-500/20 px-2 py-0.5 transition-all duration-300 ${
-            showSavedMessage ? 'opacity-100' : 'opacity-0'
-          }`}
-        >
-          <CheckIcon className="h-3 w-3 text-green-400" />
-          <span className="text-[10px] font-medium text-green-300">
-            Saved
-          </span>
+      <div className="flex items-center justify-between px-3 py-1.5 border-b border-slate-700/50">
+        <div className="flex items-center gap-2"> 
+          <h3 className="text-sm font-medium text-slate-100">Edit Scene</h3>
+          <div
+            className={`flex items-center gap-1 rounded-full bg-green-500/20 px-2 py-0.5 transition-all duration-300 ${showSavedMessage ? 'opacity-100' : 'opacity-0'
+              }`}
+          >
+            <CheckIcon className="h-3 w-3 text-green-400" />
+            <span className="text-[10px] font-medium text-green-300">
+              Saved
+            </span>
+          </div>
         </div>
-        {/* ---------------------------- */}
-      </div>      
+
+        <Button
+          variant="ghost"
+          size="sm" 
+          className="h-6 w-6 text-red-400 hover:bg-red-500/10 hover:text-red-300" 
+          onClick={() => onDeleteScene(selectedScene.id)}
+          disabled={sceneCount <= 1} 
+          tooltip="Delete Scene" 
+          tooltipSide="bottom" 
+        >
+          <Trash2Icon className="h-3.5 w-3.5" /> 
+        </Button>
+      </div>
 
       {/* Form */}
       <div className="p-3 space-y-3">

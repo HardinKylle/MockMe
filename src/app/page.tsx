@@ -76,7 +76,7 @@ export default function App() {
     setShowViews(false);
   };
 
- const handleAddScene = () => {
+  const handleAddScene = () => {
     const newScene: AnimationScene = {
       id: generateId(),
       name: `Scene ${animationScenes.length + 1}`,
@@ -96,6 +96,28 @@ export default function App() {
         scene.id === sceneId ? { ...scene, ...updates } : scene
       )
     );
+  };
+
+  const handleDeleteScene = (sceneId: string) => {
+    if (animationScenes.length <= 1) return;
+
+    const deletedIndex = animationScenes.findIndex((s) => s.id === sceneId);
+
+    setAnimationScenes((currentScenes) =>
+      currentScenes.filter((scene) => scene.id !== sceneId)
+    );
+
+    if (selectedSceneId === sceneId) {
+      if (deletedIndex === 0 && animationScenes.length > 1) {
+        setSelectedSceneId(animationScenes[1].id);
+      }
+      else if (deletedIndex > 0) {
+        setSelectedSceneId(animationScenes[deletedIndex - 1].id);
+      }
+      else {
+        setSelectedSceneId(null);
+      }
+    }
   };
 
   const selectedScene = animationScenes.find(
@@ -250,6 +272,8 @@ export default function App() {
             selectedScene={selectedScene}
             onUpdateScene={handleUpdateScene}
             sceneRef={sceneRef}
+            onDeleteScene={handleDeleteScene}
+            sceneCount={animationScenes.length}
           />
         )}
       </div>
