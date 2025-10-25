@@ -164,7 +164,7 @@ function SceneContent({
                 camera.position.set(0, 0, 2);
                 (controls as OrbitControlsType).target.set(0, 0, 0);
               }
-              (controls as any).update();
+              (controls as OrbitControlsType).update();
               // Ensure model is not spinning
               if (modelRef.current) {
                 modelRef.current.rotation.y = 0;
