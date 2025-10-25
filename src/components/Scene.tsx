@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import { SceneCaptureController } from './SceneCaptureController';
 import { ModelData, models } from '@/configs/models';
 import { AnimationScene } from '@/types/animation';
+import { CameraView } from '@/types/animation';
 interface SceneProps {
   textureUrl: string | null;
   model: ModelData;
@@ -22,6 +23,7 @@ interface SceneProps {
 export interface SceneApi {
   capture: (aspectRatio: string) => string | undefined;
   setView: (position: readonly [number, number, number], target: readonly [number, number, number]) => void;
+  getView: () => CameraView | null;
 }
 
 models.forEach(model => useGLTF.preload(model.path));

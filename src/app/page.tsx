@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/Button';
 import { useWindowSize } from '@/hooks/useWindowSize';
 import TimelinePanel from '@/components/TimelinePanel';
 import { AnimationScene } from '@/types/animation';
+import SceneEditorPanel from '@/components/SceneEditorPanel';
 
 const generateId = () => `scene_${Math.random().toString(36).substr(2, 9)}`;
 
@@ -84,6 +85,21 @@ export default function App() {
     };
     setAnimationScenes([...animationScenes, newScene]);
   };
+
+  const handleUpdateScene = (
+    sceneId: string,
+    updates: Partial<AnimationScene>
+  ) => {
+    setAnimationScenes((currentScenes) =>
+      currentScenes.map((scene) =>
+        scene.id === sceneId ? { ...scene, ...updates } : scene
+      )
+    );
+  };
+
+  const selectedScene = animationScenes.find(
+    (s) => s.id === selectedSceneId
+  );
 
   const handleTogglePlay = () => {
     if (!isPlaying) {
@@ -226,6 +242,15 @@ export default function App() {
           totalVideoDuration={totalVideoDuration}
           setTotalVideoDuration={setTotalVideoDuration}
         />
+
+        {selectedScene && (
+          <SceneEditorPanel
+            isVisible={showTimeline}
+            selectedScene={selectedScene}
+            onUpdateScene={handleUpdateScene}
+            sceneRef={sceneRef}
+          />
+        )}
       </div>
     </div>
   );

@@ -4,8 +4,8 @@ import { useImperativeHandle, forwardRef } from 'react';
 import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { SceneApi } from '@/components/Scene';
-// Import OrbitControls type for type safety
 import { OrbitControls } from 'three-stdlib';
+import { CameraView } from '@/types/animation';
 
 export const SceneCaptureController = forwardRef<SceneApi>((props, ref) => {
   // Get controls from useThree
@@ -20,13 +20,11 @@ export const SceneCaptureController = forwardRef<SceneApi>((props, ref) => {
         return;
       }
 
-      // --- Save original state ---
       const originalSize = new THREE.Vector2();
       gl.getSize(originalSize);
 
       const originalAspect = camera.aspect;
 
-      // --- Calculate new dimensions ---
       const CAPTURE_WIDTH_BASE = 1920;
       const captureDPR = 2;
       let width, height;
@@ -50,13 +48,11 @@ export const SceneCaptureController = forwardRef<SceneApi>((props, ref) => {
           break;
       }
 
-      // --- ADD A CHECK FOR SAFETY ---
       if (!width || !height) {
         console.error("Invalid aspect ratio selected:", aspectRatio);
         return;
       }
 
-      // These are now type-safe
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
       gl.setSize(width * captureDPR, height * captureDPR, false);
@@ -87,7 +83,16 @@ export const SceneCaptureController = forwardRef<SceneApi>((props, ref) => {
       orbitControls.target.set(...target);
 
       orbitControls.update();
-    }
+    },
+    
+    getView: () => {
+      if (!controls) return null;
+      
+      const position = camera.position.clone().toArray();
+      const target = (controls as any).target.clone().toArray();
+      
+      return { position, target } as CameraView;
+    },
   }));
 
   SceneCaptureController.displayName = 'SceneCaptureController';
