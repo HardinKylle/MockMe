@@ -1,6 +1,6 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
-import { Palette, Check } from 'lucide-react';
+import { Palette, Check, Pipette } from 'lucide-react';
 import { HexColorPicker } from 'react-colorful';
 import { Button } from '@/components/ui/Button';
 
@@ -86,6 +86,30 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
     backgroundPosition: '0 0, 0 4px, 4px -4px, -4px 0px',
   };
 
+  const openEyeDropper = async () => {
+    // Check if the EyeDropper API is supported
+    const eyeDropperApi = (window as any).EyeDropper;
+    if (!eyeDropperApi) {
+      alert("Your browser doesn't support the EyeDropper API.");
+      return;
+    }
+
+    try {
+      const eyeDropper = new eyeDropperApi();
+      // Start the eyedropper and wait for the user to select a color
+      const { sRGBHex } = await eyeDropper.open();
+      
+      // Update the color with the result
+      handleColorChange(sRGBHex);
+      
+      // Close the picker popover after selection
+      setIsOpen(false);
+    } catch (e) {
+      // This will catch if the user cancels the operation (e.g., presses ESC)
+      console.warn('EyeDropper cancelled or failed:', e);
+    }
+  };
+
   return (
     <div className="relative">
      <Button
@@ -126,9 +150,18 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
             }
           `}</style>
 
-          {/* Header */}
+        {/* Header */}
           <div className="px-4 pt-4 pb-3 border-b border-gray-100">
-            <h3 className="text-sm font-semibold text-gray-900 mb-3">Pick a color</h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-gray-900">Pick a color</h3>
+              <Button
+                type="button"
+                onClick={openEyeDropper}
+                variant="ghost" 
+              >
+                <Pipette size={18} />
+              </Button>
+            </div>
 
             {/* Color Preview & Hex Input */}
             <div className="flex items-center gap-3">
@@ -152,7 +185,6 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
               </div>
             </div>
           </div>
-
           {/* Color Picker */}
           <div className="p-4">
             <HexColorPicker
