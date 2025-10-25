@@ -7,9 +7,15 @@ import { AnimationType, PresetAnimationType } from '@/types/animation';
  * Defines the properties passed to every preset animation function
  * on each frame.
  */
+
+interface MinimalControls {
+  target: THREE.Vector3;
+  update: () => void;
+}
+
 export interface PresetAnimationProps {
   camera: Camera;
-  controls: any;
+  controls: MinimalControls;
   modelRef: RefObject<THREE.Group | null>;
   sceneProgress: number; // linear progress from 0 to 1
   easedProgress: number; // eased progress from 0 to 1

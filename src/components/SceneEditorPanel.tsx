@@ -9,7 +9,6 @@ import { CameraIcon, SunsetIcon, ViewIcon, CheckIcon, Trash2Icon, ArrowLeft, Arr
 import { SceneApi } from './Scene';
 import React, { useState, useEffect } from 'react';
 
-
 const MIN_DURATION = 1;
 
 // --- Helper Types for Animation Dropdowns ---
