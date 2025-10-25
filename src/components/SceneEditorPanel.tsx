@@ -1,6 +1,6 @@
 'use client';
 
-import { AnimationScene, CameraView } from '@/types/animation';
+import { AnimationScene, CameraView, AnimationType, CustomAnimationType, PresetAnimationType } from '@/types/animation';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 import { Label } from './ui/Label';
@@ -11,6 +11,24 @@ import React, { useState, useEffect } from 'react';
 
 
 const MIN_DURATION = 1;
+
+// --- Helper Types for Animation Dropdowns ---
+// Explicitly list the types for our new dropdowns
+const customAnimationTypes: CustomAnimationType[] = ['hold', 'custom'];
+const presetAnimationTypes: PresetAnimationType[] = ['spin', 'dolly-pan-up', 'reveal-from-top'];
+
+// Type guard functions to check which category is active
+const isCustomAnim = (
+  type: AnimationType
+): type is CustomAnimationType =>
+  customAnimationTypes.includes(type as any);
+
+const isPresetAnim = (
+  type: AnimationType
+): type is PresetAnimationType =>
+  presetAnimationTypes.includes(type as any);
+// --- End Helper Types ---
+
 
 interface SceneEditorPanelProps {
   isVisible: boolean;
@@ -43,7 +61,7 @@ export default function SceneEditorPanel({
   sceneRef,
   onDeleteScene,
   sceneCount,
-  scenes,               // <-- new prop
+  scenes,              
   onReorderScenes,
 }: SceneEditorPanelProps) {
   const [showSavedMessage, setShowSavedMessage] = useState(false);
@@ -106,19 +124,21 @@ export default function SceneEditorPanel({
     }
   };
 
-  return (
+return (
     <div
-      className={`fixed bottom-4 left-4 z-20 w-60 rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 backdrop-blur-xl transition-all duration-300 ease-out ${isVisible
-        ? 'opacity-100 translate-y-0'
-        : 'opacity-0 translate-y-10 pointer-events-none'
-        }`}
+      className={`fixed bottom-4 left-4 z-20 w-60 rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 backdrop-blur-xl transition-all duration-300 ease-out ${
+        isVisible
+          ? 'opacity-100 translate-y-0'
+          : 'opacity-0 translate-y-10 pointer-events-none'
+      }`}
     >
       <div className="flex items-center justify-between px-3 py-1.5 border-b border-slate-700/50">
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-medium text-slate-100">Edit Scene</h3>
           <div
-            className={`flex items-center gap-1 rounded-full bg-green-500/20 px-2 py-0.5 transition-all duration-300 ${showSavedMessage ? 'opacity-100' : 'opacity-0'
-              }`}
+            className={`flex items-center gap-1 rounded-full bg-green-500/20 px-2 py-0.5 transition-all duration-300 ${
+              showSavedMessage ? 'opacity-100' : 'opacity-0'
+            }`}
           >
             <CheckIcon className="h-3 w-3 text-green-400" />
             <span className="text-[10px] font-medium text-green-300">
@@ -168,23 +188,60 @@ export default function SceneEditorPanel({
           />
         </div>
 
-        {/* Animation Preset */}
+
+        {/* Custom Animations */}
         <div className="space-y-1.5">
-          <Label htmlFor="scene-animation">Animation</Label>
+          <Label htmlFor="scene-custom-animation">Custom Animations</Label>
           <Select
-            id="scene-animation"
-            value={selectedScene.animationType}
-            onChange={(e) =>
-              onUpdateScene(selectedScene.id, {
-                animationType: e.target.value as 'spin' | 'hold' | 'custom',
-              })
+            id="scene-custom-animation"
+            value={
+              isCustomAnim(selectedScene.animationType)
+                ? selectedScene.animationType
+                : ''
             }
+            onChange={(e) => {
+              if (e.target.value) {
+                onUpdateScene(selectedScene.id, {
+                  animationType: e.target.value as CustomAnimationType,
+                });
+              }
+            }}
           >
+            <option value="" disabled>
+              Select custom...
+            </option>
             <option value="hold">Hold View</option>
-            <option value="spin">Spin</option>
             <option value="custom">Custom View</option>
           </Select>
         </div>
+
+        {/* Preset Animations */}
+        <div className="space-y-1.5">
+          <Label htmlFor="scene-preset-animation">Preset Animations</Label>
+          <Select
+            id="scene-preset-animation"
+            value={
+              isPresetAnim(selectedScene.animationType)
+                ? selectedScene.animationType
+                : ''
+            }
+            onChange={(e) => {
+              if (e.target.value) {
+                onUpdateScene(selectedScene.id, {
+                  animationType: e.target.value as PresetAnimationType,
+                });
+              }
+            }}
+          >
+            <option value="" disabled>
+              Select preset animations
+            </option>
+            <option value="spin">Spin</option>
+            <option value="dolly-pan-up">Dolly Pan Up</option>
+            <option value="reveal-from-top">Reveal From Top</option>
+          </Select>
+        </div>
+
 
         {selectedScene.animationType === 'hold' && (
           <div className="space-y-2 pt-2 border-t border-slate-700/50">
@@ -199,7 +256,7 @@ export default function SceneEditorPanel({
           </div>
         )}
 
-        {/* Start/End Views (Only show for 'custom' type) */}
+        {/* This conditional logic also still works perfectly! */}
         {selectedScene.animationType === 'custom' && (
           <div className="space-y-2 pt-2 border-t border-slate-700/50">
             <Button

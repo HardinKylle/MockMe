@@ -6,7 +6,9 @@ import PhoneModel from '@/components/PhoneModel';
 import * as THREE from 'three';
 import { SceneCaptureController } from './SceneCaptureController';
 import { ModelData, models } from '@/configs/models';
-import { AnimationScene, CameraView } from '@/types/animation';
+
+import { AnimationScene, CameraView, AnimationType } from '@/types/animation';
+import { presetAnimationMap, isPresetAnim } from '@/types/animation-presets';
 interface SceneProps {
   textureUrl: string | null;
   model: ModelData;
@@ -60,15 +62,24 @@ function SceneContent({
 
       // Reset camera to the start of the *first* scene
       const firstScene = scenes[0];
-      if (firstScene?.animationType === 'custom' && firstScene.startView) {
-        // If first scene is custom, set camera to its start view
+      
+      // --- UPDATED LOGIC ---
+      // Now checks for 'hold' or 'custom' types
+      if (
+        firstScene &&
+        (firstScene.animationType === 'custom' ||
+          firstScene.animationType === 'hold') &&
+        firstScene.startView
+      ) {
+        // If first scene is custom/hold, set camera to its start view
         camera.position.set(...firstScene.startView.position);
         (controls as any).target.set(...firstScene.startView.target);
       } else {
-        // Otherwise, set to default view (or whatever you like)
+        // Otherwise, set to default view (or whatever the preset requires)
         camera.position.set(0, 0, 2);
         (controls as any).target.set(0, 0, 0);
       }
+      // --- END UPDATED LOGIC ---
     }
   }, [isPlaying, scenes, camera, controls]);
 
@@ -81,7 +92,7 @@ function SceneContent({
     }
   }, [gl, backgroundColor]);
 
-  useFrame((state, delta) => {
+ useFrame((state, delta) => {
     if (!isPlaying) return;
 
     setCurrentTime((prevTime) => {
@@ -92,7 +103,7 @@ function SceneContent({
         return 0;
       }
 
-    let timeSoFar = 0;
+      let timeSoFar = 0;
       let sceneFound = false;
 
       for (const scene of scenes) {
@@ -107,7 +118,25 @@ function SceneContent({
 
           // --- Check for controls before doing any work ---
           if (modelRef.current && controls) {
-            if (scene.animationType === 'custom') {
+            
+            // --- REFACTORED ANIMATION LOGIC ---
+
+            // 1. Check if it's a preset animation
+            if (isPresetAnim(scene.animationType)) {
+              const animFn = presetAnimationMap[scene.animationType];
+              if (animFn) {
+                // Run the preset function from our new library
+                animFn({
+                  camera,
+                  controls: controls as any,
+                  modelRef,
+                  sceneProgress,
+                  easedProgress,
+                });
+              }
+            }
+            // 2. Check for 'custom' (logic stays here)
+            else if (scene.animationType === 'custom') {
               if (scene.startView && scene.endView) {
                 startPos.set(...scene.startView.position);
                 endPos.set(...scene.endView.position);
@@ -119,24 +148,29 @@ function SceneContent({
                 (controls as any).target.copy(startTarget);
                 (controls as any).update();
               }
-            } else if (scene.animationType === 'spin') {
-              camera.position.set(0, 0, 2);
-              (controls as any).target.set(0, 0, 0);
-              (controls as any).update();
-
-              const targetRotation = sceneProgress * (2 * Math.PI);
-              modelRef.current.rotation.y = targetRotation;
-            } else if (scene.animationType === 'hold') {
+              // Ensure model is not spinning
+              if (modelRef.current) {
+                modelRef.current.rotation.y = 0;
+              }
+            }
+            // 3. Check for 'hold' (logic stays here)
+            else if (scene.animationType === 'hold') {
               if (scene.startView) {
                 camera.position.set(...scene.startView.position);
                 (controls as any).target.set(...scene.startView.target);
               } else {
+                // Default hold view if none is set
                 camera.position.set(0, 0, 2);
                 (controls as any).target.set(0, 0, 0);
               }
               (controls as any).update();
-              modelRef.current.rotation.y = 0;
+              // Ensure model is not spinning
+              if (modelRef.current) {
+                modelRef.current.rotation.y = 0;
+              }
             }
+
+            // --- END REFACTORED LOGIC ---
           }
           break;
         }

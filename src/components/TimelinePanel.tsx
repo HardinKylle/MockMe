@@ -3,7 +3,7 @@
 import { Button } from './ui/Button';
 import { Plus, Play, Pause } from 'lucide-react';
 import { AnimationScene } from '@/types/animation';
-import { useRef } from 'react'; // Removed unused imports
+import { useRef } from 'react'; 
 import ContentTrack from './ContentTrack';
 import AnimationTrack from './AnimationTrack';
 
@@ -17,7 +17,6 @@ interface TimelinePanelProps {
   selectedSceneId: string | null;
   onSelectScene: (id: string) => void;
   totalVideoDuration: number;
-  // setTotalVideoDuration prop removed
 }
 
 export default function TimelinePanel({
@@ -32,7 +31,6 @@ export default function TimelinePanel({
   totalVideoDuration,
 }: TimelinePanelProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  // stretchWrapperRef and useContentDrag hook call removed
 
   const playheadPercent =
     totalVideoDuration > 0 ? (currentTime / totalVideoDuration) * 100 : 0;
