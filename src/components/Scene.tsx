@@ -12,7 +12,7 @@ import { presetAnimationMap, isPresetAnim } from '@/types/animation-presets';
 
 interface SceneProps {
   textureUrl: string | null;
-  uploadedFileType: 'image' | 'video' | null; //added
+  uploadedFileType: 'image' | 'video' | null;
   model: ModelData;
   backgroundColor: string;
   isPlaying: boolean;
@@ -251,6 +251,8 @@ function SceneContent({
             textureOffset={model.textureOffset}
             rotation={model.rotation}
             screenReflection={screenReflection}
+            isPlaying={isPlaying}
+            currentTime={currentTime}
           />
         </group>
       )}

@@ -14,7 +14,8 @@ interface PhoneModelProps {
     textureOffset: [number, number];
     rotation: [number, number, number];
     screenReflection: boolean;
-    
+    isPlaying: boolean;
+    currentTime: number;
 }
 
 const PhoneModel: React.FC<PhoneModelProps> = ({
@@ -27,7 +28,9 @@ const PhoneModel: React.FC<PhoneModelProps> = ({
     textureRepeat,
     textureOffset,
     rotation,
-    screenReflection
+    screenReflection,
+    isPlaying,
+    currentTime
 }) => {
     const { scene } = useGLTF(modelUrl);
     const { gl } = useThree();
@@ -49,15 +52,44 @@ const PhoneModel: React.FC<PhoneModelProps> = ({
         // Create a video element
         const video = document.createElement('video');
         video.src = textureUrl;
-        video.crossOrigin = 'Anonymous'; // Important for textures
+        video.crossOrigin = 'Anonymous';
         video.loop = true;
-        video.muted = true; // MUST be muted to autoplay in browsers
-        video.play(); // Start loading and playing
+        video.muted = true;
+        // DON'T auto-play - let the timeline control it
 
         // Create the texture from the video element
         return new THREE.VideoTexture(video);
 
     }, [textureUrl, uploadedFileType]);
+
+    // NEW: Control video playback based on isPlaying state
+    useEffect(() => {
+        if (!videoTexture) return;
+        
+        const video = videoTexture.image as HTMLVideoElement;
+        if (!video) return;
+
+        if (isPlaying) {
+            video.play().catch(err => {
+                console.warn('Video play failed:', err);
+            });
+        } else {
+            video.pause();
+        }
+    }, [isPlaying, videoTexture]);
+
+    // NEW: Sync video currentTime with timeline currentTime
+    useEffect(() => {
+        if (!videoTexture) return;
+        
+        const video = videoTexture.image as HTMLVideoElement;
+        if (!video) return;
+
+        // Only update if the difference is significant (avoid micro-adjustments)
+        if (Math.abs(video.currentTime - currentTime) > 0.1) {
+            video.currentTime = currentTime;
+        }
+    }, [currentTime, videoTexture]);
 
     // 3. Decide which texture to use
     const texture = uploadedFileType === 'video' ? videoTexture : imageTexture;
@@ -115,7 +147,7 @@ const PhoneModel: React.FC<PhoneModelProps> = ({
                 mat.needsUpdate = true;
             }
         }
-    }, [texture, textureUrl, gl, screenReflection, uploadedFileType, flipY, textureRepeat, textureOffset]); // Added new dependencies
+    }, [texture, textureUrl, gl, screenReflection, uploadedFileType, flipY, textureRepeat, textureOffset]);
 
    useLayoutEffect(() => {
         const originalMaterials = new Map<THREE.Mesh, THREE.Material>();
