@@ -17,6 +17,7 @@ interface TimelinePanelProps {
   selectedSceneId: string | null;
   onSelectScene: (id: string) => void;
   totalVideoDuration: number;
+  uploadedFileType: 'image' | 'video' | null; //added
 }
 
 export default function TimelinePanel({
@@ -29,6 +30,7 @@ export default function TimelinePanel({
   selectedSceneId,
   onSelectScene,
   totalVideoDuration,
+  uploadedFileType, //added
 }: TimelinePanelProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -114,6 +116,7 @@ export default function TimelinePanel({
           {/* --- CONTENT TRACK --- */}
           <ContentTrack
             playheadPercent={playheadPercent}
+            uploadedFileType={uploadedFileType} //added
           />
         </div>
       </div>

@@ -2,12 +2,14 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Upload, X, UploadCloud } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
-interface ImageUploadProps {
-  OnImageUpload: (file: File | null) => void;
+interface FileUploadProps {
+  onFileUpload: (file: File | null) => void;
   previewUrl: string | null;
 }
 
-const ImageUpload: React.FC<ImageUploadProps> = ({ OnImageUpload, previewUrl }) => {
+const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25 MB max size
+
+const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, previewUrl }) => {
   const [isDragging, setIsDragging] = React.useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -18,12 +20,23 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ OnImageUpload, previewUrl }) 
   }, [previewUrl]);
 
   const handleFileChange = (file: File | null) => {
-    if (file && file.type.startsWith('image/')) {
-      OnImageUpload(file); // Forward the file to the parent hook
+    if (file && file.size > MAX_FILE_SIZE) {
+      alert(`File is too large. Please upload a file 25MB or less.`);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''; // Clear the input
+      }
+      return;
+    }
+
+    if (file && (file.type.startsWith('image/') || file.type.startsWith('video/'))) {
+      onFileUpload(file); // Forward the file to the parent hook
     } else if (file === null) {
-      OnImageUpload(null); // Notify parent to clear
-    } else {
-      alert('Please upload a valid image file.');
+      onFileUpload(null); // Notify parent to clear
+    } else if (file) {
+      alert('Please upload a valid image or video file.');
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''; // Clear the input
+      }
     }
   };
 
@@ -33,12 +46,9 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ OnImageUpload, previewUrl }) 
   };
 
   useEffect(() => {
-    // We use 'window' to capture events anywhere on the page
     window.addEventListener('dragover', handleDragOver);
     window.addEventListener('dragleave', handleDragLeave);
     window.addEventListener('drop', handleDrop);
-
-    // Cleanup function to remove listeners when component unmounts
     return () => {
       window.removeEventListener('dragover', handleDragOver);
       window.removeEventListener('dragleave', handleDragLeave);
@@ -50,14 +60,12 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ OnImageUpload, previewUrl }) 
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
-
-    // Check if files were dropped
     const file = e.dataTransfer?.files?.[0] ?? null;
     handleFileChange(file);
   };
 
   const handleDragOver = (e: DragEvent) => {
-    e.preventDefault(); // Necessary to allow dropping
+    e.preventDefault();
     e.stopPropagation();
     setIsDragging(true);
   };
@@ -65,17 +73,14 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ OnImageUpload, previewUrl }) 
   const handleDragLeave = (e: DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-
-    // This check prevents flickering when dragging over child elements
     if (e.relatedTarget && (e.currentTarget as Node).contains(e.relatedTarget as Node)) {
       return;
     }
-
     setIsDragging(false);
   };
 
   const handleRemove = () => {
-    OnImageUpload(null); // Notify parent to clear
+    onFileUpload(null); // Notify parent to clear
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -85,29 +90,23 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ OnImageUpload, previewUrl }) 
     fileInputRef.current?.click();
   };
 
-  return (
+ return (
     <>
       {isDragging && (
         <div className="fixed inset-0 z-20 flex items-center justify-center pointer-events-none">
-          {/* Blurred background overlay */}
           <div className="absolute inset-0 bg-black/30 backdrop-blur-md"></div>
-
-          <UploadCloud
-            size={96}
-            className="relative z-10 text-white"
-          />
+          <UploadCloud size={96} className="relative z-10 text-white" />
         </div>
       )}
 
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
+        accept="image/*,video/*"
         onChange={handleInputChange}
         className="hidden"
       />
       <div>
-        {/* We now use the 'previewUrl' prop instead of local state */}
         {previewUrl ? (
           <Button
             onClick={(e) => {
@@ -116,8 +115,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ OnImageUpload, previewUrl }) 
             }}
             variant="danger"
             size="default"
-            tooltip="Remove image"
-            
+            tooltip="Remove file"
           >
             <X size={24} />
           </Button>
@@ -126,8 +124,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ OnImageUpload, previewUrl }) 
             onClick={handleClick}
             variant="primary"
             size="default"
-            tooltip="Upload image"
-            
+            tooltip="Upload file"
           >
             <Upload size={24} />
           </Button>
@@ -137,4 +134,4 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ OnImageUpload, previewUrl }) 
   );
 };
 
-export default ImageUpload;
+export default FileUpload;

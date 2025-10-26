@@ -2,10 +2,12 @@
 
 interface ContentTrackProps {
   playheadPercent: number;
+  uploadedFileType: 'image' | 'video' | null; //added
 }
 
 export default function ContentTrack({
   playheadPercent,
+  uploadedFileType, //added
 }: ContentTrackProps) {
   return (
     <div className="flex items-stretch gap-2">
@@ -24,9 +26,15 @@ export default function ContentTrack({
         {/* Clips container */}
         <div className="relative h-6 rounded">
           {/* Content clip (stretches with parent) */}
-          <div className="absolute top-1 bottom-1 left-0.5 right-0.5 rounded bg-linear-to-r from-pink-500 to-rose-500 border border-pink-400/30" />
-
-
+          <div className="absolute top-1 bottom-1 left-0.5 right-0.5 rounded bg-linear-to-r from-pink-500 to-rose-500 border border-pink-400/30">
+            {/* --- ADDED --- */}
+            {uploadedFileType === 'video' && (
+              <span className="absolute left-2 top-1/2 -translate-y-1/2 text-white text-[10px] font-medium pointer-events-none z-10">
+                Uploaded Video
+              </span>
+            )}
+            {/* --- END --- */}
+          </div>
 
           {/* Playhead */}
           <div

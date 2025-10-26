@@ -1,9 +1,9 @@
 'use client';
-import ImageUpload from '@/components/ImageUpload';
-import { useUploadedImage } from '@/hooks/useUploadedImage';
+import FileUpload from '@/components/FileUpload'; //changed
+import { useUploadedFile } from '@/hooks/useUploadedFile';  //changed
 import Scene, { SceneApi } from '@/components/Scene';
 import CaptureControls from '@/components/CaptureControls';
-import { useRef, useState, useLayoutEffect } from 'react';
+import { useRef, useState, useLayoutEffect, useEffect } from 'react'; //added useEffect
 import PreviewModal from '@/components/PreviewModal';
 import { useModelSwitcher } from '@/hooks/useModelSwitcher';
 import ModelSelector from '@/components/ModelSelector';
@@ -28,10 +28,10 @@ const DEFAULT_SCENE_CONTROLS = {
   modelPosition: [0, 0, 0] as [number, number, number],
   modelRotation: [0, 0, 0] as [number, number, number],
   modelScale: 1,
-  ambientIntensity: 0.7, // Increased from 0.1 - more ambient light reduces washout
-  directionalIntensity: 0.1, // Decreased from 0.4 - less harsh direct light
+  ambientIntensity: 0.7,
+  directionalIntensity: 0.1, 
   directionalPosition: [2, 3, 4] as [number, number, number],
-  environmentIntensity: 0.2, // Decreased from 0.5 - softer environment
+  environmentIntensity: 0.2, 
   screenReflection: true,
 };
 
@@ -45,7 +45,8 @@ const defaultScene: AnimationScene = {
 };
 
 export default function App() {
-  const { uploadedImageUrl, handleImageUpload } = useUploadedImage();
+
+  const { uploadedFileUrl, uploadedFileType, videoDuration, handleFileUpload } = useUploadedFile(); // updated hook
   const sceneRef = useRef<SceneApi>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [capturedImageUrl, setCapturedImageUrl] = useState<string | null>(null);
@@ -97,6 +98,14 @@ export default function App() {
     DEFAULT_SCENE_CONTROLS.screenReflection
   );
 
+  // new effect
+  useEffect(() => {
+    if (videoDuration !== null) {
+      setTotalVideoDuration(videoDuration);
+      setShowTimeline(true);
+    }
+  }, [videoDuration, setTotalVideoDuration]);
+
   const handleCapture = () => {
     setIsLoading(true);
 
@@ -118,7 +127,7 @@ export default function App() {
 
   const handleModelChange = (modelName: string) => {
     setModel(modelName);
-    handleImageUpload(null);
+    handleFileUpload(null); // updated name
   };
 
   const handlePresetClick = (view: typeof presetViews[number]) => {
@@ -242,7 +251,7 @@ export default function App() {
       >
         <Scene
           ref={sceneRef}
-          textureUrl={uploadedImageUrl}
+          textureUrl={uploadedFileType === 'image' ? uploadedFileUrl : null} //updated
           model={selectedModel}
           backgroundColor={backgroundColor}
           isPlaying={isPlaying}
@@ -356,9 +365,9 @@ export default function App() {
             onToggleTimeline={() => setShowTimeline(!showTimeline)}
           />
 
-          <ImageUpload
-            OnImageUpload={handleImageUpload}
-            previewUrl={uploadedImageUrl}
+          <FileUpload  //updated component
+            onFileUpload={handleFileUpload}
+            previewUrl={uploadedFileUrl}
           />
         </div>
       </div>
@@ -403,6 +412,7 @@ export default function App() {
         selectedSceneId={selectedSceneId}
         onSelectScene={setSelectedSceneId}
         totalVideoDuration={totalVideoDuration}
+        uploadedFileType={uploadedFileType} //added
       />
     </div>
   );
