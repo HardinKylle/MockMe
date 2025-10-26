@@ -20,6 +20,16 @@ interface SceneProps {
   currentTime: number;
   setCurrentTime: (time: number | ((prevTime: number) => number)) => void;
   totalVideoDuration: number;
+  cameraPosition: [number, number, number];
+  cameraTarget: [number, number, number];
+  cameraFov: number;
+  modelPosition: [number, number, number];
+  modelRotation: [number, number, number];
+  modelScale: number;
+  ambientIntensity: number;
+  directionalIntensity: number;
+  directionalPosition: [number, number, number];
+  environmentIntensity: number;
 }
 
 export interface SceneApi {
@@ -49,9 +59,45 @@ function SceneContent({
   currentTime,
   setCurrentTime,
   totalVideoDuration,
+  cameraPosition,
+  cameraTarget,
+  cameraFov,
+  modelPosition,
+  modelRotation,
+  modelScale,
+  ambientIntensity,
+  directionalIntensity,
+  directionalPosition,
+  environmentIntensity,
 }: Omit<SceneProps, 'backgroundColor'> & { backgroundColor: string }) {
   const { gl, camera, controls } = useThree();
   const modelRef = useRef<THREE.Group>(null);
+
+  // Apply camera FOV
+  useEffect(() => {
+    if (camera instanceof THREE.PerspectiveCamera) {
+      camera.fov = cameraFov;
+      camera.updateProjectionMatrix();
+    }
+  }, [camera, cameraFov]);
+
+  // Apply camera position and target when not playing
+  useEffect(() => {
+    if (!isPlaying && controls) {
+      camera.position.set(...cameraPosition);
+      (controls as OrbitControlsType).target.set(...cameraTarget);
+      (controls as OrbitControlsType).update();
+    }
+  }, [isPlaying, cameraPosition, cameraTarget, camera, controls]);
+
+  // Apply model transforms
+  useEffect(() => {
+    if (modelRef.current) {
+      modelRef.current.position.set(...modelPosition);
+      modelRef.current.rotation.set(...modelRotation);
+      modelRef.current.scale.set(modelScale, modelScale, modelScale);
+    }
+  }, [modelPosition, modelRotation, modelScale]);
 
   useEffect(() => {
     if (isPlaying) {
@@ -64,8 +110,6 @@ function SceneContent({
       // Reset camera to the start of the *first* scene
       const firstScene = scenes[0];
       
-      // --- UPDATED LOGIC ---
-      // Now checks for 'hold' or 'custom' types
       if (
         firstScene &&
         (firstScene.animationType === 'custom' ||
@@ -80,7 +124,6 @@ function SceneContent({
         camera.position.set(0, 0, 2);
         (controls as OrbitControlsType).target.set(0, 0, 0);
       }
-      // --- END UPDATED LOGIC ---
     }
   }, [isPlaying, scenes, camera, controls]);
 
@@ -184,9 +227,12 @@ function SceneContent({
 
   return (
     <>
-      <ambientLight intensity={0.1} />
-      <directionalLight position={[2, 3, 4]} intensity={0.4} />
-      <Environment preset="studio" environmentIntensity={0.5} />
+      <ambientLight intensity={ambientIntensity} />
+      <directionalLight 
+        position={directionalPosition} 
+        intensity={directionalIntensity}
+      />
+      <Environment preset="studio" environmentIntensity={environmentIntensity} />
 
       {model && (
         <group ref={modelRef}>
@@ -225,7 +271,17 @@ export default forwardRef<SceneApi, SceneProps>(function Scene(
     scenes,
     currentTime,
     setCurrentTime,
-    totalVideoDuration
+    totalVideoDuration,
+    cameraPosition,
+    cameraTarget,
+    cameraFov,
+    modelPosition,
+    modelRotation,
+    modelScale,
+    ambientIntensity,
+    directionalIntensity,
+    directionalPosition,
+    environmentIntensity,
   },
   ref
 ) {
@@ -236,6 +292,7 @@ export default forwardRef<SceneApi, SceneProps>(function Scene(
         preserveDrawingBuffer: true,
         alpha: true,
       }}
+      shadows
       camera={{ position: [0, 0, 2], fov: 50, near: 0.01, far: 100 }}
     >
       <SceneContent
@@ -248,6 +305,16 @@ export default forwardRef<SceneApi, SceneProps>(function Scene(
         currentTime={currentTime}
         setCurrentTime={setCurrentTime}
         totalVideoDuration={totalVideoDuration}
+        cameraPosition={cameraPosition}
+        cameraTarget={cameraTarget}
+        cameraFov={cameraFov}
+        modelPosition={modelPosition}
+        modelRotation={modelRotation}
+        modelScale={modelScale}
+        ambientIntensity={ambientIntensity}
+        directionalIntensity={directionalIntensity}
+        directionalPosition={directionalPosition}
+        environmentIntensity={environmentIntensity}
       />
 
       <SceneCaptureController ref={ref} />

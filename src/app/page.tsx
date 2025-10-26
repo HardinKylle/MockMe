@@ -16,8 +16,24 @@ import TimelinePanel from '@/components/TimelinePanel';
 import { AnimationScene } from '@/types/animation';
 import SceneEditorPanel from '@/components/SceneEditorPanel';
 import ContentEditorPanel from '@/components/ContentEditorPanel';
+import CameraControlsPanel from '@/components/CameraControlsPanel';
 
 const generateId = () => `scene_${Math.random().toString(36).substr(2, 9)}`;
+
+// Default scene controls values
+const DEFAULT_SCENE_CONTROLS = {
+  cameraPosition: [0, 0, 2] as [number, number, number],
+  cameraTarget: [0, 0, 0] as [number, number, number],
+  cameraFov: 50,
+  modelPosition: [0, 0, 0] as [number, number, number],
+  modelRotation: [0, 0, 0] as [number, number, number],
+  modelScale: 1,
+  ambientIntensity: 0.0, // Increased from 0.1 - more ambient light reduces washout
+  directionalIntensity: 0.0, // Decreased from 0.4 - less harsh direct light
+  directionalPosition: [2, 3, 4] as [number, number, number],
+  environmentIntensity: 0.5, // Decreased from 0.5 - softer environment
+};
+
 
 // Define the default "spin" scene
 const defaultScene: AnimationScene = {
@@ -47,6 +63,34 @@ export default function App() {
     defaultScene.id
   );
   const [totalVideoDuration, setTotalVideoDuration] = useState(10);
+
+  // Scene controls state
+  const [cameraPosition, setCameraPosition] = useState<[number, number, number]>(
+    DEFAULT_SCENE_CONTROLS.cameraPosition
+  );
+  const [cameraTarget, setCameraTarget] = useState<[number, number, number]>(
+    DEFAULT_SCENE_CONTROLS.cameraTarget
+  );
+  const [cameraFov, setCameraFov] = useState(DEFAULT_SCENE_CONTROLS.cameraFov);
+  const [modelPosition, setModelPosition] = useState<[number, number, number]>(
+    DEFAULT_SCENE_CONTROLS.modelPosition
+  );
+  const [modelRotation, setModelRotation] = useState<[number, number, number]>(
+    DEFAULT_SCENE_CONTROLS.modelRotation
+  );
+  const [modelScale, setModelScale] = useState(DEFAULT_SCENE_CONTROLS.modelScale);
+  const [ambientIntensity, setAmbientIntensity] = useState(
+    DEFAULT_SCENE_CONTROLS.ambientIntensity
+  );
+  const [directionalIntensity, setDirectionalIntensity] = useState(
+    DEFAULT_SCENE_CONTROLS.directionalIntensity
+  );
+  const [directionalPosition, setDirectionalPosition] = useState<[number, number, number]>(
+    DEFAULT_SCENE_CONTROLS.directionalPosition
+  );
+  const [environmentIntensity, setEnvironmentIntensity] = useState(
+    DEFAULT_SCENE_CONTROLS.environmentIntensity
+  );
 
   const handleCapture = () => {
     setIsLoading(true);
@@ -164,6 +208,20 @@ export default function App() {
     };
   };
 
+  const handleResetSceneControls = () => {
+    setCameraPosition(DEFAULT_SCENE_CONTROLS.cameraPosition);
+    setCameraTarget(DEFAULT_SCENE_CONTROLS.cameraTarget);
+    setCameraFov(DEFAULT_SCENE_CONTROLS.cameraFov);
+    setModelPosition(DEFAULT_SCENE_CONTROLS.modelPosition);
+    setModelRotation(DEFAULT_SCENE_CONTROLS.modelRotation);
+    setModelScale(DEFAULT_SCENE_CONTROLS.modelScale);
+    setAmbientIntensity(DEFAULT_SCENE_CONTROLS.ambientIntensity);
+    setDirectionalIntensity(DEFAULT_SCENE_CONTROLS.directionalIntensity);
+    setDirectionalPosition(DEFAULT_SCENE_CONTROLS.directionalPosition);
+    setEnvironmentIntensity(DEFAULT_SCENE_CONTROLS.environmentIntensity);
+  };
+
+
   const frameStyle = getFrameStyle();
   return (
 
@@ -187,6 +245,16 @@ export default function App() {
           currentTime={currentTime}
           setCurrentTime={setCurrentTime}
           totalVideoDuration={totalVideoDuration}
+          cameraPosition={cameraPosition}
+          cameraTarget={cameraTarget}
+          cameraFov={cameraFov}
+          modelPosition={modelPosition}
+          modelRotation={modelRotation}
+          modelScale={modelScale}
+          ambientIntensity={ambientIntensity}
+          directionalIntensity={directionalIntensity}
+          directionalPosition={directionalPosition}
+          environmentIntensity={environmentIntensity}
         />
       </div>
 
@@ -205,6 +273,32 @@ export default function App() {
           selectedModel={selectedModel}
           onModelSelect={handleModelChange}
         />
+
+        {/* Camera Controls Panel */}
+        <CameraControlsPanel
+          cameraPosition={cameraPosition}
+          cameraTarget={cameraTarget}
+          cameraFov={cameraFov}
+          modelPosition={modelPosition}
+          modelRotation={modelRotation}
+          modelScale={modelScale}
+          ambientIntensity={ambientIntensity}
+          directionalIntensity={directionalIntensity}
+          directionalPosition={directionalPosition}
+          environmentIntensity={environmentIntensity}
+          onCameraPositionChange={setCameraPosition}
+          onCameraTargetChange={setCameraTarget}
+          onCameraFovChange={setCameraFov}
+          onModelPositionChange={setModelPosition}
+          onModelRotationChange={setModelRotation}
+          onModelScaleChange={setModelScale}
+          onAmbientIntensityChange={setAmbientIntensity}
+          onDirectionalIntensityChange={setDirectionalIntensity}
+          onDirectionalPositionChange={setDirectionalPosition}
+          onEnvironmentIntensityChange={setEnvironmentIntensity}
+          onReset={handleResetSceneControls}
+        />
+
 
         <div className="relative">
           <Button
