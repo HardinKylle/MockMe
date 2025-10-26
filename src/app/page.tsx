@@ -28,10 +28,10 @@ const DEFAULT_SCENE_CONTROLS = {
   modelPosition: [0, 0, 0] as [number, number, number],
   modelRotation: [0, 0, 0] as [number, number, number],
   modelScale: 1,
-  ambientIntensity: 0.0, // Increased from 0.1 - more ambient light reduces washout
-  directionalIntensity: 0.0, // Decreased from 0.4 - less harsh direct light
+  ambientIntensity: 0.7, // Increased from 0.1 - more ambient light reduces washout
+  directionalIntensity: 0.1, // Decreased from 0.4 - less harsh direct light
   directionalPosition: [2, 3, 4] as [number, number, number],
-  environmentIntensity: 0.5, // Decreased from 0.5 - softer environment
+  environmentIntensity: 0.2, // Decreased from 0.5 - softer environment
 };
 
 

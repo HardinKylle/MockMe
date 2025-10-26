@@ -26,28 +26,21 @@ const PhoneModel: React.FC<PhoneModelProps> = ({
 }) => {
     const { scene } = useGLTF(modelUrl);
     const { gl } = useThree();
-    //create a ref to store the screen material
     const screenMaterialRef = useRef<THREE.Material | null>(null);
-
-    // Refs to store the *original* material properties
     const originalMapRef = useRef<THREE.Texture | null>(null);
 
-    //load the texture from the URL
     const texture = useTexture(textureUrl || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=');
 
-    //create an effect to apply the texture
     useEffect(() => {
         if (!screenMaterialRef.current) return;
 
-        const mat = screenMaterialRef.current as THREE.MeshBasicMaterial;
+        // Cast to MeshStandardMaterial
+        const mat = screenMaterialRef.current as THREE.MeshStandardMaterial;
 
         if (textureUrl) {
-            texture.flipY = flipY; // Use the 'flipY' prop here
-
+            texture.flipY = flipY; 
             texture.repeat.set(textureRepeat[0], textureRepeat[1]);
-            // Use the 'textureOffset' prop to set position
             texture.offset.set(textureOffset[0], textureOffset[1]);
-            // Tell Three.js to wrap the texture, not clamp it
             texture.wrapS = THREE.RepeatWrapping;
             texture.wrapT = THREE.RepeatWrapping;
             texture.colorSpace = THREE.SRGBColorSpace;
@@ -57,29 +50,27 @@ const PhoneModel: React.FC<PhoneModelProps> = ({
             const maxAnisotropy = gl.capabilities.getMaxAnisotropy();
             texture.anisotropy = maxAnisotropy;
 
-            // Force texture to generate mipmaps
             texture.generateMipmaps = true;
             texture.needsUpdate = true;
 
+            // Apply texture to both map and emissiveMap
             mat.map = texture;
+            mat.emissiveMap = texture; 
             mat.needsUpdate = true;
         } else {
-            // Restore original GLB texture
             if (originalMapRef.current) {
                 mat.map = originalMapRef.current;
-                mat.map.colorSpace = THREE.SRGBColorSpace;
+                mat.emissiveMap = originalMapRef.current; 
+                if (mat.map) mat.map.colorSpace = THREE.SRGBColorSpace;
+                if (mat.emissiveMap) mat.emissiveMap.colorSpace = THREE.SRGBColorSpace;
                 mat.needsUpdate = true;
             }
         }
-    }, [texture, textureUrl, gl]);
+    }, [texture, textureUrl, gl]); 
+
     useLayoutEffect(() => {
-        // Create a map to store the original materials
         const originalMaterials = new Map<THREE.Mesh, THREE.Material>();
-
-        //Create a bounding box
         const box = new THREE.Box3().setFromObject(scene);
-
-        //Get the center and size
         const center = box.getCenter(new THREE.Vector3());
         const size = box.getSize(new THREE.Vector3());
 
@@ -89,40 +80,46 @@ const PhoneModel: React.FC<PhoneModelProps> = ({
         if (rotation) {
             scene.rotation.set(rotation[0], rotation[1], rotation[2]);
         }
-        // Fix material transparency and depth issues
+
         scene.traverse((child) => {
             if (child instanceof THREE.Mesh) {
-                // Get the material from the mesh
                 const material = child.material;
                 console.log(`Mesh: "${child.name}", Material: "${child.material.name}"`);
 
                 if (material) {
-                    if (material.name === screenMaterialName) {
-                        originalMaterials.set(child, material);
+                  if (material.name === screenMaterialName) {
+                            originalMaterials.set(child, material);
 
-                        const mat = material as THREE.MeshStandardMaterial;
+                            const mat = material as THREE.MeshStandardMaterial; 
+                            originalMapRef.current = mat.map || mat.emissiveMap || null;
 
-                        originalMapRef.current = mat.map || mat.emissiveMap || null;
+                            // Use MeshPhysicalMaterial for clearcoat reflections
+                            const physicalMat = new THREE.MeshPhysicalMaterial({
+                                // --- Base Layer (The Glowing Screen) ---
+                                color: 0x000000,          // Base color is black
+                                emissive: 0xffffff,       // Glow color is white
+                                emissiveMap: originalMapRef.current, // Texture provides the glow
+                                emissiveIntensity: 1,     // Full brightness for the glow
+                                roughness: 1.0,           // Make the base layer (the texture) non-reflective
+                                metalness: 0,             // Not metallic
+                                toneMapped: false,        // CRITICAL: This gives you the bright "unlit" look
 
-                        const basicMat = new THREE.MeshBasicMaterial({
-                            map: originalMapRef.current,
-                            color: 0xffffff,
-                            toneMapped: false,
-                        });
+                                // --- Top Layer (The Glass Reflection) ---
+                                clearcoat: 0.5,           // Add a full-strength clear "glass" coat
+                                clearcoatRoughness: 0.3,  // Make the reflection slightly blurry (0=mirror, 1=matte)
+                            });
+                            
+                            if (physicalMat.emissiveMap) physicalMat.emissiveMap.colorSpace = THREE.SRGBColorSpace;
 
-                        if (basicMat.map) basicMat.map.colorSpace = THREE.SRGBColorSpace;
-
-                        child.material = basicMat;
-                        screenMaterialRef.current = basicMat;
-                    }
+                            child.material = physicalMat;
+                            screenMaterialRef.current = physicalMat;
+                        }
 
                     material.depthWrite = true;
                     material.depthTest = true;
-
                     if (material.transparent) {
                         material.alphaTest = 0.5;
                     }
-
                     if (material.side === undefined) {
                         material.side = THREE.FrontSide;
                     }
@@ -131,20 +128,16 @@ const PhoneModel: React.FC<PhoneModelProps> = ({
         });
 
         return () => {
-            // Restore all original materials on unmount
             originalMaterials.forEach((originalMat, mesh) => {
                 mesh.material = originalMat;
             });
-            // Clear the refs
             screenMaterialRef.current = null;
             originalMapRef.current = null;
         };
 
-    }, [scene, screenMaterialName, modelUrl, scale]);
+    }, [scene, screenMaterialName, modelUrl, scale, rotation]); 
 
     return <primitive object={scene} />;
 }
 
 export default PhoneModel;
-
-// useGLTF.preload('/models/samsung_galaxy_s21_ultra_phantom_titanium.glb');

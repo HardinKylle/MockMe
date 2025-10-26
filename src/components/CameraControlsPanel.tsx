@@ -94,7 +94,7 @@ export default function CameraControlsPanel({
         onClick={() => setIsOpen(!isOpen)}
         variant="secondary"
         size="default"
-        tooltip="Camera & Scene Controls"
+        tooltip="Transforms Control"
         tooltipSide="bottom"
         isActive={isOpen}
       >
@@ -129,7 +129,6 @@ export default function CameraControlsPanel({
                 onClick={onReset}
                 variant="ghost"
                 size="sm"
-                tooltip="Reset to defaults"
               >
                 <RotateCcw size={18} />
               </Button>
