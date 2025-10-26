@@ -47,4 +47,47 @@ html {
   scrollbar-color: #334155 #0f172a; 
 }
 
+#desktop-only-message {
+  display: none;
+}
+
+
+@media (max-width: 500px) {
+  
+  /* Hide ONLY the main app content */
+  #main-app-content { 
+    display: none !important;
+  }
+  
+  /* Style and show the desktop-only message */
+  #desktop-only-message {
+    display: flex; 
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    inset: 0;
+    background-color: #030712;
+    color: white;
+    padding: 2rem;
+    text-align: center;
+    z-index: 9999;
+  }
+
+  #desktop-only-message .message-content h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: white;
+  }
+
+  #desktop-only-message .message-content p {
+    font-size: 1rem;
+    color: #d1d5db;
+    line-height: 1.6;
+  }
+}
+
+
+
+
 

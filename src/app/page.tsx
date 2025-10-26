@@ -266,7 +266,7 @@ export default function App() {
       </div>
 
       {/* Floating container for Preset Views, Model Selector, and Background Picker */}
-      <div className="fixed top-4 right-4 z-10 flex items-end gap-2">
+      <div className="fixed top-4 right-7 z-10 flex items-end gap-3">
 
         {/* BackgroundPicker */}
         <BackgroundPicker
@@ -318,7 +318,7 @@ export default function App() {
             tooltipSide="bottom"
             isActive={showViews}
           >
-            <ViewfinderCircleIcon className="h-5 w-5 text-white" />
+            <ViewfinderCircleIcon className="h-6 w-6 text-white" />
           </Button>
           {showViews && (
             <div
@@ -341,9 +341,9 @@ export default function App() {
       </div>
 
       {/* Floating container for all controls (Buttons) */}
-      <div className="fixed bottom-4 right-4 z-10">
+      <div className="fixed bottom-4 right-7 z-10">
         <div
-          className="flex flex-row items-center gap-2"
+          className="flex flex-row items-center gap-3"
         >
           {/* BackgroundPicker and ModelSelector removed from here */}
 

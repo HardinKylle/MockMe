@@ -16,6 +16,22 @@ export const metadata = {
   title: "MockMe",
 };
 
+
+// Add this component definition
+const DesktopOnlyMessage = () => {
+  return (
+    <div id="desktop-only-message">
+      <div className="message-content">
+        <h2>Best Viewed on Desktop</h2>
+        <p>
+          This application is designed for a desktop experience. Please switch
+          to a larger screen for full functionality.
+        </p>
+      </div>
+    </div>
+  );
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -23,10 +39,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+      {/* USE YOUR GEIST FONT VARIABLES HERE */}
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}> 
+        <DesktopOnlyMessage />
+        <div id="main-app-content">
+          {children}
+        </div>
       </body>
     </html>
   );
