@@ -29,9 +29,9 @@ const DEFAULT_SCENE_CONTROLS = {
   modelRotation: [0, 0, 0] as [number, number, number],
   modelScale: 1,
   ambientIntensity: 0.7,
-  directionalIntensity: 0.1, 
+  directionalIntensity: 0.1,
   directionalPosition: [2, 3, 4] as [number, number, number],
-  environmentIntensity: 0.2, 
+  environmentIntensity: 0.2,
   screenReflection: true,
 };
 
@@ -251,7 +251,8 @@ export default function App() {
       >
         <Scene
           ref={sceneRef}
-          textureUrl={uploadedFileType === 'image' ? uploadedFileUrl : null} //updated
+          textureUrl={uploadedFileUrl}
+          uploadedFileType={uploadedFileType} //added
           model={selectedModel}
           backgroundColor={backgroundColor}
           isPlaying={isPlaying}

@@ -12,6 +12,7 @@ import { presetAnimationMap, isPresetAnim } from '@/types/animation-presets';
 
 interface SceneProps {
   textureUrl: string | null;
+  uploadedFileType: 'image' | 'video' | null; //added
   model: ModelData;
   backgroundColor: string;
   isPlaying: boolean;
@@ -54,6 +55,7 @@ function SceneContent({
   backgroundColor,
   model,
   textureUrl,
+  uploadedFileType,
   isPlaying,
   setIsPlaying,
   scenes,
@@ -242,6 +244,7 @@ function SceneContent({
             modelUrl={model.path}
             screenMaterialName={model.screenMaterial}
             textureUrl={textureUrl}
+            uploadedFileType={uploadedFileType}
             scale={model.scale}
             flipY={model.flipY}
             textureRepeat={model.textureRepeat}
@@ -267,6 +270,7 @@ function SceneContent({
 export default forwardRef<SceneApi, SceneProps>(function Scene(
   {
     textureUrl,
+    uploadedFileType,
     model,
     backgroundColor,
     isPlaying,
@@ -303,6 +307,7 @@ export default forwardRef<SceneApi, SceneProps>(function Scene(
         backgroundColor={backgroundColor}
         model={model}
         textureUrl={textureUrl}
+        uploadedFileType={uploadedFileType}
         isPlaying={isPlaying}
         setIsPlaying={setIsPlaying}
         scenes={scenes}
