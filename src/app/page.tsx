@@ -32,6 +32,7 @@ const DEFAULT_SCENE_CONTROLS = {
   directionalIntensity: 0.1, // Decreased from 0.4 - less harsh direct light
   directionalPosition: [2, 3, 4] as [number, number, number],
   environmentIntensity: 0.2, // Decreased from 0.5 - softer environment
+  screenReflection: true,
 };
 
 
@@ -90,6 +91,10 @@ export default function App() {
   );
   const [environmentIntensity, setEnvironmentIntensity] = useState(
     DEFAULT_SCENE_CONTROLS.environmentIntensity
+  );
+
+  const [screenReflection, setScreenReflection] = useState(
+    DEFAULT_SCENE_CONTROLS.screenReflection
   );
 
   const handleCapture = () => {
@@ -219,6 +224,7 @@ export default function App() {
     setDirectionalIntensity(DEFAULT_SCENE_CONTROLS.directionalIntensity);
     setDirectionalPosition(DEFAULT_SCENE_CONTROLS.directionalPosition);
     setEnvironmentIntensity(DEFAULT_SCENE_CONTROLS.environmentIntensity);
+    setScreenReflection(DEFAULT_SCENE_CONTROLS.screenReflection);
   };
 
 
@@ -255,6 +261,7 @@ export default function App() {
           directionalIntensity={directionalIntensity}
           directionalPosition={directionalPosition}
           environmentIntensity={environmentIntensity}
+          screenReflection={screenReflection}
         />
       </div>
 
@@ -286,6 +293,7 @@ export default function App() {
           directionalIntensity={directionalIntensity}
           directionalPosition={directionalPosition}
           environmentIntensity={environmentIntensity}
+          screenReflection={screenReflection}
           onCameraPositionChange={setCameraPosition}
           onCameraTargetChange={setCameraTarget}
           onCameraFovChange={setCameraFov}
@@ -296,6 +304,7 @@ export default function App() {
           onDirectionalIntensityChange={setDirectionalIntensity}
           onDirectionalPositionChange={setDirectionalPosition}
           onEnvironmentIntensityChange={setEnvironmentIntensity}
+          onScreenReflectionChange={setScreenReflection}
           onReset={handleResetSceneControls}
         />
 

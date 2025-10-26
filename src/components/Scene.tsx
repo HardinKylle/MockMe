@@ -30,6 +30,7 @@ interface SceneProps {
   directionalIntensity: number;
   directionalPosition: [number, number, number];
   environmentIntensity: number;
+  screenReflection: boolean;
 }
 
 export interface SceneApi {
@@ -69,6 +70,7 @@ function SceneContent({
   directionalIntensity,
   directionalPosition,
   environmentIntensity,
+  screenReflection,
 }: Omit<SceneProps, 'backgroundColor'> & { backgroundColor: string }) {
   const { gl, camera, controls } = useThree();
   const modelRef = useRef<THREE.Group>(null);
@@ -245,6 +247,7 @@ function SceneContent({
             textureRepeat={model.textureRepeat}
             textureOffset={model.textureOffset}
             rotation={model.rotation}
+            screenReflection={screenReflection}
           />
         </group>
       )}
@@ -282,6 +285,7 @@ export default forwardRef<SceneApi, SceneProps>(function Scene(
     directionalIntensity,
     directionalPosition,
     environmentIntensity,
+    screenReflection,
   },
   ref
 ) {
@@ -315,6 +319,7 @@ export default forwardRef<SceneApi, SceneProps>(function Scene(
         directionalIntensity={directionalIntensity}
         directionalPosition={directionalPosition}
         environmentIntensity={environmentIntensity}
+        screenReflection={screenReflection}
       />
 
       <SceneCaptureController ref={ref} />

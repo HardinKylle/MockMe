@@ -12,6 +12,7 @@ interface PhoneModelProps {
     textureRepeat: [number, number];
     textureOffset: [number, number];
     rotation: [number, number, number];
+    screenReflection: boolean;
 }
 
 const PhoneModel: React.FC<PhoneModelProps> = ({
@@ -22,7 +23,8 @@ const PhoneModel: React.FC<PhoneModelProps> = ({
     flipY,
     textureRepeat,
     textureOffset,
-    rotation
+    rotation,
+    screenReflection
 }) => {
     const { scene } = useGLTF(modelUrl);
     const { gl } = useThree();
@@ -66,7 +68,7 @@ const PhoneModel: React.FC<PhoneModelProps> = ({
                 mat.needsUpdate = true;
             }
         }
-    }, [texture, textureUrl, gl]); 
+    }, [texture, textureUrl, gl, screenReflection]); 
 
     useLayoutEffect(() => {
         const originalMaterials = new Map<THREE.Mesh, THREE.Material>();
@@ -105,7 +107,7 @@ const PhoneModel: React.FC<PhoneModelProps> = ({
                                 toneMapped: false,        // CRITICAL: This gives you the bright "unlit" look
 
                                 // --- Top Layer (The Glass Reflection) ---
-                                clearcoat: 0.5,           // Add a full-strength clear "glass" coat
+                                clearcoat: screenReflection ? 0.5 : 0.0,        // Add a full-strength clear "glass" coat
                                 clearcoatRoughness: 0.3,  // Make the reflection slightly blurry (0=mirror, 1=matte)
                             });
                             
@@ -135,7 +137,7 @@ const PhoneModel: React.FC<PhoneModelProps> = ({
             originalMapRef.current = null;
         };
 
-    }, [scene, screenMaterialName, modelUrl, scale, rotation]); 
+    }, [scene, screenMaterialName, modelUrl, scale, rotation, screenReflection]); 
 
     return <primitive object={scene} />;
 }

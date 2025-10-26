@@ -16,6 +16,7 @@ interface CameraControlsProps {
   directionalIntensity: number;
   directionalPosition: [number, number, number];
   environmentIntensity: number;
+  screenReflection: boolean; 
   onCameraPositionChange: (position: [number, number, number]) => void;
   onCameraTargetChange: (target: [number, number, number]) => void;
   onCameraFovChange: (fov: number) => void;
@@ -26,6 +27,7 @@ interface CameraControlsProps {
   onDirectionalIntensityChange: (intensity: number) => void;
   onDirectionalPositionChange: (position: [number, number, number]) => void;
   onEnvironmentIntensityChange: (intensity: number) => void;
+  onScreenReflectionChange: (enabled: boolean) => void;
   onReset: () => void;
 }
 
@@ -40,6 +42,7 @@ export default function CameraControlsPanel({
   directionalIntensity,
   directionalPosition,
   environmentIntensity,
+  screenReflection,
   onCameraPositionChange,
   onCameraTargetChange,
   onCameraFovChange,
@@ -50,6 +53,7 @@ export default function CameraControlsPanel({
   onDirectionalIntensityChange,
   onDirectionalPositionChange,
   onEnvironmentIntensityChange,
+  onScreenReflectionChange,
   onReset,
 }: CameraControlsProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -488,6 +492,19 @@ export default function CameraControlsPanel({
                     if (!isNaN(val)) onEnvironmentIntensityChange(val);
                   }}
                   className="bg-gray-50 border-gray-200 text-gray-900"
+                />
+              </div>
+
+              <div className="flex items-center justify-between pt-2">
+                <Label htmlFor="screen-reflection" className="text-gray-700">
+                  Screen Reflection
+                </Label>
+                <input
+                  id="screen-reflection"
+                  type="checkbox"
+                  checked={screenReflection}
+                  onChange={(e) => onScreenReflectionChange(e.target.checked)}
+                  className="h-5 w-5 rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500"
                 />
               </div>
             </section>
