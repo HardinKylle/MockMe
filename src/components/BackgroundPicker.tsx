@@ -134,7 +134,7 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
         onClick={() => setIsOpen(!isOpen)}
         variant="secondary"
         size="default"
-        tooltip="Change background color"
+        tooltip="Background Color"
         tooltipSide="bottom"
         isActive={isOpen}
         style={{

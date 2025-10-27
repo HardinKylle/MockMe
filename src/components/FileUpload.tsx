@@ -128,7 +128,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, previewUrl }) => 
             variant="danger" // This will now use our dark 'danger' style
             size="default"
             tooltip="Remove file"
-            tooltipSide="bottom"
+            tooltipSide="top"
           >
             <X size={24} />
           </Button>

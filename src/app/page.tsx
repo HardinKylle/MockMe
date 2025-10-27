@@ -9,7 +9,7 @@ import { useModelSwitcher } from '@/hooks/useModelSwitcher';
 import ModelSelector from '@/components/ModelSelector';
 import BackgroundPicker from '@/components/BackgroundPicker';
 import { presetViews } from '@/configs/views';
-import { ViewfinderCircleIcon } from '@heroicons/react/24/outline'; // Using Heroicons
+import { Crosshair } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useWindowSize } from '@/hooks/useWindowSize';
 import TimelinePanel from '@/components/TimelinePanel';
@@ -222,7 +222,7 @@ export default function App() {
 
   const frameStyle = getFrameStyle();
   return (
-    <div className="w-full h-screen bg-gray-950 relative overflow-hidden flex items-center justify-center">
+    <div className="w-full h-screen bg-white relative overflow-hidden flex items-center justify-center">
       <div style={frameStyle} className="">
         <Scene
           ref={sceneRef}
@@ -302,8 +302,7 @@ export default function App() {
             tooltipSide="bottom"
             isActive={showViews}
           >
-            {/* Using ViewfinderCircleIcon from Heroicons as requested */}
-            <ViewfinderCircleIcon className="h-6 w-6 text-white" />
+            <Crosshair className="h-6 w-6 text-white" />
           </Button>
           {showViews && (
             <div

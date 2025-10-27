@@ -114,7 +114,7 @@ export default function CaptureControls({
         disabled={isLoading}
         variant="primary" // This remains 'primary' as it's a main action
         size="default"
-        tooltip={!isLoading ? 'Capture Image' : undefined}
+        tooltip={!isLoading ? 'Screenshot' : undefined}
         tooltipSide="top"
       >
         {isLoading ? (

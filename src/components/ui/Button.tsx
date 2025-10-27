@@ -12,7 +12,7 @@ const buttonVariants = cva(
       variant: {
         // --- *** MODIFIED: New Darker Glassy Blue Style *** ---
         primary:
-          'bg-blue-900/80 text-white hover:bg-blue-700/70 border border-blue-700/60 shadow-sm rounded-full',
+          'bg-blue-950/90 text-white hover:bg-blue-800/80 border border-blue-800/80 shadow-sm rounded-full',
         // --- *** END MODIFICATION *** ---
         secondary:
           'bg-slate-700/50 text-slate-100 hover:bg-slate-600/50 border border-slate-600/50 shadow-sm',
