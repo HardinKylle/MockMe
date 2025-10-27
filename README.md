@@ -1,16 +1,18 @@
 # 📱 MockMe
 
-**MockMe** is a 3D phone mockup web app built with **Next.js**, **React Three Fiber**, and **TypeScript**. It lets you upload an app UI or image, view it inside a realistic 3D phone model, animate the scene, and capture creative screenshots for design showcases, social media, or portfolios.
+**MockMe** is a 3D device mockup web app built with **Next.js**, **React Three Fiber**, and **TypeScript**. It lets you upload an app UI (**image or video**), view it inside a realistic 3D model, animate a full scene sequence, and capture stunning visual assets for design showcases, social media, or portfolios.
 
 ---
 
 ## 🚀 Features
 
-- 📤 Upload UI images and place them into the phone mockup.
-- 🧩 Realistic 3D phone model using Three.js + React Three Fiber.
-- 🎥 Animations & rotations for interactive previews.
-- 📸 Capture mode to export screenshots of mockups.
-- ⚙️ Customizable scene (camera, lighting, background).
+- 📤 **File Handling:** Upload **Image or Video** content and place it onto the 3D device screen.
+- 🎬 **Full Animation Timeline:** Create complex animated sequences by defining, reordering, and editing multiple scenes.
+    * Supports custom camera transitions (`startView`/`endView`) and preset animations.
+- 🎨 **Modern Dark UI/UX:** All controls, panels, and the timeline feature a consistent, clean, and highly functional dark-themed 'glassy' aesthetic.
+- ⚙️ **Granular Controls:** Fine-tune camera position, field of view (FOV), model transformations, and detailed lighting controls (ambient, directional, environment intensity).
+- 📸 **High-Quality Capture:** Export high-quality screenshots (PNG) of your final mockups.
+- 📱 **Realistic 3D Models:** Utilize Three.js + React Three Fiber for accurate 3D rendering and scene management.
 
 ---
 
