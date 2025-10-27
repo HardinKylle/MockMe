@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { Smartphone, ChevronUp } from 'lucide-react';
-import { ModelData } from '@/configs/models'; 
+import { ModelData } from '@/configs/models';
 import { Button } from '@/components/ui/Button';
 
 interface ModelSelectorProps {
@@ -24,35 +24,49 @@ export default function ModelSelector({
 
   return (
     <div className="relative">
-      {/* --- Dropdown Menu --- */}
+      {/* --- Dropdown Menu (UI MODIFIED) --- */}
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-opacity-5 overflow-hidden">
-          <div className="" role="menu">
+        <div
+          className="absolute top-full right-0 mt-2 w-48 rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 backdrop-blur-xl z-20 p-1.5"
+          style={{ animation: 'slideUp 0.2s ease-out' }}
+        >
+          <style>{`
+            @keyframes slideUp {
+              from { opacity: 0; transform: translateY(10px); }
+              to { opacity: 1; transform: translateY(0); }
+            }
+          `}</style>
+          <div className="space-y-1" role="menu">
             {allModels.map((model) => (
-              <button
+              <Button
                 key={model.name}
                 onClick={() => handleSelect(model.name)}
-                className={`flex items-center w-full text-left px-4 py-2 text-sm ${model.name === selectedModel.name
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'text-gray-700 hover:bg-gray-100'
-                  }`}
+                // Use secondary variant for active, menu-item (now dark) for others
+                variant={
+                  model.name === selectedModel.name
+                    ? 'secondary'
+                    : 'menu-item'
+                }
+                size="menu-item" // Use the menu-item size
+                className="w-full"
                 role="menuitem"
               >
                 {model.name}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
       )}
 
+      {/* This button already uses our dark 'secondary' variant, so it's consistent */}
       <Button
         onClick={() => setIsOpen(!isOpen)}
         variant="secondary"
         size="default"
         tooltip="Switch Model"
-        className="gap-2" 
+        className="gap-2"
         isActive={isOpen}
-        tooltipSide='bottom'
+        tooltipSide="bottom"
       >
         <Smartphone size={24} />
         <ChevronUp

@@ -23,7 +23,14 @@ interface CaptureControlsProps {
   onToggleTimeline: () => void;
 }
 
-export default function CaptureControls({ onCapture, isLoading = false, aspectRatio, onAspectRatioChange, showTimeline, onToggleTimeline }: CaptureControlsProps) {
+export default function CaptureControls({
+  onCapture,
+  isLoading = false,
+  aspectRatio,
+  onAspectRatioChange,
+  showTimeline,
+  onToggleTimeline,
+}: CaptureControlsProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleCaptureClick = () => {
@@ -38,63 +45,77 @@ export default function CaptureControls({ onCapture, isLoading = false, aspectRa
   return (
     <>
       <div className="relative">
-        {/* Dropdown Menu */}
+        {/* --- Dropdown Menu (UI MODIFIED) --- */}
         {isOpen && (
-          <div className="absolute bottom-14 right-0 mb-2 w-32 rounded-md shadow-lg bg-white ring-1 ring-opacity-5 overflow-hidden">            {aspectRatios.map((ratio) => (
-            <Button
-              key={ratio.value}
-              onClick={() => handleSelect(ratio.value)}
-              variant="menu-item"
-              size="menu-item"
-              className={cn(
-                'flex justify-between items-center',
-                ratio.value === aspectRatio ? 'bg-blue-100 text-blue-700' : ''
-              )}
-            >
-              {ratio.label}
-            </Button>
-          ))}
+          <div
+            className="absolute bottom-full right-0 mb-2 w-32 rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 backdrop-blur-xl z-20 p-1.5"
+            style={{ animation: 'slideUp 0.2s ease-out' }}
+          >
+            <style>{`
+              @keyframes slideUp {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+              }
+            `}</style>
+            <div className="space-y-1">
+              {aspectRatios.map((ratio) => (
+                <Button
+                  key={ratio.value}
+                  onClick={() => handleSelect(ratio.value)}
+                  // Use 'secondary' for active, 'menu-item' for inactive
+                  variant={
+                    ratio.value === aspectRatio ? 'secondary' : 'menu-item'
+                  }
+                  size="menu-item"
+                  className="w-full"
+                >
+                  {ratio.label}
+                </Button>
+              ))}
+            </div>
           </div>
         )}
 
-
-        {/* Main Button */}
+        {/* --- Main Button (UI MODIFIED) --- */}
         <Button
           onClick={() => setIsOpen(!isOpen)}
           disabled={isLoading}
-          variant="secondary"
-          size="default"
+          variant="secondary" // This will now use our dark 'secondary' style
+          size="default" // This is our 56x56 icon button
           isActive={isOpen}
           tooltip={!isLoading ? 'Aspect Ratio' : undefined}
-          className="w-28 justify-center"
+          tooltipSide="top"
+          className="w-28 justify-center rounded-full" // Changed to rounded-lg to fit text
         >
           {aspectRatio}
         </Button>
       </div>
+
+      {/* --- Timeline Button (UI MODIFIED) --- */}
       <Button
         onClick={onToggleTimeline}
-        variant="primary"
+        variant="secondary" // Changed to 'secondary' to match other controls
         size="default"
         tooltip="Video Animation"
+        tooltipSide="top"
         isActive={showTimeline}
       >
         {showTimeline ? (
-          // Use CircleStop for the "Stop" icon
-          <CircleStop className=" text-red-500" size={24} />
+          // Use a more standard icon, perhaps just Video with an "active" color
+          <Video className="text-blue-400" size={24} />
         ) : (
-          // Use Video for the "Record" icon
           <Video size={24} />
         )}
       </Button>
 
-
-      {/* Capture Button */}
+      {/* --- Capture Button (UI MODIFIED) --- */}
       <Button
         onClick={handleCaptureClick}
         disabled={isLoading}
-        variant="primary"
+        variant="primary" // This remains 'primary' as it's a main action
         size="default"
         tooltip={!isLoading ? 'Capture Image' : undefined}
+        tooltipSide="top"
       >
         {isLoading ? (
           <Loader2 size={24} className="animate-spin" />

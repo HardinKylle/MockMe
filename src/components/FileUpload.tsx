@@ -28,7 +28,10 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, previewUrl }) => 
       return;
     }
 
-    if (file && (file.type.startsWith('image/') || file.type.startsWith('video/'))) {
+    if (
+      file &&
+      (file.type.startsWith('image/') || file.type.startsWith('video/'))
+    ) {
       onFileUpload(file); // Forward the file to the parent hook
     } else if (file === null) {
       onFileUpload(null); // Notify parent to clear
@@ -73,7 +76,10 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, previewUrl }) => 
   const handleDragLeave = (e: DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.relatedTarget && (e.currentTarget as Node).contains(e.relatedTarget as Node)) {
+    if (
+      e.relatedTarget &&
+      (e.currentTarget as Node).contains(e.relatedTarget as Node)
+    ) {
       return;
     }
     setIsDragging(false);
@@ -90,12 +96,18 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, previewUrl }) => 
     fileInputRef.current?.click();
   };
 
- return (
+  return (
     <>
+      {/* --- UI MODIFIED: Using dark panel styles for the overlay --- */}
       {isDragging && (
         <div className="fixed inset-0 z-20 flex items-center justify-center pointer-events-none">
-          <div className="absolute inset-0 bg-black/30 backdrop-blur-md"></div>
-          <UploadCloud size={96} className="relative z-10 text-white" />
+          <div className="absolute inset-0 bg-linear-to-br from-slate-900/90 to-slate-800/90 backdrop-blur-md"></div>
+          <div className="flex flex-col items-center gap-4">
+            <UploadCloud size={96} className="relative z-10 text-white" />
+            <span className="relative z-10 text-2xl font-medium text-white">
+              Drop file to upload
+            </span>
+          </div>
         </div>
       )}
 
@@ -113,18 +125,20 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, previewUrl }) => 
               e.stopPropagation();
               handleRemove();
             }}
-            variant="danger"
+            variant="danger" // This will now use our dark 'danger' style
             size="default"
             tooltip="Remove file"
+            tooltipSide="bottom"
           >
             <X size={24} />
           </Button>
         ) : (
           <Button
             onClick={handleClick}
-            variant="primary"
+            variant="primary" // --- UI MODIFIED: Changed from primary to secondary ---
             size="default"
             tooltip="Upload file"
+            tooltipSide="top"
           >
             <Upload size={24} />
           </Button>

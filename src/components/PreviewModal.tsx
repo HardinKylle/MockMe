@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { X, Download, Check, Sparkles } from 'lucide-react';
+import { X, Download, Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
 interface PreviewModalProps {
@@ -14,7 +14,7 @@ export default function PreviewModal({ imageUrl, onClose }: PreviewModalProps) {
 
   const handleDownload = async () => {
     setIsDownloading(true);
-    await new Promise(resolve => setTimeout(resolve, 400));
+    await new Promise((resolve) => setTimeout(resolve, 400));
 
     const link = document.createElement('a');
     link.download = 'mockme-capture.png';
@@ -33,21 +33,19 @@ export default function PreviewModal({ imageUrl, onClose }: PreviewModalProps) {
     }
   };
 
-
-
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md" // Dark blur
       onClick={handleBackdropClick}
       style={{
-        background: 'rgba(0, 0, 0, 0.1)' // Light backdrop
+        background: 'rgba(2, 6, 23, 0.7)', // Dark backdrop (slate-900/70)
       }}
     >
       <div
-        className="bg-white rounded-3xl w-full max-w-3xl relative overflow-hidden"
+        // --- UI MODIFIED: Dark panel styles ---
+        className="w-full max-w-3xl relative rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 backdrop-blur-xl"
         style={{
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05)', // Lighter shadow, subtle border
-          animation: 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
+          animation: 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
         }}
       >
         <style>{`
@@ -63,35 +61,30 @@ export default function PreviewModal({ imageUrl, onClose }: PreviewModalProps) {
           }
         `}</style>
 
-        {/* Header with ambient glow */}
-        <div className="relative px-8 pt-8 pb-6">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 bg-blue-500/10 blur-2xl rounded-full" />
+        {/* Header */}
+        <div className="relative px-6 pt-6 pb-4 border-b border-slate-700/50">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-medium text-slate-100">
+              Mockup Preview
+            </h3>
 
-          <div className="relative flex items-start justify-between">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <h3 className="text-2xl font-semibold text-neutral-900">
-                  Mockup Preview
-                </h3>
-              </div>
-            </div>
-
+            {/* --- UI MODIFIED: Dark ghost button --- */}
             <Button
               onClick={onClose}
               variant="ghost"
               size="sm"
-              className="absolute right-2" // Use absolute positioning
+              className="absolute top-4 right-4" // Use absolute positioning
             >
-              <X size={20} strokeWidth={2} />
+              <X size={18} strokeWidth={2.5} />
             </Button>
           </div>
         </div>
 
-        <div className="px-8 pb-8">
-          {/* Premium Image Preview */}
+        <div className="p-6">
+          {/* Image Preview */}
           <div className="relative mb-6 group">
-            <div className="absolute -inset-1 bg-blue-500 rounded-2xl opacity-20 group-hover:opacity-30 blur transition-opacity duration-500" />
-            <div className="relative rounded-2xl overflow-hidden border border-neutral-200 bg-neutral-100">
+            {/* --- UI MODIFIED: Dark image background --- */}
+            <div className="relative rounded-lg overflow-hidden border border-slate-700/50 bg-slate-800/50">
               <div className="max-h-[60vh] flex items-center justify-center">
                 <img
                   src={imageUrl}
@@ -104,21 +97,24 @@ export default function PreviewModal({ imageUrl, onClose }: PreviewModalProps) {
 
           {/* Action Buttons */}
           <div className="flex gap-3">
+            {/* --- UI MODIFIED: Dark secondary button --- */}
             <Button
               onClick={onClose}
-              variant="secondary" // Use the white button style
+              variant="secondary"
               size="full"
-              className="rounded-full" // This is now handled by the base style
+              className="rounded-full"
             >
               Cancel
             </Button>
 
-            <button
+            {/* --- UI MODIFIED: Dark primary button --- */}
+            <Button
               onClick={handleDownload}
               disabled={isDownloading || downloaded}
-              className="flex-1 h-12 rounded-full font-semibold text-white bg-blue-950 flex items-center justify-center gap-2 relative overflow-hidden group shadow-lg hover:shadow-xl hover:bg-blue-900 transform transition-all duration-200 hover:scale-105"
+              variant="primary"
+              size="full"
+              className="gap-2"
             >
-              <div className="absolute inset-0" />
               {downloaded ? (
                 <>
                   <Check size={20} strokeWidth={2.5} />
@@ -126,7 +122,7 @@ export default function PreviewModal({ imageUrl, onClose }: PreviewModalProps) {
                 </>
               ) : isDownloading ? (
                 <>
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <Loader2 size={20} className="animate-spin" />
                   Downloading
                 </>
               ) : (
@@ -135,7 +131,7 @@ export default function PreviewModal({ imageUrl, onClose }: PreviewModalProps) {
                   Download PNG
                 </>
               )}
-            </button>
+            </Button>
           </div>
         </div>
       </div>
