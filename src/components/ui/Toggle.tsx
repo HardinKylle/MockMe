@@ -24,7 +24,7 @@ const Toggle = React.forwardRef<HTMLInputElement, ToggleProps>(
         )}
         <label
           htmlFor={finalId} // Use finalId
-          className="relative inline-flex items-center h-5 w-9 cursor-pointer flex-shrink-0"
+          className="relative inline-flex items-center h-5 w-9 cursor-pointer shrink-0"
         >
           <input
             type="checkbox"

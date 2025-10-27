@@ -135,7 +135,6 @@ export default function App() {
 
   const handleModelChange = (modelName: string) => {
     setModel(modelName);
-    handleFileUpload(null);
   };
 
   const handlePresetClick = (view: typeof presetViews[number]) => {
