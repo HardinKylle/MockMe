@@ -44,6 +44,8 @@ const defaultScene: AnimationScene = {
   animationType: 'spin',
 };
 
+const DEFAULT_TOTAL_DURATION = 10;
+
 export default function App() {
   const { uploadedFileUrl, uploadedFileType, videoDuration, handleFileUpload } =
     useUploadedFile();
@@ -101,11 +103,19 @@ export default function App() {
 
   // useEffect and handlers remain the same
   useEffect(() => {
-    if (videoDuration !== null) {
+    // Check if uploadedFileType is 'video' AND videoDuration is a valid number > 0
+    if (uploadedFileType === 'video' && videoDuration !== null && videoDuration > 0) {
       setTotalVideoDuration(videoDuration);
-      setShowTimeline(true);
+      setShowTimeline(true); // Show timeline for video
+    } else {
+      // If it's an image, no file, or video duration is invalid/zero
+      setTotalVideoDuration(DEFAULT_TOTAL_DURATION); // Reset to default 10
+      // Decide if timeline should hide based on file type, not just duration
+      if (uploadedFileType !== 'video') {
+         setShowTimeline(false); // Hide timeline if not a video
+      }
     }
-  }, [videoDuration, setTotalVideoDuration]);
+  }, [uploadedFileType, videoDuration]);
 
   const handleCapture = () => {
     setIsLoading(true);

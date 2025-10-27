@@ -5,64 +5,72 @@ export function useUploadedFile() {
   const [uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null);
   const [uploadedFileType, setUploadedFileType] = useState<'image' | 'video' | null>(null);
   const [videoDuration, setVideoDuration] = useState<number | null>(null);
+  const [internalFile, setInternalFile] = useState<File | null>(null); // Keep track of the file itself
 
   const handleFileUpload = (file: File | null) => {
+    // Revoke previous URL if it exists, before setting new state
+    if (uploadedFileUrl) {
+       URL.revokeObjectURL(uploadedFileUrl);
+       if (uploadedFileType === 'image') {
+         useTexture.clear(uploadedFileUrl);
+       }
+    }
+
+    setInternalFile(file); // Update internal file state
+
     if (file) {
-      // Create a new temporary URL for the selected file
       const fileUrl = URL.createObjectURL(file);
-      setUploadedFileUrl(fileUrl);
+      setUploadedFileUrl(fileUrl); // Set URL immediately
 
       if (file.type.startsWith('image/')) {
         setUploadedFileType('image');
-        setVideoDuration(null);
+        setVideoDuration(null); // Ensure duration is null for images
       } else if (file.type.startsWith('video/')) {
         setUploadedFileType('video');
-        
-        // Create a temporary video element to get its duration
         const video = document.createElement('video');
         video.preload = 'metadata';
-        
         video.onloadedmetadata = () => {
-          // Once metadata is loaded, we have the duration
+          // No need to revoke here, URL.createObjectURL creates a *new* reference
           setVideoDuration(video.duration);
         };
-        
-        video.src = fileUrl;
-
+        video.onerror = () => {
+          console.error("Error loading video metadata.");
+          setVideoDuration(null); // Reset duration on error
+        };
+        video.src = fileUrl; // Use the same URL created above
       } else {
-        // Not an image or video, clear everything
+        // Invalid file type
         setUploadedFileUrl(null);
         setUploadedFileType(null);
         setVideoDuration(null);
+        URL.revokeObjectURL(fileUrl); // Clean up the URL if type is invalid
+        setInternalFile(null); // Reset internal file state too
       }
-
     } else {
-      // User cleared the file
+      // File is null (cleared)
       setUploadedFileUrl(null);
       setUploadedFileType(null);
-      setVideoDuration(null);
+      setVideoDuration(null); // Reset duration when cleared
     }
   };
 
-  // Cleanup effect
+  // Cleanup effect: Only responsible for revoking the URL when the component unmounts
+  // or when uploadedFileUrl changes to a *new* valid URL (implicitly handled by handleFileUpload)
   useEffect(() => {
-    // Capture the current values for the cleanup function
-    const currentUrl = uploadedFileUrl;
+    const currentUrl = uploadedFileUrl; // Capture URL at the time effect runs
     const currentType = uploadedFileType;
 
+    // Return the cleanup function
     return () => {
       if (currentUrl) {
-        // If it was an image, tell drei to clear it from cache
-        if (currentType === 'image') {
-          useTexture.clear(currentUrl);
-        }
-        
-        // In all cases, revoke the object URL to prevent memory leaks
-        URL.revokeObjectURL(currentUrl);
+         console.log("Cleaning up URL:", currentUrl);
+         URL.revokeObjectURL(currentUrl);
+         if (currentType === 'image') {
+           useTexture.clear(currentUrl); // Clear drei cache if it was an image
+         }
       }
     };
-  }, [uploadedFileUrl, uploadedFileType]); // Effect depends on the URL and type
+  }, [uploadedFileUrl, uploadedFileType]); // Re-run if URL or type changes
 
-  // Return the state and the function for components to use
   return { uploadedFileUrl, uploadedFileType, videoDuration, handleFileUpload };
 }
