@@ -12,24 +12,24 @@ const buttonVariants = cva(
       variant: {
         primary:
           'bg-blue-950 text-white shadow-lg hover:shadow-xl hover:bg-blue-900 hover:scale-105 rounded-full',
-        // --- NEW/MODIFIED VARIANTS ---
+        // --- DARK THEME VARIANTS ---
         secondary:
           'bg-slate-700/50 text-slate-100 hover:bg-slate-600/50 border border-slate-600/50 shadow-sm',
         ghost: 'text-slate-400 hover:bg-slate-700/50 hover:text-slate-100',
         danger:
           'text-red-500 hover:bg-red-500/10 hover:text-red-400 disabled:text-red-500/50 disabled:hover:bg-transparent',
-        // --- END NEW/MODIFIED VARIANTS ---
+        // --- END DARK THEME VARIANTS ---
         'menu-item':
           'w-full justify-start text-left px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-none disabled:opacity-50',
       },
       // Different button sizes
       size: {
+        // --- CONSISTENT SIZES ---
         default: 'p-4 rounded-full', // Your standard 56x56 icon button
-        // --- NEW/MODIFIED SIZES ---
         md: 'h-8 px-3 text-xs rounded-md', // For SceneEditorPanel
         sm: 'h-7 w-7 rounded-md', // For SceneEditorPanel icons
         xs: 'h-6 px-2 text-xs rounded-md', // For TimelinePanel
-        // --- END NEW/MODIFIED SIZES ---
+        // --- END CONSISTENT SIZES ---
         full: 'h-12 flex-1 rounded-md',
         'menu-item': 'h-auto',
       },

@@ -4,8 +4,10 @@ import { Sliders, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
+import { Toggle } from '@/components/ui/Toggle'; // <-- Still imported
 
 interface CameraControlsProps {
+  // ... all props remain the same
   cameraPosition: [number, number, number];
   cameraTarget: [number, number, number];
   cameraFov: number;
@@ -16,7 +18,7 @@ interface CameraControlsProps {
   directionalIntensity: number;
   directionalPosition: [number, number, number];
   environmentIntensity: number;
-  screenReflection: boolean; 
+  screenReflection: boolean;
   onCameraPositionChange: (position: [number, number, number]) => void;
   onCameraTargetChange: (target: [number, number, number]) => void;
   onCameraFovChange: (fov: number) => void;
@@ -32,6 +34,7 @@ interface CameraControlsProps {
 }
 
 export default function CameraControlsPanel({
+  // ... all props remain the same
   cameraPosition,
   cameraTarget,
   cameraFov,
@@ -108,7 +111,7 @@ export default function CameraControlsPanel({
       {isOpen && (
         <div
           ref={panelRef}
-          className="absolute top-full mt-2 right-0 w-80 bg-white rounded-2xl shadow-2xl overflow-hidden z-20 border border-gray-100 max-h-[80vh] overflow-y-auto"
+          className="absolute top-full mt-2 right-0 w-80 rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 backdrop-blur-xl z-20 max-h-[75vh] overflow-y-auto"
           style={{ animation: 'slideUp 0.2s ease-out' }}
         >
           <style>{`
@@ -125,16 +128,20 @@ export default function CameraControlsPanel({
           `}</style>
 
           {/* Header */}
-          <div className="px-4 pt-4 pb-3 border-b border-gray-100 sticky top-0 bg-white z-10">
+          <div className="px-4 pt-3 pb-3 border-b border-slate-700/50 sticky top-0 bg-slate-900/80 backdrop-blur-md z-10">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-gray-900">Scene Controls</h3>
+              <h3 className="text-sm font-medium text-slate-100">
+                Scene Controls
+              </h3>
               <Button
                 type="button"
                 onClick={onReset}
                 variant="ghost"
                 size="sm"
+                tooltip="Reset All"
+                tooltipSide="left"
               >
-                <RotateCcw size={18} />
+                <RotateCcw size={16} />
               </Button>
             </div>
           </div>
@@ -142,46 +149,60 @@ export default function CameraControlsPanel({
           <div className="p-4 space-y-6">
             {/* Camera Section */}
             <section>
-              <h4 className="text-xs font-semibold text-gray-700 mb-3 uppercase tracking-wider">Camera</h4>
-              
+              <h4 className="text-xs font-semibold text-slate-400 mb-3 uppercase tracking-wider">
+                Camera
+              </h4>
+
               {/* Camera Position */}
               <div className="space-y-2 mb-3">
-                <Label className="text-gray-700">Position</Label>
+                <Label className="text-xs">Position</Label>
                 <div className="grid grid-cols-3 gap-2">
                   <div>
-                    <Label className="text-[9px] text-gray-500">X</Label>
+                    <Label className="text-[10px]">X</Label>
                     <Input
                       type="number"
                       step="0.1"
                       value={cameraPosition[0]}
                       onChange={(e) =>
-                        handleVector3Change(e.target.value, 0, cameraPosition, onCameraPositionChange)
+                        handleVector3Change(
+                          e.target.value,
+                          0,
+                          cameraPosition,
+                          onCameraPositionChange
+                        )
                       }
-                      className="bg-gray-50 border-gray-200 text-gray-900"
                     />
                   </div>
                   <div>
-                    <Label className="text-[9px] text-gray-500">Y</Label>
+                    <Label className="text-[10px]">Y</Label>
                     <Input
                       type="number"
                       step="0.1"
                       value={cameraPosition[1]}
                       onChange={(e) =>
-                        handleVector3Change(e.target.value, 1, cameraPosition, onCameraPositionChange)
+                        handleVector3Change(
+                          e.target.value,
+                          1,
+                          cameraPosition,
+                          onCameraPositionChange
+                        )
                       }
-                      className="bg-gray-50 border-gray-200 text-gray-900"
                     />
                   </div>
                   <div>
-                    <Label className="text-[9px] text-gray-500">Z</Label>
+                    <Label className="text-[10px]">Z</Label>
                     <Input
                       type="number"
                       step="0.1"
                       value={cameraPosition[2]}
                       onChange={(e) =>
-                        handleVector3Change(e.target.value, 2, cameraPosition, onCameraPositionChange)
+                        handleVector3Change(
+                          e.target.value,
+                          2,
+                          cameraPosition,
+                          onCameraPositionChange
+                        )
                       }
-                      className="bg-gray-50 border-gray-200 text-gray-900"
                     />
                   </div>
                 </div>
@@ -189,42 +210,54 @@ export default function CameraControlsPanel({
 
               {/* Camera Target */}
               <div className="space-y-2 mb-3">
-                <Label className="text-gray-700">Target</Label>
+                <Label className="text-xs">Target</Label>
                 <div className="grid grid-cols-3 gap-2">
                   <div>
-                    <Label className="text-[9px] text-gray-500">X</Label>
+                    <Label className="text-[10px]">X</Label>
                     <Input
                       type="number"
                       step="0.1"
                       value={cameraTarget[0]}
                       onChange={(e) =>
-                        handleVector3Change(e.target.value, 0, cameraTarget, onCameraTargetChange)
+                        handleVector3Change(
+                          e.target.value,
+                          0,
+                          cameraTarget,
+                          onCameraTargetChange
+                        )
                       }
-                      className="bg-gray-50 border-gray-200 text-gray-900"
                     />
                   </div>
                   <div>
-                    <Label className="text-[9px] text-gray-500">Y</Label>
+                    <Label className="text-[10px]">Y</Label>
                     <Input
                       type="number"
                       step="0.1"
                       value={cameraTarget[1]}
                       onChange={(e) =>
-                        handleVector3Change(e.target.value, 1, cameraTarget, onCameraTargetChange)
+                        handleVector3Change(
+                          e.target.value,
+                          1,
+                          cameraTarget,
+                          onCameraTargetChange
+                        )
                       }
-                      className="bg-gray-50 border-gray-200 text-gray-900"
                     />
                   </div>
                   <div>
-                    <Label className="text-[9px] text-gray-500">Z</Label>
+                    <Label className="text-[10px]">Z</Label>
                     <Input
                       type="number"
                       step="0.1"
                       value={cameraTarget[2]}
                       onChange={(e) =>
-                        handleVector3Change(e.target.value, 2, cameraTarget, onCameraTargetChange)
+                        handleVector3Change(
+                          e.target.value,
+                          2,
+                          cameraTarget,
+                          onCameraTargetChange
+                        )
                       }
-                      className="bg-gray-50 border-gray-200 text-gray-900"
                     />
                   </div>
                 </div>
@@ -232,7 +265,7 @@ export default function CameraControlsPanel({
 
               {/* FOV */}
               <div className="space-y-2">
-                <Label className="text-gray-700">Field of View</Label>
+                <Label className="text-xs">Field of View</Label>
                 <Input
                   type="number"
                   step="1"
@@ -243,53 +276,66 @@ export default function CameraControlsPanel({
                     const val = parseFloat(e.target.value);
                     if (!isNaN(val)) onCameraFovChange(val);
                   }}
-                  className="bg-gray-50 border-gray-200 text-gray-900"
                 />
               </div>
             </section>
 
             {/* Model Transform Section */}
             <section>
-              <h4 className="text-xs font-semibold text-gray-700 mb-3 uppercase tracking-wider">Model Transform</h4>
-              
+              <h4 className="text-xs font-semibold text-slate-400 mb-3 uppercase tracking-wider">
+                Model Transform
+              </h4>
+
               {/* Model Position */}
               <div className="space-y-2 mb-3">
-                <Label className="text-gray-700">Position</Label>
+                <Label className="text-xs">Position</Label>
                 <div className="grid grid-cols-3 gap-2">
                   <div>
-                    <Label className="text-[9px] text-gray-500">X</Label>
+                    <Label className="text-[10px]">X</Label>
                     <Input
                       type="number"
                       step="0.1"
                       value={modelPosition[0]}
                       onChange={(e) =>
-                        handleVector3Change(e.target.value, 0, modelPosition, onModelPositionChange)
+                        handleVector3Change(
+                          e.target.value,
+                          0,
+                          modelPosition,
+                          onModelPositionChange
+                        )
                       }
-                      className="bg-gray-50 border-gray-200 text-gray-900"
                     />
                   </div>
                   <div>
-                    <Label className="text-[9px] text-gray-500">Y</Label>
+                    <Label className="text-[10px]">Y</Label>
                     <Input
                       type="number"
                       step="0.1"
                       value={modelPosition[1]}
                       onChange={(e) =>
-                        handleVector3Change(e.target.value, 1, modelPosition, onModelPositionChange)
+                        handleVector3Change(
+                          e.target.value,
+                          1,
+                          modelPosition,
+                          onModelPositionChange
+                        )
                       }
-                      className="bg-gray-50 border-gray-200 text-gray-900"
                     />
                   </div>
                   <div>
-                    <Label className="text-[9px] text-gray-500">Z</Label>
+                    <Label className="text-[10px]">Z</Label>
                     <Input
                       type="number"
                       step="0.1"
                       value={modelPosition[2]}
                       onChange={(e) =>
-                        handleVector3Change(e.target.value, 2, modelPosition, onModelPositionChange)
+                        handleVector3Change(
+                          e.target.value,
+                          2,
+                          modelPosition,
+                          onModelPositionChange
+                        )
                       }
-                      className="bg-gray-50 border-gray-200 text-gray-900"
                     />
                   </div>
                 </div>
@@ -297,10 +343,10 @@ export default function CameraControlsPanel({
 
               {/* Model Rotation */}
               <div className="space-y-2 mb-3">
-                <Label className="text-gray-700">Rotation (degrees)</Label>
+                <Label className="text-xs">Rotation (degrees)</Label>
                 <div className="grid grid-cols-3 gap-2">
                   <div>
-                    <Label className="text-[9px] text-gray-500">X</Label>
+                    <Label className="text-[10px]">X</Label>
                     <Input
                       type="number"
                       step="1"
@@ -317,11 +363,10 @@ export default function CameraControlsPanel({
                           );
                         }
                       }}
-                      className="bg-gray-50 border-gray-200 text-gray-900"
                     />
                   </div>
                   <div>
-                    <Label className="text-[9px] text-gray-500">Y</Label>
+                    <Label className="text-[10px]">Y</Label>
                     <Input
                       type="number"
                       step="1"
@@ -338,11 +383,10 @@ export default function CameraControlsPanel({
                           );
                         }
                       }}
-                      className="bg-gray-50 border-gray-200 text-gray-900"
                     />
                   </div>
                   <div>
-                    <Label className="text-[9px] text-gray-500">Z</Label>
+                    <Label className="text-[10px]">Z</Label>
                     <Input
                       type="number"
                       step="1"
@@ -359,7 +403,6 @@ export default function CameraControlsPanel({
                           );
                         }
                       }}
-                      className="bg-gray-50 border-gray-200 text-gray-900"
                     />
                   </div>
                 </div>
@@ -367,7 +410,7 @@ export default function CameraControlsPanel({
 
               {/* Model Scale */}
               <div className="space-y-2">
-                <Label className="text-gray-700">Scale</Label>
+                <Label className="text-xs">Scale</Label>
                 <Input
                   type="number"
                   step="0.1"
@@ -377,18 +420,19 @@ export default function CameraControlsPanel({
                     const val = parseFloat(e.target.value);
                     if (!isNaN(val) && val > 0) onModelScaleChange(val);
                   }}
-                  className="bg-gray-50 border-gray-200 text-gray-900"
                 />
               </div>
             </section>
 
             {/* Lighting Section */}
             <section>
-              <h4 className="text-xs font-semibold text-gray-700 mb-3 uppercase tracking-wider">Lighting</h4>
-              
+              <h4 className="text-xs font-semibold text-slate-400 mb-3 uppercase tracking-wider">
+                Lighting
+              </h4>
+
               {/* Ambient Light */}
               <div className="space-y-2 mb-3">
-                <Label className="text-gray-700">Ambient Intensity</Label>
+                <Label className="text-xs">Ambient Intensity</Label>
                 <Input
                   type="number"
                   step="0.1"
@@ -399,13 +443,12 @@ export default function CameraControlsPanel({
                     const val = parseFloat(e.target.value);
                     if (!isNaN(val)) onAmbientIntensityChange(val);
                   }}
-                  className="bg-gray-50 border-gray-200 text-gray-900"
                 />
               </div>
 
               {/* Directional Light Intensity */}
               <div className="space-y-2 mb-3">
-                <Label className="text-gray-700">Directional Intensity</Label>
+                <Label className="text-xs">Directional Intensity</Label>
                 <Input
                   type="number"
                   step="0.1"
@@ -416,16 +459,15 @@ export default function CameraControlsPanel({
                     const val = parseFloat(e.target.value);
                     if (!isNaN(val)) onDirectionalIntensityChange(val);
                   }}
-                  className="bg-gray-50 border-gray-200 text-gray-900"
                 />
               </div>
 
               {/* Directional Light Position */}
               <div className="space-y-2 mb-3">
-                <Label className="text-gray-700">Directional Position</Label>
+                <Label className="text-xs">Directional Position</Label>
                 <div className="grid grid-cols-3 gap-2">
                   <div>
-                    <Label className="text-[9px] text-gray-500">X</Label>
+                    <Label className="text-[10px]">X</Label>
                     <Input
                       type="number"
                       step="0.5"
@@ -438,11 +480,10 @@ export default function CameraControlsPanel({
                           onDirectionalPositionChange
                         )
                       }
-                      className="bg-gray-50 border-gray-200 text-gray-900"
                     />
                   </div>
                   <div>
-                    <Label className="text-[9px] text-gray-500">Y</Label>
+                    <Label className="text-[10px]">Y</Label>
                     <Input
                       type="number"
                       step="0.5"
@@ -455,11 +496,10 @@ export default function CameraControlsPanel({
                           onDirectionalPositionChange
                         )
                       }
-                      className="bg-gray-50 border-gray-200 text-gray-900"
                     />
                   </div>
                   <div>
-                    <Label className="text-[9px] text-gray-500">Z</Label>
+                    <Label className="text-[10px]">Z</Label>
                     <Input
                       type="number"
                       step="0.5"
@@ -472,7 +512,6 @@ export default function CameraControlsPanel({
                           onDirectionalPositionChange
                         )
                       }
-                      className="bg-gray-50 border-gray-200 text-gray-900"
                     />
                   </div>
                 </div>
@@ -480,7 +519,7 @@ export default function CameraControlsPanel({
 
               {/* Environment Intensity */}
               <div className="space-y-2">
-                <Label className="text-gray-700">Environment Intensity</Label>
+                <Label className="text-xs">Environment Intensity</Label>
                 <Input
                   type="number"
                   step="0.1"
@@ -491,20 +530,16 @@ export default function CameraControlsPanel({
                     const val = parseFloat(e.target.value);
                     if (!isNaN(val)) onEnvironmentIntensityChange(val);
                   }}
-                  className="bg-gray-50 border-gray-200 text-gray-900"
                 />
               </div>
 
-              <div className="flex items-center justify-between pt-2">
-                <Label htmlFor="screen-reflection" className="text-gray-700">
-                  Screen Reflection
-                </Label>
-                <input
+              {/* --- MODIFIED: Use Toggle component's built-in label --- */}
+              <div className="pt-4">
+                <Toggle
                   id="screen-reflection"
-                  type="checkbox"
+                  label="Screen Reflection" // Pass the label text here
                   checked={screenReflection}
                   onChange={(e) => onScreenReflectionChange(e.target.checked)}
-                  className="h-5 w-5 rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500"
                 />
               </div>
             </section>
