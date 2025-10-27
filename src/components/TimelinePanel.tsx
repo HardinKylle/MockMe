@@ -116,11 +116,10 @@ export default function TimelinePanel({
 
   return (
     <div
-      className={`fixed bottom-40 lg:bottom-4 left-1/2 z-20 w-[480px] max-w-[90vw] rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 backdrop-blur-xl transition-all duration-300 ease-out ${
-        isVisible
-          ? 'opacity-100 -translate-x-1/2 translate-y-0'
-          : 'opacity-0 -translate-x-1/2 translate-y-10 pointer-events-none'
-      }`}
+      className={`fixed bottom-40 lg:bottom-4 left-1/2 z-20 w-[480px] max-w-[90vw] rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 backdrop-blur-xl transition-all duration-300 ease-out ${isVisible
+        ? 'opacity-100 -translate-x-1/2 translate-y-0'
+        : 'opacity-0 -translate-x-1/2 translate-y-10 pointer-events-none'
+        }`}
     >
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-1.5 border-b border-slate-700/50">
@@ -147,7 +146,7 @@ export default function TimelinePanel({
           className="h-6 px-2 rounded bg-slate-700/50 hover:bg-slate-600/50 transition-colors flex items-center gap-1.5"
           onClick={onAddScene}
         >
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-4">
             <Plus className="h-4 w-4 text-slate-300" />
           </div>
         </Button>
@@ -155,7 +154,7 @@ export default function TimelinePanel({
 
       {/* Track Container */}
       <div ref={scrollContainerRef} className="overflow-x-auto">
-        <div className="p-2.5">
+        <div className="p-2.5 pt-7">
           <div className="flex gap-2">
             {/* 1. The Label Column */}
             <div className="w-16 shrink-0 space-y-2">
@@ -172,16 +171,18 @@ export default function TimelinePanel({
             </div>
 
             {/* 2. The Track Column */}
-            <div
+           <div
               ref={trackContainerRef}
               className="flex-1 relative space-y-2"
             >
               <div
-                className="playhead-draggable absolute -top-1 -bottom-1 w-0.5 bg-red-500 z-30"
+                className="absolute -top-3 -bottom-1 w-0.5 bg-red-500 z-30 pointer-events-none"
                 style={{ left: `${playheadPercent}%` }}
-                onMouseDown={handleMouseDown}
               >
-                <div className="absolute -top-1 -left-2 w-4 h-4 rounded-full bg-red-500 border-2 border-white pointer-events-none" />
+                <div 
+                  className="playhead-draggable absolute -top-2 -left-2 w-4 h-4 rounded-full bg-red-500 border-2 border-white pointer-events-auto" 
+                  onMouseDown={handleMouseDown}
+                />
               </div>
 
               <AnimationTrack

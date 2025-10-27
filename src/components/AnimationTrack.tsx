@@ -29,7 +29,7 @@ export default function AnimationTrack({
           <div
             key={scene.id}
             onClick={() => onSelectScene(scene.id)}
-            className={`absolute top-1 bottom-1 rounded cursor-pointer bg-linear-to-r from-blue-500 to-blue-600 border border-blue-400/50 hover:border-blue-300/60 flex items-center justify-center px-2 shadow-sm hover:shadow-lg shadow-inner ${
+            className={`absolute top-1 bottom-1 rounded cursor-pointer bg-linear-to-r from-blue-500 to-blue-600 border border-blue-400/50 hover:border-blue-300/60 flex items-center justify-center px-2  hover:shadow-lg shadow-inner ${
               selectedSceneId === scene.id
                 ? 'ring-1 ring-yellow-400 z-10'
                 : ''
