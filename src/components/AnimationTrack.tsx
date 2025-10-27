@@ -21,23 +21,23 @@ export default function AnimationTrack({
 }: AnimationTrackProps) {
   return (
     <div className="relative">
-      <div className="absolute inset-0 bg-slate-800/80 rounded border border-slate-700" />
+      {/* Base track background */}
+      <div className="absolute inset-0 bg-slate-800/80 rounded border border-slate-700/80" />
 
-      {/* Container no longer needs padding */}
+      {/* Container for clips */}
       <div className="relative h-8 rounded">
         {scenes.map((scene, index) => (
           <div
             key={scene.id}
             onClick={() => onSelectScene(scene.id)}
-            className={`absolute top-1 bottom-1 rounded cursor-pointer bg-linear-to-r from-blue-500 to-blue-600 border border-blue-400/50 hover:border-blue-300/60 flex items-center justify-center px-2  hover:shadow-lg shadow-inner ${
-              selectedSceneId === scene.id
-                ? 'ring-1 ring-yellow-400 z-10'
-                : ''
-            } 
-              z-10`}
+            className={`absolute top-1 bottom-1 rounded cursor-pointer flex items-center justify-center px-2 shadow-inner transition-all duration-150 ease-out
+              ${
+                selectedSceneId === scene.id
+                  ? 'bg-blue-600 border border-blue-400/80 ring-1 ring-yellow-400 z-20' // Selected state
+                  : 'bg-linear-to-r from-slate-600 to-slate-500 border border-slate-400/50 hover:border-slate-300/60 z-10' // Default state
+              } 
+            `}
             style={{
-              // --- STYLE MODIFIED ---
-              // Removed the 'calc()' functions for precise spacing
               left: `${getClipLeftPercent(index, scenes)}%`,
               width: `${getClipWidthPercent(scene.duration)}%`,
             }}
