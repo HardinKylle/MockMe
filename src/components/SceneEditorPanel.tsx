@@ -1,22 +1,39 @@
 'use client';
 
-import { AnimationScene, CameraView, AnimationType, CustomAnimationType, PresetAnimationType } from '@/types/animation';
+import {
+  AnimationScene,
+  CameraView,
+  AnimationType,
+  CustomAnimationType,
+  PresetAnimationType,
+} from '@/types/animation';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 import { Label } from './ui/Label';
 import { Select } from './ui/Select';
-import { CameraIcon, SunsetIcon, ViewIcon, CheckIcon, Trash2Icon, ArrowLeft, ArrowRight } from 'lucide-react';
+import {
+  CameraIcon,
+  SunsetIcon,
+  ViewIcon,
+  CheckIcon,
+  Trash2Icon,
+  ArrowLeft,
+  ArrowRight,
+  CameraOff,
+} from 'lucide-react';
 import { SceneApi } from './Scene';
 import React, { useState, useEffect } from 'react';
 
 const MIN_DURATION = 1;
 
 // --- Helper Types for Animation Dropdowns ---
-// Explicitly list the types for our new dropdowns
 const customAnimationTypes: CustomAnimationType[] = ['hold', 'custom'];
-const presetAnimationTypes: PresetAnimationType[] = ['spin', 'dolly-pan-up', 'reveal-from-top'];
+const presetAnimationTypes: PresetAnimationType[] = [
+  'spin',
+  'dolly-pan-up',
+  'reveal-from-top',
+];
 
-// Type guard functions to check which category is active
 const isCustomAnim = (
   type: AnimationType
 ): type is CustomAnimationType =>
@@ -28,6 +45,13 @@ const isPresetAnim = (
   presetAnimationTypes.includes(type as PresetAnimationType);
 // --- End Helper Types ---
 
+// --- *** MODIFIED: formatView now only shows Position *** ---
+const formatView = (view: CameraView | undefined | null) => {
+  if (!view) return 'Not Set';
+  // Only show the position
+  return `P:[${view.position.map((p) => p.toFixed(1)).join(', ')}]`;
+};
+// --- *** END MODIFICATION *** ---
 
 interface SceneEditorPanelProps {
   isVisible: boolean;
@@ -41,17 +65,14 @@ interface SceneEditorPanelProps {
   sceneCount: number;
   scenes: AnimationScene[];
   onReorderScenes: (scenes: AnimationScene[]) => void;
-
 }
 
-// Helper function to reorder array
 function reorder<T>(list: T[], startIndex: number, endIndex: number): T[] {
   const result = Array.from(list);
   const [removed] = result.splice(startIndex, 1);
   result.splice(endIndex, 0, removed);
   return result;
 }
-
 
 export default function SceneEditorPanel({
   isVisible,
@@ -60,7 +81,7 @@ export default function SceneEditorPanel({
   sceneRef,
   onDeleteScene,
   sceneCount,
-  scenes,              
+  scenes,
   onReorderScenes,
 }: SceneEditorPanelProps) {
   const [showSavedMessage, setShowSavedMessage] = useState(false);
@@ -68,6 +89,12 @@ export default function SceneEditorPanel({
     selectedScene.duration.toString()
   );
   const currentIndex = scenes.findIndex((s) => s.id === selectedScene.id);
+
+  const activeCategory = isCustomAnim(selectedScene.animationType)
+    ? 'custom'
+    : isPresetAnim(selectedScene.animationType)
+    ? 'preset'
+    : 'custom';
 
   useEffect(() => {
     setDurationInput(selectedScene.duration.toString());
@@ -77,12 +104,9 @@ export default function SceneEditorPanel({
 
   const handleMove = (direction: 'left' | 'right') => {
     const newIndex = direction === 'left' ? currentIndex - 1 : currentIndex + 1;
-
-    // Check bounds
     if (newIndex < 0 || newIndex >= scenes.length) {
       return;
     }
-
     const newScenes = reorder(scenes, currentIndex, newIndex);
     onReorderScenes(newScenes);
   };
@@ -91,21 +115,21 @@ export default function SceneEditorPanel({
     const view = sceneRef.current?.getView();
     if (view) {
       onUpdateScene(selectedScene.id, { [type]: view });
-
       setShowSavedMessage(true);
-      // Automatically hide it after 1.5 seconds
       setTimeout(() => {
         setShowSavedMessage(false);
       }, 1500);
     }
   };
 
+  const handleClearView = (viewType: 'startView' | 'endView') => {
+    onUpdateScene(selectedScene.id, { [viewType]: undefined });
+  };
+
   const handleDurationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
-    setDurationInput(val); // Allow user to type empty string, "1.", etc.
-
+    setDurationInput(val);
     const parsedVal = parseFloat(val);
-    // If it's a valid number, update the parent state immediately
     if (!isNaN(parsedVal) && parsedVal > 0) {
       onUpdateScene(selectedScene.id, { duration: parsedVal });
     }
@@ -113,19 +137,16 @@ export default function SceneEditorPanel({
 
   const handleDurationBlur = () => {
     const parsedVal = parseFloat(durationInput);
-    // If the value is invalid or empty when user clicks away,
-    // reset it to the minimum duration.
     if (isNaN(parsedVal) || parsedVal < MIN_DURATION) {
       onUpdateScene(selectedScene.id, { duration: MIN_DURATION });
     } else {
-      // Otherwise, just make sure the parent is set
       onUpdateScene(selectedScene.id, { duration: parsedVal });
     }
   };
 
-return (
+  return (
     <div
-     className={`z-20 w-60 rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 backdrop-blur-xl transition-all duration-300 ease-out ${
+      className={`z-20 w-60 rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 backdrop-blur-xl transition-all duration-300 ease-out ${
         isVisible
           ? 'opacity-100 translate-y-0'
           : 'opacity-0 translate-y-10 pointer-events-none'
@@ -147,9 +168,8 @@ return (
         </div>
 
         <Button
-          variant="ghost"
+          variant="danger"
           size="sm"
-          className="h-6 w-6 text-red-400 hover:bg-red-500/10 hover:text-red-300"
           onClick={() => onDeleteScene(selectedScene.id)}
           disabled={sceneCount <= 1}
           tooltip="Delete Scene"
@@ -163,7 +183,9 @@ return (
       <div className="p-3 space-y-3">
         {/* Name */}
         <div className="space-y-1.5">
-          <Label htmlFor="scene-name">Name</Label>
+          <Label htmlFor="scene-name" className="text-xs">
+            Name
+          </Label>
           <Input
             id="scene-name"
             value={selectedScene.name}
@@ -175,117 +197,207 @@ return (
 
         {/* Duration */}
         <div className="space-y-1.5">
-          <Label htmlFor="scene-duration">Duration (s)</Label>
+          <Label htmlFor="scene-duration" className="text-xs">
+            Duration (s)
+          </Label>
           <Input
             id="scene-duration"
             type="number"
             step="0.1"
-            min={MIN_DURATION} // Set min
-            value={durationInput} // Use local string state
-            onChange={handleDurationChange} // Use new handler
-            onBlur={handleDurationBlur} // Add blur handler
+            min={MIN_DURATION}
+            value={durationInput}
+            onChange={handleDurationChange}
+            onBlur={handleDurationBlur}
           />
         </div>
 
-
-        {/* Custom Animations */}
+        {/* Animation Type Toggle */}
         <div className="space-y-1.5">
-          <Label htmlFor="scene-custom-animation">Custom Animations</Label>
-          <Select
-            id="scene-custom-animation"
-            value={
-              isCustomAnim(selectedScene.animationType)
-                ? selectedScene.animationType
-                : ''
-            }
-            onChange={(e) => {
-              if (e.target.value) {
+          <Label className="text-xs">Animation Type</Label>
+          <div className="grid grid-cols-2 gap-1">
+            <Button
+              variant={activeCategory === 'custom' ? 'secondary' : 'ghost'}
+              size="md"
+              onClick={() => {
+                if (!isCustomAnim(selectedScene.animationType)) {
+                  onUpdateScene(selectedScene.id, {
+                    animationType: customAnimationTypes[0],
+                  });
+                }
+              }}
+              className="w-full"
+            >
+              Custom
+            </Button>
+            <Button
+              variant={activeCategory === 'preset' ? 'secondary' : 'ghost'}
+              size="md"
+              onClick={() => {
+                if (!isPresetAnim(selectedScene.animationType)) {
+                  onUpdateScene(selectedScene.id, {
+                    animationType: presetAnimationTypes[0],
+                  });
+                }
+              }}
+              className="w-full"
+            >
+              Preset
+            </Button>
+          </div>
+        </div>
+
+        {/* Custom Animations Dropdown (Conditional) */}
+        {activeCategory === 'custom' && (
+          <div className="space-y-1.5 animate-in fade-in-0 duration-200">
+            <Label htmlFor="scene-custom-animation" className="text-xs">
+              Custom Type
+            </Label>
+            <Select
+              id="scene-custom-animation"
+              value={selectedScene.animationType}
+              onChange={(e) => {
                 onUpdateScene(selectedScene.id, {
                   animationType: e.target.value as CustomAnimationType,
                 });
-              }
-            }}
-          >
-            <option value="" disabled>
-              Select custom...
-            </option>
-            <option value="hold">Hold View</option>
-            <option value="custom">Custom View</option>
-          </Select>
-        </div>
+              }}
+            >
+              <option value="hold">Hold View</option>
+              <option value="custom">Custom View</option>
+            </Select>
+          </div>
+        )}
 
-        {/* Preset Animations */}
-        <div className="space-y-1.5">
-          <Label htmlFor="scene-preset-animation">Preset Animations</Label>
-          <Select
-            id="scene-preset-animation"
-            value={
-              isPresetAnim(selectedScene.animationType)
-                ? selectedScene.animationType
-                : ''
-            }
-            onChange={(e) => {
-              if (e.target.value) {
+        {/* Preset Animations Dropdown (Conditional) */}
+        {activeCategory === 'preset' && (
+          <div className="space-y-1.5 animate-in fade-in-0 duration-200">
+            <Label htmlFor="scene-preset-animation" className="text-xs">
+              Preset Type
+            </Label>
+            <Select
+              id="scene-preset-animation"
+              value={selectedScene.animationType}
+              onChange={(e) => {
                 onUpdateScene(selectedScene.id, {
                   animationType: e.target.value as PresetAnimationType,
                 });
-              }
-            }}
-          >
-            <option value="" disabled>
-              Select preset animations
-            </option>
-            <option value="spin">Spin</option>
-            <option value="dolly-pan-up">Dolly Pan Up</option>
-            <option value="reveal-from-top">Reveal From Top</option>
-          </Select>
-        </div>
+              }}
+            >
+              <option value="spin">Spin</option>
+              <option value="dolly-pan-up">Dolly Pan Up</option>
+              <option value="reveal-from-top">Reveal From Top</option>
+            </Select>
+          </div>
+        )}
 
-
+        {/* 'hold' section */}
         {selectedScene.animationType === 'hold' && (
-          <div className="space-y-2 pt-2 border-t border-slate-700/50">
-            <Button
-              variant="secondary"
-              className="w-full"
-              onClick={() => handleSetView('startView')}
-            >
-              <ViewIcon className="h-4 w-4 mr-2" />
-              Set View
-            </Button>
+          <div className="space-y-2 pt-2 border-t border-slate-700/50 animate-in fade-in-0 duration-200">
+            <Label className="text-xs">Camera View</Label>
+            <div className="flex items-center gap-1.5">
+              <Button
+                variant="secondary"
+                size="md"
+                className="flex-1"
+                onClick={() => handleSetView('startView')}
+              >
+                <ViewIcon className="h-4 w-4 mr-2" />
+                Set View
+              </Button>
+              {selectedScene.startView && (
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={() => handleClearView('startView')}
+                  tooltip="Clear View"
+                  tooltipSide="right"
+                >
+                  <CameraOff className="h-3.5 w-3.5" />
+                </Button>
+              )}
+            </div>
+            {/* Coordinate Display (Only P) */}
+            <p className="text-[10px] text-slate-400 truncate leading-tight">
+              {formatView(selectedScene.startView)}
+            </p>
           </div>
         )}
 
-        {/* This conditional logic also still works perfectly! */}
+        {/* 'custom' section */}
         {selectedScene.animationType === 'custom' && (
-          <div className="space-y-2 pt-2 border-t border-slate-700/50">
-            <Button
-              variant="secondary"
-              className="w-full"
-              onClick={() => handleSetView('startView')}
-            >
-              <CameraIcon className="h-4 w-4 mr-2" />
-              Set Start View
-            </Button>
-            <Button
-              variant="secondary"
-              className="w-full"
-              onClick={() => handleSetView('endView')}
-            >
-              <SunsetIcon className="h-4 w-4 mr-2" />
-              Set End View
-            </Button>
+          <div className="space-y-3 pt-2 border-t border-slate-700/50 animate-in fade-in-0 duration-200">
+            {/* Start View */}
+            <div className="space-y-1.5">
+              <Label className="text-xs">Start View</Label>
+              <div className="flex items-center gap-1.5">
+                <Button
+                  variant="secondary"
+                  size="md"
+                  className="flex-1"
+                  onClick={() => handleSetView('startView')}
+                >
+                  <CameraIcon className="h-4 w-4 mr-2" />
+                  Set Start
+                </Button>
+                {selectedScene.startView && (
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={() => handleClearView('startView')}
+                    tooltip="Clear Start View"
+                    tooltipSide="right"
+                  >
+                    <CameraOff className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+              </div>
+              {/* Coordinate Display (Only P) */}
+              <p className="text-[10px] text-slate-400 truncate leading-tight">
+                {formatView(selectedScene.startView)}
+              </p>
+            </div>
+
+            {/* End View */}
+            <div className="space-y-1.5">
+              <Label className="text-xs">End View</Label>
+              <div className="flex items-center gap-1.5">
+                <Button
+                  variant="secondary"
+                  size="md"
+                  className="flex-1"
+                  onClick={() => handleSetView('endView')}
+                >
+                  <SunsetIcon className="h-4 w-4 mr-2" />
+                  Set End
+                </Button>
+                {selectedScene.endView && (
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={() => handleClearView('endView')}
+                    tooltip="Clear End View"
+                    tooltipSide="right"
+                  >
+                    <CameraOff className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+              </div>
+              {/* Coordinate Display (Only P) */}
+              <p className="text-[10px] text-slate-400 truncate leading-tight">
+                {formatView(selectedScene.endView)}
+              </p>
+            </div>
           </div>
         )}
 
+        {/* Reorder Section */}
         <div className="flex items-center justify-between pt-3 border-t border-slate-700/50">
-          <Label>Reorder</Label>
+          <Label className="text-xs">Reorder</Label>
           <div className="flex items-center gap-1">
             <Button
               variant="ghost"
               size="sm"
-              className="h-7 w-7"
               onClick={() => handleMove('left')}
-              disabled={currentIndex === 0} // Disable if first
+              disabled={currentIndex === 0}
               tooltip="Move Left"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -293,9 +405,8 @@ return (
             <Button
               variant="ghost"
               size="sm"
-              className="h-7 w-7"
               onClick={() => handleMove('right')}
-              disabled={currentIndex === scenes.length - 1} // Disable if last
+              disabled={currentIndex === scenes.length - 1}
               tooltip="Move Right"
             >
               <ArrowRight className="h-4 w-4" />
