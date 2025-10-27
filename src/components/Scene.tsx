@@ -87,14 +87,14 @@ function SceneContent({
     }
   }, [camera, cameraFov]);
 
-  // Apply camera position and target when not playing
+  // Apply camera position and target when not playing AND at the start
   useEffect(() => {
-    if (!isPlaying && controls) {
+    if (!isPlaying && currentTime === 0 && controls) {
       camera.position.set(...cameraPosition);
       (controls as OrbitControlsType).target.set(...cameraTarget);
       (controls as OrbitControlsType).update();
     }
-  }, [isPlaying, cameraPosition, cameraTarget, camera, controls]);
+  }, [isPlaying, currentTime, cameraPosition, cameraTarget, camera, controls]); // <-- Added currentTime
 
   // Apply model transforms
   useEffect(() => {
