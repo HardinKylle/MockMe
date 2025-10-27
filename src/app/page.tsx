@@ -58,6 +58,7 @@ export default function App() {
   const { width: windowWidth, height: windowHeight } = useWindowSize();
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
+  const [hasFinished, setHasFinished] = useState(false);
   const [animationScenes, setAnimationScenes] = useState<AnimationScene[]>([
     defaultScene,
   ]);
@@ -185,7 +186,12 @@ export default function App() {
 
   const handleTogglePlay = () => {
     if (!isPlaying) {
-      setCurrentTime(0);
+      // Only reset if the video has finished
+      if (hasFinished) {
+        setCurrentTime(0);
+        setHasFinished(false);
+      }
+      // Otherwise, just resume from current position
     }
     setIsPlaying(!isPlaying);
   };
@@ -260,6 +266,7 @@ export default function App() {
           scenes={animationScenes}
           currentTime={currentTime}
           setCurrentTime={setCurrentTime}
+          setHasFinished={setHasFinished}
           totalVideoDuration={totalVideoDuration}
           cameraPosition={cameraPosition}
           cameraTarget={cameraTarget}

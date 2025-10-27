@@ -21,6 +21,7 @@ interface SceneProps {
   currentTime: number;
   setCurrentTime: (time: number | ((prevTime: number) => number)) => void;
   totalVideoDuration: number;
+  setHasFinished: (hasFinished: boolean) => void;
   cameraPosition: [number, number, number];
   cameraTarget: [number, number, number];
   cameraFov: number;
@@ -62,6 +63,7 @@ function SceneContent({
   currentTime,
   setCurrentTime,
   totalVideoDuration,
+  setHasFinished,
   cameraPosition,
   cameraTarget,
   cameraFov,
@@ -104,32 +106,29 @@ function SceneContent({
   }, [modelPosition, modelRotation, modelScale]);
 
   useEffect(() => {
-    if (isPlaying) {
-      // We just pressed Play
+    // Only reset if we're starting to play AND we're at the beginning
+    if (isPlaying && currentTime === 0) {
       if (modelRef.current) {
-        // Reset the model's rotation to 0
         modelRef.current.rotation.y = 0;
       }
 
-      // Reset camera to the start of the *first* scene
       const firstScene = scenes[0];
-      
+
       if (
         firstScene &&
         (firstScene.animationType === 'custom' ||
           firstScene.animationType === 'hold') &&
         firstScene.startView
       ) {
-        // If first scene is custom/hold, set camera to its start view
         camera.position.set(...firstScene.startView.position);
         (controls as OrbitControlsType).target.set(...firstScene.startView.target);
       } else {
-        // Otherwise, set to default view (or whatever the preset requires)
         camera.position.set(0, 0, 2);
         (controls as OrbitControlsType).target.set(0, 0, 0);
       }
     }
-  }, [isPlaying, scenes, camera, controls]);
+    // Add currentTime to the dependency array
+  }, [isPlaying, currentTime, scenes, camera, controls]);
 
   useEffect(() => {
     if (backgroundColor === 'transparent') {
@@ -140,7 +139,7 @@ function SceneContent({
     }
   }, [gl, backgroundColor]);
 
- useFrame((state, delta) => {
+  useFrame((state, delta) => {
     if (!isPlaying) return;
 
     setCurrentTime((prevTime) => {
@@ -148,6 +147,7 @@ function SceneContent({
 
       if (newTime > totalVideoDuration) {
         setIsPlaying(false);
+        setHasFinished(true);  // <-- ADD THIS LINE
         return 0;
       }
 
@@ -166,7 +166,7 @@ function SceneContent({
 
           // --- Check for controls before doing any work ---
           if (modelRef.current && controls) {
-            
+
             // --- REFACTORED ANIMATION LOGIC ---
 
             // 1. Check if it's a preset animation
@@ -232,8 +232,8 @@ function SceneContent({
   return (
     <>
       <ambientLight intensity={ambientIntensity} />
-      <directionalLight 
-        position={directionalPosition} 
+      <directionalLight
+        position={directionalPosition}
         intensity={directionalIntensity}
       />
       <Environment preset="studio" environmentIntensity={environmentIntensity} />
@@ -281,6 +281,7 @@ export default forwardRef<SceneApi, SceneProps>(function Scene(
     currentTime,
     setCurrentTime,
     totalVideoDuration,
+    setHasFinished,
     cameraPosition,
     cameraTarget,
     cameraFov,
@@ -316,6 +317,7 @@ export default forwardRef<SceneApi, SceneProps>(function Scene(
         currentTime={currentTime}
         setCurrentTime={setCurrentTime}
         totalVideoDuration={totalVideoDuration}
+        setHasFinished={setHasFinished}
         cameraPosition={cameraPosition}
         cameraTarget={cameraTarget}
         cameraFov={cameraFov}
