@@ -17,6 +17,7 @@ interface SceneProps {
   backgroundColor: string;
   isPlaying: boolean;
   setIsPlaying: (isPlaying: boolean) => void;
+  isScrubbing: boolean; // <-- ADD THIS PROP
   scenes: AnimationScene[];
   currentTime: number;
   setCurrentTime: (time: number | ((prevTime: number) => number)) => void;
@@ -59,6 +60,7 @@ function SceneContent({
   uploadedFileType,
   isPlaying,
   setIsPlaying,
+  isScrubbing, // <-- GET PROP
   scenes,
   currentTime,
   setCurrentTime,
@@ -75,7 +77,7 @@ function SceneContent({
   directionalPosition,
   environmentIntensity,
   screenReflection,
-}: Omit<SceneProps, 'backgroundColor'> & { backgroundColor: string }) {
+}: Omit<SceneProps, 'backgroundColor' | 'isScrubbing'> & { backgroundColor: string; isScrubbing: boolean }) { // <-- Add prop to type
   const { gl, camera, controls } = useThree();
   const modelRef = useRef<THREE.Group>(null);
 
@@ -87,14 +89,14 @@ function SceneContent({
     }
   }, [camera, cameraFov]);
 
-  // Apply camera position and target when not playing AND at the start
+  // Apply camera position and target when not playing/scrubbing AND at the start
   useEffect(() => {
-    if (!isPlaying && currentTime === 0 && controls) {
+    if (!isPlaying && !isScrubbing && currentTime === 0 && controls) {
       camera.position.set(...cameraPosition);
       (controls as OrbitControlsType).target.set(...cameraTarget);
       (controls as OrbitControlsType).update();
     }
-  }, [isPlaying, currentTime, cameraPosition, cameraTarget, camera, controls]); // <-- Added currentTime
+  }, [isPlaying, isScrubbing, currentTime, cameraPosition, cameraTarget, camera, controls]); // <-- Add isScrubbing
 
   // Apply model transforms
   useEffect(() => {
@@ -127,7 +129,6 @@ function SceneContent({
         (controls as OrbitControlsType).target.set(0, 0, 0);
       }
     }
-    // Add currentTime to the dependency array
   }, [isPlaying, currentTime, scenes, camera, controls]);
 
   useEffect(() => {
@@ -139,18 +140,24 @@ function SceneContent({
     }
   }, [gl, backgroundColor]);
 
+  // --- *** MODIFIED USEFRAME HOOK *** ---
   useFrame((state, delta) => {
-    if (!isPlaying) return;
+    // 1. Advance time ONLY if isPlaying is true
+    if (isPlaying) {
+      setCurrentTime((prevTime) => {
+        const newTime = prevTime + delta;
 
-    setCurrentTime((prevTime) => {
-      const newTime = prevTime + delta;
+        if (newTime > totalVideoDuration) {
+          setIsPlaying(false);
+          setHasFinished(true);
+          return 0; // Reset to start
+        }
+        return newTime;
+      });
+    }
 
-      if (newTime > totalVideoDuration) {
-        setIsPlaying(false);
-        setHasFinished(true);  // <-- ADD THIS LINE
-        return 0;
-      }
-
+    // 2. Animate camera/model ONLY if playing OR scrubbing
+    if (isPlaying || isScrubbing) {
       let timeSoFar = 0;
       let sceneFound = false;
 
@@ -158,22 +165,17 @@ function SceneContent({
         const sceneStartTime = timeSoFar;
         const sceneEndTime = sceneStartTime + scene.duration;
 
-        if (newTime >= sceneStartTime && newTime < sceneEndTime) {
+        if (currentTime >= sceneStartTime && currentTime <= sceneEndTime) {
           sceneFound = true;
-          const timeInScene = newTime - sceneStartTime;
-          const sceneProgress = timeInScene / scene.duration;
+          const timeInScene = currentTime - sceneStartTime;
+          const sceneProgress = scene.duration > 0 ? timeInScene / scene.duration : 0;
           const easedProgress = easeInOutCubic(sceneProgress);
 
-          // --- Check for controls before doing any work ---
           if (modelRef.current && controls) {
-
-            // --- REFACTORED ANIMATION LOGIC ---
-
-            // 1. Check if it's a preset animation
+            // ... (Animation logic is unchanged) ...
             if (isPresetAnim(scene.animationType)) {
               const animFn = presetAnimationMap[scene.animationType];
               if (animFn) {
-                // Run the preset function from our new library
                 animFn({
                   camera,
                   controls: controls as OrbitControlsType,
@@ -183,7 +185,6 @@ function SceneContent({
                 });
               }
             }
-            // 2. Check for 'custom' (logic stays here)
             else if (scene.animationType === 'custom') {
               if (scene.startView && scene.endView) {
                 startPos.set(...scene.startView.position);
@@ -196,37 +197,29 @@ function SceneContent({
                 (controls as OrbitControlsType).target.copy(startTarget);
                 (controls as OrbitControlsType).update();
               }
-              // Ensure model is not spinning
               if (modelRef.current) {
                 modelRef.current.rotation.y = 0;
               }
             }
-            // 3. Check for 'hold' (logic stays here)
             else if (scene.animationType === 'hold') {
               if (scene.startView) {
                 camera.position.set(...scene.startView.position);
                 (controls as OrbitControlsType).target.set(...scene.startView.target);
               } else {
-                // Default hold view if none is set
                 camera.position.set(0, 0, 2);
                 (controls as OrbitControlsType).target.set(0, 0, 0);
               }
               (controls as OrbitControlsType).update();
-              // Ensure model is not spinning
               if (modelRef.current) {
                 modelRef.current.rotation.y = 0;
               }
             }
-
-            // --- END REFACTORED LOGIC ---
           }
-          break;
+          break; 
         }
         timeSoFar = sceneEndTime;
       }
-
-      return newTime;
-    });
+    }
   });
 
   return (
@@ -263,7 +256,8 @@ function SceneContent({
         maxDistance={6}
         makeDefault
         target={[0, 0, 0]}
-        enabled={!isPlaying}
+        enabled={!isPlaying && !isScrubbing}
+        // ------------------------------------
       />
     </>
   );
@@ -277,6 +271,7 @@ export default forwardRef<SceneApi, SceneProps>(function Scene(
     backgroundColor,
     isPlaying,
     setIsPlaying,
+    isScrubbing, // <-- GET PROP
     scenes,
     currentTime,
     setCurrentTime,
@@ -313,6 +308,7 @@ export default forwardRef<SceneApi, SceneProps>(function Scene(
         uploadedFileType={uploadedFileType}
         isPlaying={isPlaying}
         setIsPlaying={setIsPlaying}
+        isScrubbing={isScrubbing} // <-- PASS PROP
         scenes={scenes}
         currentTime={currentTime}
         setCurrentTime={setCurrentTime}

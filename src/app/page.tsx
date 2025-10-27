@@ -59,6 +59,9 @@ export default function App() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [hasFinished, setHasFinished] = useState(false);
+  // --- ADD THIS STATE ---
+  const [isScrubbing, setIsScrubbing] = useState(false);
+  // ----------------------
   const [animationScenes, setAnimationScenes] = useState<AnimationScene[]>([
     defaultScene,
   ]);
@@ -263,6 +266,7 @@ export default function App() {
           backgroundColor={backgroundColor}
           isPlaying={isPlaying}
           setIsPlaying={setIsPlaying}
+          isScrubbing={isScrubbing} // <-- PASS PROP
           scenes={animationScenes}
           currentTime={currentTime}
           setCurrentTime={setCurrentTime}
@@ -420,7 +424,13 @@ export default function App() {
         selectedSceneId={selectedSceneId}
         onSelectScene={setSelectedSceneId}
         totalVideoDuration={totalVideoDuration}
-        uploadedFileType={uploadedFileType} //added
+        uploadedFileType={uploadedFileType}
+        setCurrentTime={setCurrentTime}
+        setIsPlaying={setIsPlaying}
+        // --- ADD/PASS PROPS ---
+        isScrubbing={isScrubbing}
+        setIsScrubbing={setIsScrubbing}
+        // ----------------------
       />
     </div>
   );

@@ -3,7 +3,7 @@
 import { Button } from './ui/Button';
 import { Plus, Play, Pause } from 'lucide-react';
 import { AnimationScene } from '@/types/animation';
-import { useRef } from 'react'; 
+import { useRef, useState, useEffect, useCallback } from 'react'; // Remove useState
 import ContentTrack from './ContentTrack';
 import AnimationTrack from './AnimationTrack';
 
@@ -17,7 +17,13 @@ interface TimelinePanelProps {
   selectedSceneId: string | null;
   onSelectScene: (id: string) => void;
   totalVideoDuration: number;
-  uploadedFileType: 'image' | 'video' | null; //added
+  uploadedFileType: 'image' | 'video' | null;
+  setCurrentTime: (time: number) => void;
+  setIsPlaying: (isPlaying: boolean) => void;
+  // --- ADD THESE PROPS ---
+  isScrubbing: boolean;
+  setIsScrubbing: (isScrubbing: boolean) => void;
+  // -----------------------
 }
 
 export default function TimelinePanel({
@@ -30,9 +36,18 @@ export default function TimelinePanel({
   selectedSceneId,
   onSelectScene,
   totalVideoDuration,
-  uploadedFileType, //added
+  uploadedFileType,
+  setCurrentTime,
+  setIsPlaying,
+  // --- GET NEW PROPS ---
+  isScrubbing,
+  setIsScrubbing,
 }: TimelinePanelProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  // --- REMOVE LOCAL STATE ---
+  // const [isScrubbing, setIsScrubbing] = useState(false);
+  // --------------------------
+  const trackContainerRef = useRef<HTMLDivElement>(null);
 
   const playheadPercent =
     totalVideoDuration > 0 ? (currentTime / totalVideoDuration) * 100 : 0;
@@ -51,12 +66,57 @@ export default function TimelinePanel({
     return (previousDuration / totalVideoDuration) * 100;
   };
 
-  // Format time to one decimal place (e.g., "0.0s")
   const formatTime = (time: number) => time.toFixed(1);
+
+  // --- DRAG HANDLERS (use props) ---
+  const handleMouseMove = useCallback(
+    (event: MouseEvent) => {
+      // Use isScrubbing prop
+      if (!isScrubbing || !trackContainerRef.current || totalVideoDuration === 0)
+        return;
+
+      const rect = trackContainerRef.current.getBoundingClientRect();
+      const mouseX = event.clientX - rect.left;
+      const trackWidth = rect.width;
+
+      let progress = mouseX / trackWidth;
+      progress = Math.max(0, Math.min(1, progress));
+
+      const newTime = progress * totalVideoDuration;
+      setCurrentTime(newTime);
+    },
+    [isScrubbing, totalVideoDuration, setCurrentTime] // Use isScrubbing prop
+  );
+
+  const handleMouseUp = useCallback(() => {
+    setIsScrubbing(false); // Use setIsScrubbing prop
+  }, [setIsScrubbing]); // Add prop dependency
+
+  const handleMouseDown = (event: React.MouseEvent) => {
+    event.preventDefault();
+    setIsPlaying(false);
+    setIsScrubbing(true); // Use setIsScrubbing prop
+  };
+
+  useEffect(() => {
+    if (isScrubbing) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    } else {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isScrubbing, handleMouseMove, handleMouseUp]); // Use isScrubbing prop
+  // ---------------------------
 
   return (
     <div
-   className={`fixed bottom-40 lg:bottom-4 left-1/2 z-20 w-[480px] max-w-[90vw] rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 backdrop-blur-xl transition-all duration-300 ease-out ${
+      className={`fixed bottom-40 lg:bottom-4 left-1/2 z-20 w-[480px] max-w-[90vw] rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 backdrop-blur-xl transition-all duration-300 ease-out ${
         isVisible
           ? 'opacity-100 -translate-x-1/2 translate-y-0'
           : 'opacity-0 -translate-x-1/2 translate-y-10 pointer-events-none'
@@ -78,7 +138,6 @@ export default function TimelinePanel({
             )}
           </Button>
           <span className="text-[10px] font-mono text-slate-300">
-            {/* Updated to use totalVideoDuration directly */}
             {formatTime(currentTime)}s / {formatTime(totalVideoDuration)}s
           </span>
         </div>
@@ -95,29 +154,50 @@ export default function TimelinePanel({
       </div>
 
       {/* Track Container */}
-      <div
-        ref={scrollContainerRef}
-        className="overflow-x-auto"
-      >
-        <div
-          // ref and style related to drag-sizing removed
-          className="p-2.5 space-y-2"
-        >
-          {/* --- ANIMATION TRACK --- */}
-          <AnimationTrack
-            scenes={scenes}
-            selectedSceneId={selectedSceneId}
-            onSelectScene={onSelectScene}
-            getClipLeftPercent={getClipLeftPercent}
-            getClipWidthPercent={getClipWidthPercent}
-            playheadPercent={playheadPercent}
-          />
+      <div ref={scrollContainerRef} className="overflow-x-auto">
+        <div className="p-2.5">
+          <div className="flex gap-2">
+            {/* 1. The Label Column */}
+            <div className="w-16 shrink-0 space-y-2">
+              <div className="h-8 flex items-center">
+                <span className="text-[10px] font-medium text-slate-400">
+                  Animation
+                </span>
+              </div>
+              <div className="h-8 flex items-center"> {/* Changed to h-8 */}
+                <span className="text-[10px] font-medium text-slate-400">
+                  Content
+                </span>
+              </div>
+            </div>
 
-          {/* --- CONTENT TRACK --- */}
-          <ContentTrack
-            playheadPercent={playheadPercent}
-            uploadedFileType={uploadedFileType} //added
-          />
+            {/* 2. The Track Column */}
+            <div
+              ref={trackContainerRef}
+              className="flex-1 relative space-y-2"
+            >
+              <div
+                className="playhead-draggable absolute -top-1 -bottom-1 w-0.5 bg-red-500 z-30"
+                style={{ left: `${playheadPercent}%` }}
+                onMouseDown={handleMouseDown}
+              >
+                <div className="absolute -top-1 -left-2 w-4 h-4 rounded-full bg-red-500 border-2 border-white pointer-events-none" />
+              </div>
+
+              <AnimationTrack
+                scenes={scenes}
+                selectedSceneId={selectedSceneId}
+                onSelectScene={onSelectScene}
+                getClipLeftPercent={getClipLeftPercent}
+                getClipWidthPercent={getClipWidthPercent}
+                playheadPercent={playheadPercent}
+              />
+              <ContentTrack
+                playheadPercent={playheadPercent}
+                uploadedFileType={uploadedFileType}
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>
