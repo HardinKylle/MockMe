@@ -3,7 +3,7 @@
 import { Input } from './ui/Input';
 import { Label } from './ui/Label';
 import { TimerIcon } from 'lucide-react';
-import { useState, useEffect } from 'react'; // Import hooks
+import { useState, useEffect } from 'react';
 
 interface ContentEditorPanelProps {
   isVisible: boolean;
@@ -11,28 +11,24 @@ interface ContentEditorPanelProps {
   setTotalVideoDuration: (duration: number) => void;
 }
 
-const MIN_DURATION = 1; // Set a minimum duration
+const MIN_DURATION = 1;
 
 export default function ContentEditorPanel({
   isVisible,
   totalVideoDuration,
   setTotalVideoDuration,
 }: ContentEditorPanelProps) {
-  // Local state to hold the string value of the input
   const [inputValue, setInputValue] = useState(totalVideoDuration.toString());
 
-  // Keep local state in sync with parent prop
   useEffect(() => {
     setInputValue(totalVideoDuration.toString());
   }, [totalVideoDuration]);
 
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
-    // Allow user to type empty string, "1.", etc.
     setInputValue(val);
 
     const parsedVal = parseFloat(val);
-    // If it's a valid number, update the parent state immediately
     if (!isNaN(parsedVal) && parsedVal > 0) {
       setTotalVideoDuration(parsedVal);
     }
@@ -40,13 +36,10 @@ export default function ContentEditorPanel({
 
   const handleOnBlur = () => {
     const parsedVal = parseFloat(inputValue);
-    // If the value is invalid or empty when user clicks away,
-    // reset it to the minimum duration.
     if (isNaN(parsedVal) || parsedVal < MIN_DURATION) {
       setTotalVideoDuration(MIN_DURATION);
       setInputValue(MIN_DURATION.toString());
     } else {
-      // Otherwise, just make sure the parent is set
       setTotalVideoDuration(parsedVal);
     }
   };
@@ -74,15 +67,18 @@ export default function ContentEditorPanel({
       <div className="p-3 space-y-3">
         {/* Duration */}
         <div className="space-y-1.5">
-          <Label htmlFor="total-duration">Duration (s)</Label>
+          {/* --- MODIFICATION: Added text-xs for consistency --- */}
+          <Label htmlFor="total-duration" className="text-xs">
+            Duration (s)
+          </Label>
           <Input
             id="total-duration"
             type="number"
             step="0.1"
-            min={MIN_DURATION} // Use min duration
-            value={inputValue} // Use local string state
-            onChange={handleOnChange} // Use new handler
-            onBlur={handleOnBlur} // Add blur handler for validation
+            min={MIN_DURATION}
+            value={inputValue}
+            onChange={handleOnChange}
+            onBlur={handleOnBlur}
           />
         </div>
       </div>
