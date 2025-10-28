@@ -149,7 +149,7 @@ export const SceneCaptureController = forwardRef<SceneApi>((props, ref) => {
       recorderRef.current = new MediaRecorder(stream, {
         mimeType: 'video/webm; codecs=vp9',
         // --- MODIFIED: Increased bitrate for 1080p60 ---
-        videoBitsPerSecond: 15000000, // 15 Mbps
+        videoBitsPerSecond: 25000000, 
       });
       
       recordedChunksRef.current = [];

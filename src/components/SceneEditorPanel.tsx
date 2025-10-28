@@ -24,7 +24,7 @@ import {
 import { SceneApi } from './Scene';
 import React, { useState, useEffect } from 'react';
 
-const MIN_DURATION = 1;
+const MIN_DURATION = 0.1;
 
 // --- Helper Types for Animation Dropdowns ---
 const customAnimationTypes: CustomAnimationType[] = ['hold', 'custom'];
