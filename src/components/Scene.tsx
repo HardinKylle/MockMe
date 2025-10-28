@@ -17,7 +17,7 @@ interface SceneProps {
   backgroundColor: string;
   isPlaying: boolean;
   setIsPlaying: (isPlaying: boolean) => void;
-  isScrubbing: boolean; // <-- ADD THIS PROP
+  isScrubbing: boolean;
   scenes: AnimationScene[];
   currentTime: number;
   setCurrentTime: (time: number | ((prevTime: number) => number)) => void;
@@ -53,6 +53,37 @@ const endPos = new THREE.Vector3();
 const startTarget = new THREE.Vector3();
 const endTarget = new THREE.Vector3();
 
+// Helper function to convert Cartesian to Spherical coordinates
+const cartesianToSpherical = (vec: THREE.Vector3) => {
+  const radius = vec.length();
+  const theta = Math.atan2(vec.x, vec.z); // Horizontal angle
+  const phi = Math.acos(vec.y / radius); // Vertical angle
+  return { radius, theta, phi };
+};
+
+// Helper function to convert Spherical to Cartesian coordinates
+const sphericalToCartesian = (radius: number, theta: number, phi: number) => {
+  return new THREE.Vector3(
+    radius * Math.sin(phi) * Math.sin(theta),
+    radius * Math.cos(phi),
+    radius * Math.sin(phi) * Math.cos(theta)
+  );
+};
+
+// Helper to find shortest angle between two angles
+const shortestAngleDelta = (start: number, end: number) => {
+  let delta = end - start;
+  // Normalize to [-PI, PI]
+  while (delta > Math.PI) delta -= 2 * Math.PI;
+  while (delta < -Math.PI) delta += 2 * Math.PI;
+  return delta;
+};
+
+// Linear interpolation helper
+const lerp = (start: number, end: number, t: number) => {
+  return start + (end - start) * t;
+};
+
 function SceneContent({
   backgroundColor,
   model,
@@ -60,7 +91,7 @@ function SceneContent({
   uploadedFileType,
   isPlaying,
   setIsPlaying,
-  isScrubbing, // <-- GET PROP
+  isScrubbing,
   scenes,
   currentTime,
   setCurrentTime,
@@ -77,7 +108,7 @@ function SceneContent({
   directionalPosition,
   environmentIntensity,
   screenReflection,
-}: Omit<SceneProps, 'backgroundColor' | 'isScrubbing'> & { backgroundColor: string; isScrubbing: boolean }) { // <-- Add prop to type
+}: Omit<SceneProps, 'backgroundColor' | 'isScrubbing'> & { backgroundColor: string; isScrubbing: boolean }) {
   const { gl, camera, controls } = useThree();
   const modelRef = useRef<THREE.Group>(null);
 
@@ -96,7 +127,7 @@ function SceneContent({
       (controls as OrbitControlsType).target.set(...cameraTarget);
       (controls as OrbitControlsType).update();
     }
-  }, [isPlaying, isScrubbing, currentTime, cameraPosition, cameraTarget, camera, controls]); // <-- Add isScrubbing
+  }, [isPlaying, isScrubbing, currentTime, cameraPosition, cameraTarget, camera, controls]);
 
   // Apply model transforms
   useEffect(() => {
@@ -140,7 +171,6 @@ function SceneContent({
     }
   }, [gl, backgroundColor]);
 
-  // --- *** MODIFIED USEFRAME HOOK *** ---
   useFrame((state, delta) => {
     // 1. Advance time ONLY if isPlaying is true
     if (isPlaying) {
@@ -150,7 +180,7 @@ function SceneContent({
         if (newTime > totalVideoDuration) {
           setIsPlaying(false);
           setHasFinished(true);
-          return 0; // Reset to start
+          return 0;
         }
         return newTime;
       });
@@ -172,7 +202,6 @@ function SceneContent({
           const easedProgress = easeInOutCubic(sceneProgress);
 
           if (modelRef.current && controls) {
-            // ... (Animation logic is unchanged) ...
             if (isPresetAnim(scene.animationType)) {
               const animFn = presetAnimationMap[scene.animationType];
               if (animFn) {
@@ -191,8 +220,41 @@ function SceneContent({
                 endPos.set(...scene.endView.position);
                 startTarget.set(...scene.startView.target);
                 endTarget.set(...scene.endView.target);
-                startPos.lerp(endPos, easedProgress);
-                camera.position.copy(startPos);
+                
+                // Convert to spherical coordinates
+                const startSphere = cartesianToSpherical(startPos);
+                const endSphere = cartesianToSpherical(endPos);
+                
+                // Check if positions are on opposite sides (angle difference > 90°)
+                const angleDiff = Math.abs(shortestAngleDelta(startSphere.theta, endSphere.theta));
+                const shouldUseSpherical = angleDiff > Math.PI / 2;
+                
+                if (shouldUseSpherical) {
+                  // Use spherical interpolation for smooth orbital movement
+                  const interpolatedRadius = lerp(startSphere.radius, endSphere.radius, easedProgress);
+                  
+                  // Interpolate theta (horizontal angle) using shortest path
+                  const thetaDelta = shortestAngleDelta(startSphere.theta, endSphere.theta);
+                  const interpolatedTheta = startSphere.theta + thetaDelta * easedProgress;
+                  
+                  // Interpolate phi (vertical angle)
+                  const interpolatedPhi = lerp(startSphere.phi, endSphere.phi, easedProgress);
+                  
+                  // Convert back to Cartesian
+                  const interpolatedPos = sphericalToCartesian(
+                    interpolatedRadius,
+                    interpolatedTheta,
+                    interpolatedPhi
+                  );
+                  
+                  camera.position.copy(interpolatedPos);
+                } else {
+                  // Use standard linear interpolation for close positions
+                  startPos.lerp(endPos, easedProgress);
+                  camera.position.copy(startPos);
+                }
+                
+                // Always interpolate target linearly
                 startTarget.lerp(endTarget, easedProgress);
                 (controls as OrbitControlsType).target.copy(startTarget);
                 (controls as OrbitControlsType).update();
@@ -257,7 +319,6 @@ function SceneContent({
         makeDefault
         target={[0, 0, 0]}
         enabled={!isPlaying && !isScrubbing}
-        // ------------------------------------
       />
     </>
   );
@@ -271,7 +332,7 @@ export default forwardRef<SceneApi, SceneProps>(function Scene(
     backgroundColor,
     isPlaying,
     setIsPlaying,
-    isScrubbing, // <-- GET PROP
+    isScrubbing,
     scenes,
     currentTime,
     setCurrentTime,
@@ -308,7 +369,7 @@ export default forwardRef<SceneApi, SceneProps>(function Scene(
         uploadedFileType={uploadedFileType}
         isPlaying={isPlaying}
         setIsPlaying={setIsPlaying}
-        isScrubbing={isScrubbing} // <-- PASS PROP
+        isScrubbing={isScrubbing}
         scenes={scenes}
         currentTime={currentTime}
         setCurrentTime={setCurrentTime}
