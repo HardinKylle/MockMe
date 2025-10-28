@@ -72,7 +72,7 @@ export default function App() {
 
   const [isRecording, setIsRecording] = useState(false);
   const [showExportConfirm, setShowExportConfirm] = useState(false);
-
+  const [showBrowserWarning, setShowBrowserWarning] = useState(false); 
   // Scene controls state (remains the same)
   const [cameraPosition, setCameraPosition] = useState<[number, number, number]>(
     DEFAULT_SCENE_CONTROLS.cameraPosition
@@ -149,6 +149,7 @@ export default function App() {
     if (aspectRatio === '16:9') {
       // When 16:9, the background should be white
       setWrapperBg('bg-white');
+
     } else {
       // For any other ratio, show the gray letterboxing
       setWrapperBg('bg-gray-950');
@@ -218,11 +219,25 @@ export default function App() {
 
   const handleExport = () => {
     if (isRecording) return;
-    setShowExportConfirm(true); // Just open the pop-up
+
+    // --- ADD THIS BROWSER CHECK ---
+    const mimeType = 'video/webm; codecs=vp9';
+    if (
+      typeof MediaRecorder === 'undefined' ||
+      !MediaRecorder.isTypeSupported(mimeType)
+    ) {
+      // If not supported, show the warning modal and stop.
+      setShowBrowserWarning(true);
+      return;
+    }
+    // --- END OF CHECK ---
+
+    // If supported, proceed as normal.
+    setShowExportConfirm(true);
   };
 
   // --- ADDED: This function contains the actual export logic ---
- const handleConfirmExport = () => {
+  const handleConfirmExport = () => {
     if (!sceneRef.current || isRecording) return;
 
     setShowExportConfirm(false); // Close the pop-up
@@ -281,7 +296,7 @@ export default function App() {
     setScreenReflection(DEFAULT_SCENE_CONTROLS.screenReflection);
   };
 
-  
+
 
   const frameStyle = getFrameStyle();
   return (
@@ -418,6 +433,46 @@ export default function App() {
           onClose={() => setCapturedImageUrl(null)}
         />
       )}
+
+      {/* --- ADD THIS NEW BROWSER WARNING MODAL --- */}
+      {showBrowserWarning && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div
+            className="w-full max-w-md rounded-lg border shadow-xl p-6 space-y-4 bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50"
+            style={{ animation: 'slideUp 0.2s ease-out' }}
+          >
+            <style>{`
+                @keyframes slideUp {
+                  from { opacity: 0; transform: translateY(10px); }
+                  to { opacity: 1; transform: translateY(0); }
+                }
+              `}</style>
+            <h3 className="text-xl font-semibold text-white">
+              Browser Not Supported
+            </h3>
+            <p className="text-slate-300">
+              Unfortunately, your browser does not support the required video
+              codec (<code>video/webm; codecs=vp9</code>) for exporting this
+              animation.
+            </p>
+            <p className="text-slate-300">
+              Please try again using a different browser like{' '}
+              <strong className="text-white">Google Chrome</strong> or{' '}
+              <strong className="text-white">Microsoft Edge</strong> for full
+              export functionality.
+            </p>
+            <div className="flex justify-end pt-2">
+              <Button
+                variant="primary"
+                onClick={() => setShowBrowserWarning(false)}
+              >
+                Got it
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* --- END OF NEW MODAL --- */}
 
       {/* Bottom-Left Container */}
       <div className="fixed bottom-4 left-4 z-20 flex flex-col-reverse items-end gap-2">

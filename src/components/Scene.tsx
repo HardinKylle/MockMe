@@ -175,14 +175,17 @@ function SceneContent({
     }
   }, [gl, backgroundColor]);
 
-  useFrame((state, delta) => {
+useFrame((state, delta) => {
     // 1. Advance time ONLY if isPlaying is true
     if (isPlaying) {
+      
       // --- THIS IS THE FIX ---
-      // When recording, use a fixed delta for a stable frame rate.
-      // When playing normally, use the real-time delta.
-      // We use 60 FPS to match the recorder's setting.
-      const frameDelta = isRecording ? 1 / 60 : delta;
+      // We must ALWAYS use the real-time delta to advance
+      // the animation. This ensures that even if the frame
+      // rate is high (e.g., 144Hz) or low (e.g., 30Hz),
+      // the animation 'currentTime' advances correctly
+      // in sync with real-world time.
+      const frameDelta = delta; // <--- THIS IS THE CHANGE
 
       setCurrentTime((prevTime) => {
         // --- MODIFIED: Use our new frameDelta ---
