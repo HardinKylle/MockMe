@@ -181,7 +181,7 @@ export default function TimelinePanel({
 
               {/* --- MODIFIED: Centered the triangle --- */}
               {/* Little triangle at the bottom */}
-              <div className="absolute -bottom-[6px] right-2.5 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-slate-800" />
+              <div className="absolute -bottom-1.5 right-2.5 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-slate-800" />
             </div>
           )}
 

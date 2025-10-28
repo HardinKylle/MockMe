@@ -61,6 +61,7 @@ export default function App() {
   const [currentTime, setCurrentTime] = useState(0);
   const [hasFinished, setHasFinished] = useState(false);
   const [isScrubbing, setIsScrubbing] = useState(false);
+  const [wrapperBg, setWrapperBg] = useState('bg-white');
   const [animationScenes, setAnimationScenes] = useState<AnimationScene[]>([
     defaultScene,
   ]);
@@ -143,6 +144,16 @@ export default function App() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (aspectRatio === '16:9') {
+      // When 16:9, the background should be white
+      setWrapperBg('bg-white');
+    } else {
+      // For any other ratio, show the gray letterboxing
+      setWrapperBg('bg-gray-950');
+    }
+  }, [aspectRatio]);
 
   const handleModelChange = (modelName: string) => {
     setModel(modelName);
@@ -270,9 +281,11 @@ export default function App() {
     setScreenReflection(DEFAULT_SCENE_CONTROLS.screenReflection);
   };
 
+  
+
   const frameStyle = getFrameStyle();
   return (
-    <div className="w-full h-screen bg-gray-950 relative overflow-hidden flex items-center justify-center">
+    <div className={`w-full h-screen ${wrapperBg} relative overflow-hidden flex items-center justify-center transition-colors`}>
       <div style={frameStyle} className="">
         <Scene
           ref={sceneRef}
