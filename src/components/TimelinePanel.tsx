@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from './ui/Button';
-import { Plus, Play, Pause } from 'lucide-react';
+import { Plus, Play, Pause, Download, Loader } from 'lucide-react';
 import { AnimationScene } from '@/types/animation';
 import { useRef, useState, useEffect, useCallback } from 'react';
 import ContentTrack from './ContentTrack';
@@ -11,6 +11,11 @@ interface TimelinePanelProps {
   isVisible: boolean;
   scenes: AnimationScene[];
   onAddScene: () => void;
+  onExport: () => void;
+  isRecording: boolean;
+  showExportConfirm: boolean;
+  onConfirmExport: () => void;
+  onCancelExport: () => void;
   isPlaying: boolean;
   onTogglePlay: () => void;
   currentTime: number;
@@ -28,6 +33,11 @@ export default function TimelinePanel({
   isVisible,
   scenes,
   onAddScene,
+  onExport,
+  isRecording,
+  showExportConfirm,
+  onConfirmExport,
+  onCancelExport,
   isPlaying,
   onTogglePlay,
   currentTime,
@@ -107,21 +117,20 @@ export default function TimelinePanel({
 
   return (
     <div
-      className={`fixed bottom-40 lg:bottom-4 left-1/2 z-20 w-[480px] max-w-[90vw] rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 backdrop-blur-xl transition-all duration-300 ease-out ${
-        isVisible
+      className={`fixed bottom-40 lg:bottom-4 left-1/2 z-20 w-[480px] max-w-[90vw] rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 backdrop-blur-xl transition-all duration-300 ease-out ${isVisible
           ? 'opacity-100 -translate-x-1/2 translate-y-0'
           : 'opacity-0 -translate-x-1/2 translate-y-10 pointer-events-none'
-      }`}
+        }`}
     >
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-1.5 border-b border-slate-700/50">
         <div className="flex items-center gap-2">
-          {/* --- UI MODIFIED: Using new button styles --- */}
           <Button
             variant="secondary"
             size="xs"
-            className="w-6 p-0" // Make it a square icon button
+            className="w-6 p-0"
             onClick={onTogglePlay}
+            disabled={isRecording}
           >
             {isPlaying ? (
               <Pause className="h-3 w-3 text-white" />
@@ -133,17 +142,78 @@ export default function TimelinePanel({
             {formatTime(currentTime)}s / {formatTime(totalVideoDuration)}s
           </span>
         </div>
-        {/* --- UI MODIFIED: Using new button styles --- */}
-        <Button
-          variant="secondary"
-          size="xs"
-          onClick={onAddScene}
-          tooltip="Add Scene"
-        >
-          <Plus className="h-4 w-4 text-slate-300" />
-        </Button>
-      </div>
 
+        {/* --- MODIFIED: Added 'relative' to position the pop-up --- */}
+        <div className="relative flex items-center gap-2">
+          {/* --- ADDED: The confirmation pop-up --- */}
+        {showExportConfirm && (
+            <div className="absolute bottom-full right-0 mb-2 w-64 rounded-lg border border-slate-700/50 bg-slate-800 p-3 shadow-xl z-30">
+              {/* [Pop-up content remains the same] */}
+              <div className="flex items-start gap-2.5">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-white">
+                    Confirm Export
+                  </p>
+                  <p className="text-xs text-slate-300 mt-1">
+                    This will render and download a .webm video.
+                  </p>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 mt-3">
+                <Button
+                  variant="secondary"
+                  size="xs"
+                  onClick={onCancelExport}
+                  className="px-2"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary" // Your blue button
+                  size="xs"
+                  onClick={onConfirmExport}
+                  className="px-2"
+                >
+                  Export
+                </Button>
+              </div>
+              {/* --- END Pop-up content --- */}
+
+              {/* --- MODIFIED: Centered the triangle --- */}
+              {/* Little triangle at the bottom */}
+              <div className="absolute -bottom-[6px] right-2.5 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-slate-800" />
+            </div>
+          )}
+
+          <Button
+            variant="secondary"
+            size="xs"
+            onClick={onAddScene}
+            tooltip="Add Scene"
+            disabled={isRecording || showExportConfirm} // Also disable
+          >
+            <Plus className="h-4 w-4 text-slate-300" />
+          </Button>
+
+          <Button
+            variant="secondary"
+            size="xs"
+            // --- MODIFIED: onClick now opens the pop-up ---
+            onClick={onExport}
+            tooltip="Export Video"
+            disabled={isRecording}
+            className="w-8"
+            // --- MODIFIED: Show as "active" when pop-up is open ---
+            isActive={showExportConfirm}
+          >
+            {isRecording ? (
+              <Loader className="h-4 w-4 text-slate-300 animate-spin" />
+            ) : (
+              <Download className="h-4 w-4 text-slate-300" />
+            )}
+          </Button>
+        </div>
+      </div>
       {/* Track Container */}
       <div ref={scrollContainerRef} className="overflow-x-auto">
         <div className="p-2.5 pt-7">

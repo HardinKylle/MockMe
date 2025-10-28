@@ -17,7 +17,6 @@ import { AnimationScene } from '@/types/animation';
 import SceneEditorPanel from '@/components/SceneEditorPanel';
 import ContentEditorPanel from '@/components/ContentEditorPanel';
 import CameraControlsPanel from '@/components/CameraControlsPanel';
-import { cn } from '@/lib/utils'; // <-- IMPORT cn UTILITY
 
 const generateId = () => `scene_${Math.random().toString(36).substr(2, 9)}`;
 
@@ -70,6 +69,9 @@ export default function App() {
   );
   const [totalVideoDuration, setTotalVideoDuration] = useState(10);
 
+  const [isRecording, setIsRecording] = useState(false);
+  const [showExportConfirm, setShowExportConfirm] = useState(false);
+
   // Scene controls state (remains the same)
   const [cameraPosition, setCameraPosition] = useState<[number, number, number]>(
     DEFAULT_SCENE_CONTROLS.cameraPosition
@@ -112,10 +114,19 @@ export default function App() {
       setTotalVideoDuration(DEFAULT_TOTAL_DURATION); // Reset to default 10
       // Decide if timeline should hide based on file type, not just duration
       if (uploadedFileType !== 'video') {
-         setShowTimeline(false); // Hide timeline if not a video
+        setShowTimeline(false); // Hide timeline if not a video
       }
     }
   }, [uploadedFileType, videoDuration]);
+
+
+  useEffect(() => {
+    // When animation finishes AND we are recording, stop the recording.
+    if (hasFinished && isRecording) {
+      sceneRef.current?.stopRecording();
+      setIsRecording(false);
+    }
+  }, [hasFinished, isRecording]);
 
   const handleCapture = () => {
     setIsLoading(true);
@@ -186,11 +197,41 @@ export default function App() {
   );
 
   const handleTogglePlay = () => {
+    if (isRecording) return; // Don't allow user to pause during recording
     if (!isPlaying && hasFinished) {
       setCurrentTime(0);
       setHasFinished(false);
     }
     setIsPlaying(!isPlaying);
+  };
+
+  const handleExport = () => {
+    if (isRecording) return;
+    setShowExportConfirm(true); // Just open the pop-up
+  };
+
+  // --- ADDED: This function contains the actual export logic ---
+ const handleConfirmExport = () => {
+    if (!sceneRef.current || isRecording) return;
+
+    setShowExportConfirm(false); // Close the pop-up
+    setIsRecording(true);
+    setIsPlaying(false); // Ensure paused
+    setCurrentTime(0);   // Reset time
+    setHasFinished(false);
+
+    // Give React a moment to update state before starting
+    setTimeout(() => {
+      // --- MODIFIED: Pass the aspectRatio state ---
+      sceneRef.current?.startRecording(aspectRatio);
+      setCurrentTime(0); // Reset again just in case
+      setIsPlaying(true);  // Start playback
+    }, 100); // Small delay
+  };
+
+  // --- ADDED: Handler to cancel from the pop-up ---
+  const handleCancelExport = () => {
+    setShowExportConfirm(false);
   };
 
   const getFrameStyle = () => {
@@ -231,7 +272,7 @@ export default function App() {
 
   const frameStyle = getFrameStyle();
   return (
-    <div className="w-full h-screen bg-white relative overflow-hidden flex items-center justify-center">
+    <div className="w-full h-screen bg-gray-950 relative overflow-hidden flex items-center justify-center">
       <div style={frameStyle} className="">
         <Scene
           ref={sceneRef}
@@ -239,6 +280,7 @@ export default function App() {
           uploadedFileType={uploadedFileType}
           model={selectedModel}
           backgroundColor={backgroundColor}
+          isRecording={isRecording}
           isPlaying={isPlaying}
           setIsPlaying={setIsPlaying}
           isScrubbing={isScrubbing}
@@ -296,12 +338,7 @@ export default function App() {
           onEnvironmentIntensityChange={setEnvironmentIntensity}
           onScreenReflectionChange={setScreenReflection}
           onReset={handleResetSceneControls}
-          // --- Pass presets here if you integrate into CameraControlsPanel ---
-          // presetViews={presetViews}
-          // onSetPresetView={handleSetPresetView}
         />
-
-        {/* --- MODIFIED: Preset Views Dropdown --- */}
         <div className="relative">
           <Button
             onClick={() => setShowViews(!showViews)}
@@ -330,9 +367,9 @@ export default function App() {
                   <Button
                     key={view.name}
                     onClick={() => handlePresetClick(view)}
-                    variant="menu-item" // Will use new dark menu-item style
+                    variant="menu-item"
                     size="menu-item"
-                    className="w-full" // Removed border classes
+                    className="w-full"
                   >
                     {view.name}
                   </Button>
@@ -341,7 +378,6 @@ export default function App() {
             </div>
           )}
         </div>
-        {/* --- END MODIFICATION --- */}
       </div>
 
       {/* Bottom-Right Container */}
@@ -396,6 +432,11 @@ export default function App() {
         isVisible={showTimeline}
         scenes={animationScenes}
         onAddScene={handleAddScene}
+        onExport={handleExport} // --- ADDED ---
+        isRecording={isRecording} // --- ADDED ---
+        showExportConfirm={showExportConfirm}
+        onConfirmExport={handleConfirmExport}
+        onCancelExport={handleCancelExport}
         isPlaying={isPlaying}
         onTogglePlay={handleTogglePlay}
         currentTime={currentTime}

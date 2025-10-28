@@ -15,6 +15,7 @@ interface SceneProps {
   uploadedFileType: 'image' | 'video' | null;
   model: ModelData;
   backgroundColor: string;
+  isRecording: boolean
   isPlaying: boolean;
   setIsPlaying: (isPlaying: boolean) => void;
   isScrubbing: boolean;
@@ -40,6 +41,8 @@ export interface SceneApi {
   capture: (aspectRatio: string) => string | undefined;
   setView: (position: readonly [number, number, number], target: readonly [number, number, number]) => void;
   getView: () => CameraView | null;
+  startRecording: (aspectRatio: string) => void;
+  stopRecording: () => void;
 }
 
 models.forEach(model => useGLTF.preload(model.path));
@@ -91,6 +94,7 @@ function SceneContent({
   uploadedFileType,
   isPlaying,
   setIsPlaying,
+  isRecording,
   isScrubbing,
   scenes,
   currentTime,
@@ -120,14 +124,14 @@ function SceneContent({
     }
   }, [camera, cameraFov]);
 
-  // Apply camera position and target when not playing/scrubbing AND at the start
-  useEffect(() => {
-    if (!isPlaying && !isScrubbing && currentTime === 0 && controls) {
-      camera.position.set(...cameraPosition);
-      (controls as OrbitControlsType).target.set(...cameraTarget);
-      (controls as OrbitControlsType).update();
-    }
-  }, [isPlaying, isScrubbing, currentTime, cameraPosition, cameraTarget, camera, controls]);
+  // // Apply camera position and target when not playing/scrubbing AND at the start
+  // useEffect(() => {
+  //   if (!isPlaying && !isScrubbing && currentTime === 0 && controls) {
+  //     camera.position.set(...cameraPosition);
+  //     (controls as OrbitControlsType).target.set(...cameraTarget);
+  //     (controls as OrbitControlsType).update();
+  //   }
+  // }, [isPlaying, isScrubbing, currentTime, cameraPosition, cameraTarget, camera, controls]);
 
   // Apply model transforms
   useEffect(() => {
@@ -138,29 +142,29 @@ function SceneContent({
     }
   }, [modelPosition, modelRotation, modelScale]);
 
-  useEffect(() => {
-    // Only reset if we're starting to play AND we're at the beginning
-    if (isPlaying && currentTime === 0) {
-      if (modelRef.current) {
-        modelRef.current.rotation.y = 0;
-      }
+  // useEffect(() => {
+  //   // Only reset if we're starting to play AND we're at the beginning
+  //   if (isPlaying && currentTime === 0) {
+  //     if (modelRef.current) {
+  //       modelRef.current.rotation.y = 0;
+  //     }
 
-      const firstScene = scenes[0];
+  //     const firstScene = scenes[0];
 
-      if (
-        firstScene &&
-        (firstScene.animationType === 'custom' ||
-          firstScene.animationType === 'hold') &&
-        firstScene.startView
-      ) {
-        camera.position.set(...firstScene.startView.position);
-        (controls as OrbitControlsType).target.set(...firstScene.startView.target);
-      } else {
-        camera.position.set(0, 0, 2);
-        (controls as OrbitControlsType).target.set(0, 0, 0);
-      }
-    }
-  }, [isPlaying, currentTime, scenes, camera, controls]);
+  //     if (
+  //       firstScene &&
+  //       (firstScene.animationType === 'custom' ||
+  //         firstScene.animationType === 'hold') &&
+  //       firstScene.startView
+  //     ) {
+  //       camera.position.set(...firstScene.startView.position);
+  //       (controls as OrbitControlsType).target.set(...firstScene.startView.target);
+  //     } else {
+  //       camera.position.set(0, 0, 2);
+  //       (controls as OrbitControlsType).target.set(0, 0, 0);
+  //     }
+  //   }
+  // }, [isPlaying, currentTime, scenes, camera, controls]);
 
   useEffect(() => {
     if (backgroundColor === 'transparent') {
@@ -174,13 +178,21 @@ function SceneContent({
   useFrame((state, delta) => {
     // 1. Advance time ONLY if isPlaying is true
     if (isPlaying) {
-      setCurrentTime((prevTime) => {
-        const newTime = prevTime + delta;
+      // --- THIS IS THE FIX ---
+      // When recording, use a fixed delta for a stable frame rate.
+      // When playing normally, use the real-time delta.
+      // We use 60 FPS to match the recorder's setting.
+      const frameDelta = isRecording ? 1 / 60 : delta;
 
-        if (newTime > totalVideoDuration) {
+      setCurrentTime((prevTime) => {
+        // --- MODIFIED: Use our new frameDelta ---
+        const newTime = prevTime + frameDelta;
+
+        if (newTime >= totalVideoDuration) {
           setIsPlaying(false);
           setHasFinished(true);
-          return 0;
+          // --- MODIFIED: Return total duration to prevent jumping to 0 ---
+          return totalVideoDuration;
         }
         return newTime;
       });
@@ -220,40 +232,40 @@ function SceneContent({
                 endPos.set(...scene.endView.position);
                 startTarget.set(...scene.startView.target);
                 endTarget.set(...scene.endView.target);
-                
+
                 // Convert to spherical coordinates
                 const startSphere = cartesianToSpherical(startPos);
                 const endSphere = cartesianToSpherical(endPos);
-                
+
                 // Check if positions are on opposite sides (angle difference > 90°)
                 const angleDiff = Math.abs(shortestAngleDelta(startSphere.theta, endSphere.theta));
                 const shouldUseSpherical = angleDiff > Math.PI / 2;
-                
+
                 if (shouldUseSpherical) {
                   // Use spherical interpolation for smooth orbital movement
                   const interpolatedRadius = lerp(startSphere.radius, endSphere.radius, easedProgress);
-                  
+
                   // Interpolate theta (horizontal angle) using shortest path
                   const thetaDelta = shortestAngleDelta(startSphere.theta, endSphere.theta);
                   const interpolatedTheta = startSphere.theta + thetaDelta * easedProgress;
-                  
+
                   // Interpolate phi (vertical angle)
                   const interpolatedPhi = lerp(startSphere.phi, endSphere.phi, easedProgress);
-                  
+
                   // Convert back to Cartesian
                   const interpolatedPos = sphericalToCartesian(
                     interpolatedRadius,
                     interpolatedTheta,
                     interpolatedPhi
                   );
-                  
+
                   camera.position.copy(interpolatedPos);
                 } else {
                   // Use standard linear interpolation for close positions
                   startPos.lerp(endPos, easedProgress);
                   camera.position.copy(startPos);
                 }
-                
+
                 // Always interpolate target linearly
                 startTarget.lerp(endTarget, easedProgress);
                 (controls as OrbitControlsType).target.copy(startTarget);
@@ -277,7 +289,7 @@ function SceneContent({
               }
             }
           }
-          break; 
+          break;
         }
         timeSoFar = sceneEndTime;
       }
@@ -330,6 +342,7 @@ export default forwardRef<SceneApi, SceneProps>(function Scene(
     uploadedFileType,
     model,
     backgroundColor,
+    isRecording,
     isPlaying,
     setIsPlaying,
     isScrubbing,
@@ -367,6 +380,7 @@ export default forwardRef<SceneApi, SceneProps>(function Scene(
         model={model}
         textureUrl={textureUrl}
         uploadedFileType={uploadedFileType}
+        isRecording={isRecording}
         isPlaying={isPlaying}
         setIsPlaying={setIsPlaying}
         isScrubbing={isScrubbing}
