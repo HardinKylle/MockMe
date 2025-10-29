@@ -33,6 +33,14 @@ interface CameraControlsProps {
   onReset: () => void;
 }
 
+// NEW: Helper function to check if the string value matches the number
+// This prevents formatting "5." to "5.00000" while typing
+const isStringValueEquivalent = (str: string, num: number) => {
+  const parsedStr = parseFloat(str);
+  if (isNaN(parsedStr)) return false;
+  return parsedStr === num;
+};
+
 export default function CameraControlsPanel({
   // ... all props remain the same
   cameraPosition,
@@ -63,6 +71,49 @@ export default function CameraControlsPanel({
   const panelRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
+  const [camPosStr, setCamPosStr] = useState<[string, string, string]>([
+    cameraPosition[0].toString(),
+    cameraPosition[1].toString(),
+    cameraPosition[2].toString(),
+  ]);
+  const [camTgtStr, setCamTgtStr] = useState<[string, string, string]>([
+    cameraTarget[0].toString(),
+    cameraTarget[1].toString(),
+    cameraTarget[2].toString(),
+  ]);
+
+  // NEW: Refined effect to sync prop changes (like reset)
+  // This will now update the input field even if focused,
+  // *unless* the user is actively typing a value that matches the new prop.
+  useEffect(() => {
+    setCamPosStr((prev) => [
+      isStringValueEquivalent(prev[0], cameraPosition[0])
+        ? prev[0]
+        : cameraPosition[0].toFixed(5),
+      isStringValueEquivalent(prev[1], cameraPosition[1])
+        ? prev[1]
+        : cameraPosition[1].toFixed(5),
+      isStringValueEquivalent(prev[2], cameraPosition[2])
+        ? prev[2]
+        : cameraPosition[2].toFixed(5),
+    ]);
+  }, [cameraPosition]);
+
+  // NEW: Refined effect for camera target
+  useEffect(() => {
+    setCamTgtStr((prev) => [
+      isStringValueEquivalent(prev[0], cameraTarget[0])
+        ? prev[0]
+        : cameraTarget[0].toFixed(5),
+      isStringValueEquivalent(prev[1], cameraTarget[1])
+        ? prev[1]
+        : cameraTarget[1].toFixed(5),
+      isStringValueEquivalent(prev[2], cameraTarget[2])
+        ? prev[2]
+        : cameraTarget[2].toFixed(5),
+    ]);
+  }, [cameraTarget]);
+
   useEffect(() => {
     if (!isOpen) return;
     function handleClickOutside(event: MouseEvent) {
@@ -80,6 +131,7 @@ export default function CameraControlsPanel({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
 
+  // This function is still used by other vector inputs
   const handleVector3Change = (
     value: string,
     index: number,
@@ -91,6 +143,68 @@ export default function CameraControlsPanel({
       const newVec: [number, number, number] = [...currentVec];
       newVec[index] = parsed;
       setter(newVec);
+    }
+  };
+
+  // Handler for camera inputs that uses local string state
+  const handleCameraStringChange = (
+    value: string,
+    index: number,
+    stateSetter: React.Dispatch<React.SetStateAction<[string, string, string]>>,
+    propSetter: (vec: [number, number, number]) => void,
+    currentPropVec: [number, number, number]
+  ) => {
+    // 1. Update local string state immediately to allow typing "5."
+    stateSetter((prev) => {
+      const newStrVec: [string, string, string] = [...prev];
+      newStrVec[index] = value;
+      return newStrVec;
+    });
+
+    // 2. Try to parse and update parent state (full precision)
+    // This allows the step buttons (which use onChange) to work correctly
+    const parsed = parseFloat(value);
+    if (!isNaN(parsed)) {
+      const newVec: [number, number, number] = [...currentPropVec];
+      newVec[index] = parsed;
+      propSetter(newVec);
+    }
+  };
+
+  // Handle blur event to format the input and sync parent state
+  const handleCameraBlur = (
+    value: string,
+    index: number,
+    stateSetter: React.Dispatch<React.SetStateAction<[string, string, string]>>,
+    currentPropVec: [number, number, number],
+    propSetter: (vec: [number, number, number]) => void
+  ) => {
+    const parsed = parseFloat(value);
+    let finalValue: number;
+
+    // If invalid or empty, reset to prop value
+    if (isNaN(parsed)) {
+      finalValue = currentPropVec[index];
+    } else {
+      // If valid, use the parsed value
+      finalValue = parsed;
+    }
+
+    // Round to 5 decimals
+    const roundedValue = parseFloat(finalValue.toFixed(5));
+
+    // Format the local display string
+    stateSetter((prev) => {
+      const newStrVec: [string, string, string] = [...prev];
+      newStrVec[index] = roundedValue.toFixed(5);
+      return newStrVec;
+    });
+
+    // Ensure parent state matches the rounded value
+    if (currentPropVec[index] !== roundedValue) {
+      const newVec: [number, number, number] = [...currentPropVec];
+      newVec[index] = roundedValue;
+      propSetter(newVec);
     }
   };
 
@@ -161,14 +275,24 @@ export default function CameraControlsPanel({
                     <Label className="text-[10px]">X</Label>
                     <Input
                       type="number"
-                      step="0.1"
-                      value={cameraPosition[0]}
-                      onChange={(e) =>
-                        handleVector3Change(
+                      step="0.1" // <--- CHANGED BACK TO 0.1
+                      value={camPosStr[0]}
+                      onBlur={(e) =>
+                        handleCameraBlur(
                           e.target.value,
                           0,
+                          setCamPosStr,
                           cameraPosition,
                           onCameraPositionChange
+                        )
+                      }
+                      onChange={(e) =>
+                        handleCameraStringChange(
+                          e.target.value,
+                          0,
+                          setCamPosStr,
+                          onCameraPositionChange,
+                          cameraPosition
                         )
                       }
                     />
@@ -177,14 +301,24 @@ export default function CameraControlsPanel({
                     <Label className="text-[10px]">Y</Label>
                     <Input
                       type="number"
-                      step="0.1"
-                      value={cameraPosition[1]}
-                      onChange={(e) =>
-                        handleVector3Change(
+                      step="0.1" // <--- CHANGED BACK TO 0.1
+                      value={camPosStr[1]}
+                      onBlur={(e) =>
+                        handleCameraBlur(
                           e.target.value,
                           1,
+                          setCamPosStr,
                           cameraPosition,
                           onCameraPositionChange
+                        )
+                      }
+                      onChange={(e) =>
+                        handleCameraStringChange(
+                          e.target.value,
+                          1,
+                          setCamPosStr,
+                          onCameraPositionChange,
+                          cameraPosition
                         )
                       }
                     />
@@ -193,14 +327,24 @@ export default function CameraControlsPanel({
                     <Label className="text-[10px]">Z</Label>
                     <Input
                       type="number"
-                      step="0.1"
-                      value={cameraPosition[2]}
-                      onChange={(e) =>
-                        handleVector3Change(
+                      step="0.1" // <--- CHANGED BACK TO 0.1
+                      value={camPosStr[2]}
+                      onBlur={(e) =>
+                        handleCameraBlur(
                           e.target.value,
                           2,
+                          setCamPosStr,
                           cameraPosition,
                           onCameraPositionChange
+                        )
+                      }
+                      onChange={(e) =>
+                        handleCameraStringChange(
+                          e.target.value,
+                          2,
+                          setCamPosStr,
+                          onCameraPositionChange,
+                          cameraPosition
                         )
                       }
                     />
@@ -216,14 +360,24 @@ export default function CameraControlsPanel({
                     <Label className="text-[10px]">X</Label>
                     <Input
                       type="number"
-                      step="0.1"
-                      value={cameraTarget[0]}
-                      onChange={(e) =>
-                        handleVector3Change(
+                      step="0.1" // <--- CHANGED BACK TO 0.1
+                      value={camTgtStr[0]}
+                      onBlur={(e) =>
+                        handleCameraBlur(
                           e.target.value,
                           0,
+                          setCamTgtStr,
                           cameraTarget,
                           onCameraTargetChange
+                        )
+                      }
+                      onChange={(e) =>
+                        handleCameraStringChange(
+                          e.target.value,
+                          0,
+                          setCamTgtStr,
+                          onCameraTargetChange,
+                          cameraTarget
                         )
                       }
                     />
@@ -232,14 +386,24 @@ export default function CameraControlsPanel({
                     <Label className="text-[10px]">Y</Label>
                     <Input
                       type="number"
-                      step="0.1"
-                      value={cameraTarget[1]}
-                      onChange={(e) =>
-                        handleVector3Change(
+                      step="0.1" // <--- CHANGED BACK TO 0.1
+                      value={camTgtStr[1]}
+                      onBlur={(e) =>
+                        handleCameraBlur(
                           e.target.value,
                           1,
+                          setCamTgtStr,
                           cameraTarget,
                           onCameraTargetChange
+                        )
+                      }
+                      onChange={(e) =>
+                        handleCameraStringChange(
+                          e.target.value,
+                          1,
+                          setCamTgtStr,
+                          onCameraTargetChange,
+                          cameraTarget
                         )
                       }
                     />
@@ -248,14 +412,24 @@ export default function CameraControlsPanel({
                     <Label className="text-[10px]">Z</Label>
                     <Input
                       type="number"
-                      step="0.1"
-                      value={cameraTarget[2]}
-                      onChange={(e) =>
-                        handleVector3Change(
+                      step="0.1" // <--- CHANGED BACK TO 0.1
+                      value={camTgtStr[2]}
+                      onBlur={(e) =>
+                        handleCameraBlur(
                           e.target.value,
                           2,
+                          setCamTgtStr,
                           cameraTarget,
                           onCameraTargetChange
+                        )
+                      }
+                      onChange={(e) =>
+                        handleCameraStringChange(
+                          e.target.value,
+                          2,
+                          setCamTgtStr,
+                          onCameraTargetChange,
+                          cameraTarget
                         )
                       }
                     />

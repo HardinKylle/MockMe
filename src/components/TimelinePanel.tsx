@@ -155,7 +155,7 @@ export default function TimelinePanel({
                     Confirm Export
                   </p>
                   <p className="text-xs text-slate-300 mt-1">
-                    This will render and download a .webm video.
+                    This will render and download a .webm video. Place the playhead at the start first to avoid bugs.
                   </p>
                 </div>
               </div>
