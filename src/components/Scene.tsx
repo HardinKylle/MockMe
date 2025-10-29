@@ -244,9 +244,32 @@ function SceneContent({
 
           if (modelRef.current && controls) {
             // --- ALL YOUR ANIMATION LOGIC MOVES THE CAMERA ---
-            if (isPresetAnim(scene.animationType)) {
+           if (isPresetAnim(scene.animationType)) {
+              
+              // --- [START FIX] ---
+              // Apply the base state from startView first.
+              // This resets properties like scale and position
+              // before the preset animation (e.g., spin) runs.
+              if (scene.startView && modelRef.current && controls) {
+                camera.position.set(...scene.startView.position);
+                (controls as OrbitControlsType).target.set(...scene.startView.target);
+
+                if (camera instanceof THREE.PerspectiveCamera) {
+                  camera.fov = scene.startView.fov;
+                  camera.updateProjectionMatrix();
+                }
+
+                modelRef.current.position.set(...scene.startView.modelPosition);
+                modelRef.current.rotation.set(...scene.startView.modelRotation);
+                modelRef.current.scale.set(scene.startView.modelScale, scene.startView.modelScale, scene.startView.modelScale);
+                
+                (controls as OrbitControlsType).update();
+              }
+              // --- [END FIX] ---
+
               const animFn = presetAnimationMap[scene.animationType];
               if (animFn) {
+                // Now, the animFn will animate *over* the base state
                 animFn({
                   camera,
                   controls: controls as OrbitControlsType,
@@ -354,9 +377,7 @@ function SceneContent({
                 (controls as OrbitControlsType).target.set(0, 0, 0);
               }
               (controls as OrbitControlsType).update();
-              if (modelRef.current) {
-                modelRef.current.rotation.y = 0;
-              }
+           
             }
           }
           break;
