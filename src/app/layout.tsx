@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-
+import { AppProvider } from '@/contexts/AppContext';
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -40,10 +40,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       {/* USE YOUR GEIST FONT VARIABLES HERE */}
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}> 
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <DesktopOnlyMessage />
         <div id="main-app-content">
-          {children}
+          <AppProvider>{children}</AppProvider>
         </div>
       </body>
     </html>
