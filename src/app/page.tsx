@@ -319,31 +319,9 @@ return (
           selectedModel={selectedModel}
           onModelSelect={handleModelChange}
         />
-        <CameraControlsPanel
-          cameraPosition={cameraPosition}
-          cameraTarget={cameraTarget}
-          cameraFov={cameraFov}
-          modelPosition={modelPosition}
-          modelRotation={modelRotation}
-          modelScale={modelScale}
-          ambientIntensity={ambientIntensity}
-          directionalIntensity={directionalIntensity}
-          directionalPosition={directionalPosition}
-          environmentIntensity={environmentIntensity}
-          screenReflection={screenReflection}
-          onCameraPositionChange={(val) => dispatchSceneControls({ type: 'UPDATE_RAW', payload: { cameraPosition: val } })}
-          onCameraTargetChange={(val) => dispatchSceneControls({ type: 'UPDATE_RAW', payload: { cameraTarget: val } })}
-          onCameraFovChange={(val) => dispatchSceneControls({ type: 'UPDATE_RAW', payload: { cameraFov: val } })}
-          onModelPositionChange={(val) => dispatchSceneControls({ type: 'UPDATE_RAW', payload: { modelPosition: val } })}
-          onModelRotationChange={(val) => dispatchSceneControls({ type: 'UPDATE_RAW', payload: { modelRotation: val } })}
-          onModelScaleChange={(val) => dispatchSceneControls({ type: 'UPDATE_RAW', payload: { modelScale: val } })}
-          onAmbientIntensityChange={(val) => dispatchSceneControls({ type: 'UPDATE_RAW', payload: { ambientIntensity: val } })}
-          onDirectionalIntensityChange={(val) => dispatchSceneControls({ type: 'UPDATE_RAW', payload: { directionalIntensity: val } })}
-          onDirectionalPositionChange={(val) => dispatchSceneControls({ type: 'UPDATE_RAW', payload: { directionalPosition: val } })}
-          onEnvironmentIntensityChange={(val) => dispatchSceneControls({ type: 'UPDATE_RAW', payload: { environmentIntensity: val } })}
-          onScreenReflectionChange={(val) => dispatchSceneControls({ type: 'UPDATE_RAW', payload: { screenReflection: val } })}
-          onReset={handleResetSceneControls}
-        />
+
+        <CameraControlsPanel onReset={handleResetSceneControls} />
+      
     <div className="relative">
           <Button
             onClick={() => setShowViews(!showViews)}
