@@ -131,7 +131,7 @@ export default function CameraControlsPanel({
           <div className="px-4 pt-3 pb-3 border-b border-slate-700/50 sticky top-0 bg-slate-900/80 backdrop-blur-md z-10">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-medium text-slate-100">
-                Scene Controls
+                Transforms Controls
               </h3>
               <Button
                 type="button"

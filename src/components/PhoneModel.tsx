@@ -65,7 +65,7 @@ const PhoneModel: React.FC<PhoneModelProps> = ({
     // NEW: Control video playback based on isPlaying state
     useEffect(() => {
         if (!videoTexture) return;
-        
+
         const video = videoTexture.image as HTMLVideoElement;
         if (!video) return;
 
@@ -81,7 +81,7 @@ const PhoneModel: React.FC<PhoneModelProps> = ({
     // NEW: Sync video currentTime with timeline currentTime
     useEffect(() => {
         if (!videoTexture) return;
-        
+
         const video = videoTexture.image as HTMLVideoElement;
         if (!video) return;
 
@@ -147,13 +147,12 @@ const PhoneModel: React.FC<PhoneModelProps> = ({
                 mat.needsUpdate = true;
             }
         }
-    }, [texture, textureUrl, gl, screenReflection, uploadedFileType, flipY, textureRepeat, textureOffset]);
+    }, [texture, textureUrl, gl, uploadedFileType, flipY, textureRepeat, textureOffset]);
 
-   useLayoutEffect(() => {
-        const originalMaterials = new Map<THREE.Mesh, THREE.Material>();
+    useLayoutEffect(() => {
         const box = new THREE.Box3().setFromObject(scene);
         const center = box.getCenter(new THREE.Vector3());
-        const size = box.getSize(new THREE.Vector3());
+        // const size = box.getSize(new THREE.Vector3()); // Not used
 
         scene.position.sub(center);
         scene.scale.set(scale, scale, scale);
@@ -161,36 +160,43 @@ const PhoneModel: React.FC<PhoneModelProps> = ({
         if (rotation) {
             scene.rotation.set(rotation[0], rotation[1], rotation[2]);
         }
+    }, [scene, modelUrl, scale, rotation]); // <-- No screenReflection
+
+    // Effect 2: Handle material setup (run once per model)
+    // This creates the material and stores a ref to it.
+    useLayoutEffect(() => {
+        const originalMaterials = new Map<THREE.Mesh, THREE.Material>();
 
         scene.traverse((child) => {
             if (child instanceof THREE.Mesh) {
                 const material = child.material;
-                console.log(`Mesh: "${child.name}", Material: "${child.material.name}"`);
+                // console.log(`Mesh: "${child.name}", Material: "${child.material.name}"`);
 
                 if (material) {
-                  if (material.name === screenMaterialName) {
-                            originalMaterials.set(child, material);
+                    if (material.name === screenMaterialName) {
+                        originalMaterials.set(child, material);
 
-                            const mat = material as THREE.MeshStandardMaterial; 
-                            originalMapRef.current = mat.map || mat.emissiveMap || null;
+                        const mat = material as THREE.MeshStandardMaterial;
+                        originalMapRef.current = mat.map || mat.emissiveMap || null;
 
-                            const physicalMat = new THREE.MeshPhysicalMaterial({
-                                color: 0x000000,
-                                emissive: 0xffffff,
-                                emissiveMap: originalMapRef.current,
-                                emissiveIntensity: 1,
-                                roughness: 1.0,
-                                metalness: 0,
-                                toneMapped: false, 
-                                clearcoat: screenReflection ? 0.5 : 0.0,
-                                clearcoatRoughness: 0.3,
-                            });
-                            
-                            if (physicalMat.emissiveMap) physicalMat.emissiveMap.colorSpace = THREE.SRGBColorSpace;
+                        const physicalMat = new THREE.MeshPhysicalMaterial({
+                            color: 0x000000,
+                            emissive: 0xffffff,
+                            emissiveMap: originalMapRef.current,
+                            emissiveIntensity: 1,
+                            roughness: 1.0,
+                            metalness: 0,
+                            toneMapped: false,
+                            // Set initial value from prop
+                            clearcoat: screenReflection ? 0.5 : 0.0,
+                            clearcoatRoughness: 0.3,
+                        });
 
-                            child.material = physicalMat;
-                            screenMaterialRef.current = physicalMat;
-                        }
+                        if (physicalMat.emissiveMap) physicalMat.emissiveMap.colorSpace = THREE.SRGBColorSpace;
+
+                        child.material = physicalMat;
+                        screenMaterialRef.current = physicalMat; // <-- We store the ref
+                    }
 
                     material.depthWrite = true;
                     material.depthTest = true;
@@ -211,8 +217,19 @@ const PhoneModel: React.FC<PhoneModelProps> = ({
             screenMaterialRef.current = null;
             originalMapRef.current = null;
         };
+        // This effect now only runs when the model itself changes
+    }, [scene, screenMaterialName, modelUrl, screenReflection]); // <-- We keep screenReflection here to set the *initial* state correctly
 
-    }, [scene, screenMaterialName, modelUrl, scale, rotation, screenReflection]); 
+    // Effect 3: Update reflection property dynamically
+    // This is small, fast, and only runs when the toggle changes.
+    useEffect(() => {
+        if (screenMaterialRef.current) {
+            // We know this is a MeshPhysicalMaterial because we created it.
+            const mat = screenMaterialRef.current as THREE.MeshPhysicalMaterial;
+            mat.clearcoat = screenReflection ? 0.5 : 0.0;
+            // mat.needsUpdate = true; // Not required for clearcoat
+        }
+    }, [screenReflection]); // <-- Runs ONLY when reflection changes.
 
     return <primitive object={scene} />;
 }

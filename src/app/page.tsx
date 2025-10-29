@@ -290,14 +290,14 @@ export default function App() {
     setShowExportConfirm(false); // Close the pop-up
     setIsRecording(true);
     setIsPlaying(false); // Ensure paused
-    setCurrentTime(0);   // Reset time
+    setCurrentTime(0.1);   // Reset time to 0.1  // Reset time
     setHasFinished(false);
 
     // Give React a moment to update state before starting
     setTimeout(() => {
       // --- MODIFIED: Pass the aspectRatio state ---
       sceneRef.current?.startRecording(aspectRatio);
-      setCurrentTime(0); // Reset again just in case
+      setCurrentTime(0.1); // Reset again just in case
       setIsPlaying(true);  // Start playback
     }, 100); // Small delay
   };
@@ -357,7 +357,7 @@ export default function App() {
   const frameStyle = getFrameStyle();
 
   // --- ADDED: Handler for two-way binding ---
-const handleLiveCameraChange = (newState: SceneState) => {
+  const handleLiveCameraChange = (newState: SceneState) => {
     setCameraPosition(newState.position);
     setCameraTarget(newState.target);
     setCameraFov(newState.fov);
