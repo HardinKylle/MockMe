@@ -74,6 +74,7 @@ export default function App() {
   const [hasFinished, setHasFinished] = useState(false);
   const [isScrubbing, setIsScrubbing] = useState(false);
   const [wrapperBg, setWrapperBg] = useState('bg-white');
+  const isResetting = useRef(false); // <--- ADD THIS LINE
   const [animationScenes, setAnimationScenes] = useState<AnimationScene[]>([
     defaultScene,
   ]);
@@ -338,7 +339,11 @@ export default function App() {
     modelScale: modelScale,
   };
 
-  const handleResetSceneControls = () => {
+const handleResetSceneControls = () => {
+    // 1. Activate the lock
+    isResetting.current = true;
+
+    // 2. Set all the state to default
     setCameraPosition(DEFAULT_SCENE_CONTROLS.cameraPosition);
     setCameraTarget(DEFAULT_SCENE_CONTROLS.cameraTarget);
     setCameraFov(DEFAULT_SCENE_CONTROLS.cameraFov);
@@ -350,14 +355,31 @@ export default function App() {
     setDirectionalPosition(DEFAULT_SCENE_CONTROLS.directionalPosition);
     setEnvironmentIntensity(DEFAULT_SCENE_CONTROLS.environmentIntensity);
     setScreenReflection(DEFAULT_SCENE_CONTROLS.screenReflection);
+
+    // 3. Imperatively reset the 3D scene's camera
+    if (sceneRef.current) {
+      sceneRef.current.setView(
+        DEFAULT_SCENE_CONTROLS.cameraPosition,
+        DEFAULT_SCENE_CONTROLS.cameraTarget
+      );
+    }
+
+    // 4. Release the lock *after* the camera animation has finished.
+    // 100ms was too short. 600ms is much safer.
+    setTimeout(() => {
+      isResetting.current = false;
+    }, 600); // <--- INCREASED TIMEOUT
   };
 
-
+  // ...
 
   const frameStyle = getFrameStyle();
 
-  // --- ADDED: Handler for two-way binding ---
+// This function is now protected by the lock
   const handleLiveCameraChange = (newState: SceneState) => {
+    // 5. Check the lock. If we are resetting, do nothing.
+    if (isResetting.current) return;
+
     setCameraPosition(newState.position);
     setCameraTarget(newState.target);
     setCameraFov(newState.fov);
