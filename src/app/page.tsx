@@ -74,7 +74,8 @@ export default function App() {
   const [hasFinished, setHasFinished] = useState(false);
   const [isScrubbing, setIsScrubbing] = useState(false);
   const [wrapperBg, setWrapperBg] = useState('bg-white');
-  const isResetting = useRef(false); // <--- ADD THIS LINE
+  const isResetting = useRef(false);
+  const prevUploadedFileTypeRef = useRef<string | null>(null);
   const [animationScenes, setAnimationScenes] = useState<AnimationScene[]>([
     defaultScene,
   ]);
@@ -117,22 +118,25 @@ export default function App() {
     DEFAULT_SCENE_CONTROLS.screenReflection
   );
 
-  // useEffect and handlers remain the same
   useEffect(() => {
-    // Check if uploadedFileType is 'video' AND videoDuration is a valid number > 0
+    const prevFileType = prevUploadedFileTypeRef.current;
+
+    // Case 1: A video is uploaded.
+    // Set duration to the video's length.
     if (uploadedFileType === 'video' && videoDuration !== null && videoDuration > 0) {
       setTotalVideoDuration(videoDuration);
       setShowTimeline(true); // Show timeline for video
-    } else {
-      // If it's an image, no file, or video duration is invalid/zero
-      setTotalVideoDuration(DEFAULT_TOTAL_DURATION); // Reset to default 10
-      // Decide if timeline should hide based on file type, not just duration
-      if (uploadedFileType !== 'video') {
-        setShowTimeline(false); // Hide timeline if not a video
-      }
     }
-  }, [uploadedFileType, videoDuration]);
+    // Case 2: A video was *just* removed.
+    // (The previous type was 'video', but the current one is not).
+    else if (prevFileType === 'video' && uploadedFileType !== 'video') {
+      setTotalVideoDuration(DEFAULT_TOTAL_DURATION); // Reset to 10
+    }
 
+    // Finally, update the ref to store the current type for the next run.
+    prevUploadedFileTypeRef.current = uploadedFileType;
+
+  }, [uploadedFileType, videoDuration]);
 
   useEffect(() => {
     // When animation finishes AND we are recording, stop the recording.
@@ -339,7 +343,7 @@ export default function App() {
     modelScale: modelScale,
   };
 
-const handleResetSceneControls = () => {
+  const handleResetSceneControls = () => {
     // 1. Activate the lock
     isResetting.current = true;
 
@@ -375,7 +379,7 @@ const handleResetSceneControls = () => {
 
   const frameStyle = getFrameStyle();
 
-// This function is now protected by the lock
+  // This function is now protected by the lock
   const handleLiveCameraChange = (newState: SceneState) => {
     // 5. Check the lock. If we are resetting, do nothing.
     if (isResetting.current) return;
