@@ -35,6 +35,8 @@ interface SceneProps {
   directionalPosition: [number, number, number];
   environmentIntensity: number;
   screenReflection: boolean;
+  // --- ADD THIS PROP ---
+  onLiveCameraChange: (pos: [number, number, number], target: [number, number, number]) => void;
 }
 
 export interface SceneApi {
@@ -87,6 +89,9 @@ const lerp = (start: number, end: number, t: number) => {
   return start + (end - start) * t;
 };
 
+// --- CREATE A REUSABLE VECTOR FOR THE EFFECT ---
+const vec3 = new THREE.Vector3();
+
 function SceneContent({
   backgroundColor,
   model,
@@ -112,9 +117,24 @@ function SceneContent({
   directionalPosition,
   environmentIntensity,
   screenReflection,
-}: Omit<SceneProps, 'backgroundColor' | 'isScrubbing'> & { backgroundColor: string; isScrubbing: boolean }) {
-  const { gl, camera, controls } = useThree();
+  // --- ADD THIS PROP ---
+  onLiveCameraChange,
+}: Omit<SceneProps, 'backgroundColor' | 'isScrubbing'> & {
+  backgroundColor: string;
+  isScrubbing: boolean;
+  // --- ADD THIS PROP ---
+  onLiveCameraChange: (pos: [number, number, number], target: [number, number, number]) => void;
+}) {
+  const { gl, camera, controls } = useThree(); // <--- GET CONTROLS FROM USETHREE
   const modelRef = useRef<THREE.Group>(null);
+  
+  // --- CAST CONTROLS TO THE CORRECT TYPE ---
+  const controlsRef = useRef<OrbitControlsType>(controls as OrbitControlsType);
+  // Sync ref if `controls` from `useThree` changes
+  useEffect(() => {
+    controlsRef.current = controls as OrbitControlsType;
+  }, [controls]);
+
 
   // Apply camera FOV
   useEffect(() => {
@@ -124,14 +144,27 @@ function SceneContent({
     }
   }, [camera, cameraFov]);
 
-  // // Apply camera position and target when not playing/scrubbing AND at the start
-  // useEffect(() => {
-  //   if (!isPlaying && !isScrubbing && currentTime === 0 && controls) {
-  //     camera.position.set(...cameraPosition);
-  //     (controls as OrbitControlsType).target.set(...cameraTarget);
-  //     (controls as OrbitControlsType).update();
-  //   }
-  // }, [isPlaying, isScrubbing, currentTime, cameraPosition, cameraTarget, camera, controls]);
+  // --- [FIX 1: Sliders -> Camera] ---
+  // This effect applies the inspection state (from sliders) to the camera
+  // ONLY when we are PAUSED.
+  useEffect(() => {
+    if (controlsRef.current && !isPlaying && !isScrubbing) {
+      const camPos = controlsRef.current.object.position;
+      const targetPos = controlsRef.current.target;
+
+      // Check if different to prevent infinite loops from floating point noise
+      if (
+        !camPos.equals(vec3.set(...cameraPosition)) ||
+        !targetPos.equals(vec3.set(...cameraTarget))
+      ) {
+        camPos.set(...cameraPosition);
+        targetPos.set(...cameraTarget);
+        controlsRef.current.update();
+      }
+    }
+    // This effect runs when the *props* change, or when we pause/play
+  }, [isPlaying, isScrubbing, cameraPosition, cameraTarget]);
+
 
   // Apply model transforms
   useEffect(() => {
@@ -141,30 +174,6 @@ function SceneContent({
       modelRef.current.scale.set(modelScale, modelScale, modelScale);
     }
   }, [modelPosition, modelRotation, modelScale]);
-
-  // useEffect(() => {
-  //   // Only reset if we're starting to play AND we're at the beginning
-  //   if (isPlaying && currentTime === 0) {
-  //     if (modelRef.current) {
-  //       modelRef.current.rotation.y = 0;
-  //     }
-
-  //     const firstScene = scenes[0];
-
-  //     if (
-  //       firstScene &&
-  //       (firstScene.animationType === 'custom' ||
-  //         firstScene.animationType === 'hold') &&
-  //       firstScene.startView
-  //     ) {
-  //       camera.position.set(...firstScene.startView.position);
-  //       (controls as OrbitControlsType).target.set(...firstScene.startView.target);
-  //     } else {
-  //       camera.position.set(0, 0, 2);
-  //       (controls as OrbitControlsType).target.set(0, 0, 0);
-  //     }
-  //   }
-  // }, [isPlaying, currentTime, scenes, camera, controls]);
 
   useEffect(() => {
     if (backgroundColor === 'transparent') {
@@ -176,25 +185,27 @@ function SceneContent({
   }, [gl, backgroundColor]);
 
 useFrame((state, delta) => {
+    const controls = controlsRef.current; // Get controls from ref
+    if (!controls) return; // Safety check
+
     // 1. Advance time ONLY if isPlaying is true
     if (isPlaying) {
       
-      // --- THIS IS THE FIX ---
-      // We must ALWAYS use the real-time delta to advance
-      // the animation. This ensures that even if the frame
-      // rate is high (e.g., 144Hz) or low (e.g., 30Hz),
-      // the animation 'currentTime' advances correctly
-      // in sync with real-world time.
-      const frameDelta = delta; // <--- THIS IS THE CHANGE
+      const frameDelta = delta; 
 
       setCurrentTime((prevTime) => {
-        // --- MODIFIED: Use our new frameDelta ---
         const newTime = prevTime + frameDelta;
 
         if (newTime >= totalVideoDuration) {
           setIsPlaying(false);
           setHasFinished(true);
-          // --- MODIFIED: Return total duration to prevent jumping to 0 ---
+          
+          // --- FIX: Also sync state on the very last frame ---
+          const pos = camera.position.toArray() as [number, number, number];
+          const target = controls.target.toArray() as [number, number, number];
+          onLiveCameraChange(pos, target);
+          // --- END FIX ---
+
           return totalVideoDuration;
         }
         return newTime;
@@ -217,6 +228,7 @@ useFrame((state, delta) => {
           const easedProgress = easeInOutCubic(sceneProgress);
 
           if (modelRef.current && controls) {
+            // --- ALL YOUR ANIMATION LOGIC MOVES THE CAMERA ---
             if (isPresetAnim(scene.animationType)) {
               const animFn = presetAnimationMap[scene.animationType];
               if (animFn) {
@@ -296,6 +308,14 @@ useFrame((state, delta) => {
         }
         timeSoFar = sceneEndTime;
       }
+      
+      // --- [FIX 2: Animation -> Sliders] ---
+      // After the animation logic runs, report the new animated position
+      // back up to the parent (which updates the sliders).
+      const pos = camera.position.toArray() as [number, number, number];
+      const target = controls.target.toArray() as [number, number, number];
+      onLiveCameraChange(pos, target);
+      // --- END OF FIX 2 ---
     }
   });
 
@@ -328,19 +348,35 @@ useFrame((state, delta) => {
       )}
 
       <OrbitControls
+        // --- ADD REF ---
+        ref={controlsRef}
         enableZoom={true}
         minDistance={0.5}
         maxDistance={6}
         makeDefault
         target={[0, 0, 0]}
         enabled={!isPlaying && !isScrubbing}
+        // --- [FIX 3: Drag -> Sliders] ---
+        // When dragging (paused), report the new position up to the parent
+        // (which updates the sliders).
+        onChange={() => {
+          if (controlsRef.current && !isPlaying && !isScrubbing) {
+            const pos = controlsRef.current.object.position.toArray() as [number, number, number];
+            const target = controlsRef.current.target.toArray() as [number, number, number];
+            onLiveCameraChange(pos, target);
+          }
+        }}
       />
     </>
   );
 }
 
 export default forwardRef<SceneApi, SceneProps>(function Scene(
-  {
+  props, // --- CHANGED TO 'props'
+  ref
+) {
+  // --- DESTRUCTURE PROPS ---
+  const {
     textureUrl,
     uploadedFileType,
     model,
@@ -365,9 +401,9 @@ export default forwardRef<SceneApi, SceneProps>(function Scene(
     directionalPosition,
     environmentIntensity,
     screenReflection,
-  },
-  ref
-) {
+    onLiveCameraChange, // --- GET THE NEW PROP ---
+  } = props;
+
   return (
     <Canvas
       gl={{
@@ -403,6 +439,7 @@ export default forwardRef<SceneApi, SceneProps>(function Scene(
         directionalPosition={directionalPosition}
         environmentIntensity={environmentIntensity}
         screenReflection={screenReflection}
+        onLiveCameraChange={onLiveCameraChange} // --- PASS PROP DOWN ---
       />
 
       <SceneCaptureController ref={ref} />

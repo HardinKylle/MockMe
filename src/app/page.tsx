@@ -72,7 +72,7 @@ export default function App() {
 
   const [isRecording, setIsRecording] = useState(false);
   const [showExportConfirm, setShowExportConfirm] = useState(false);
-  const [showBrowserWarning, setShowBrowserWarning] = useState(false); 
+  const [showBrowserWarning, setShowBrowserWarning] = useState(false);
   // Scene controls state (remains the same)
   const [cameraPosition, setCameraPosition] = useState<[number, number, number]>(
     DEFAULT_SCENE_CONTROLS.cameraPosition
@@ -162,6 +162,10 @@ export default function App() {
 
   const handlePresetClick = (view: typeof presetViews[number]) => {
     sceneRef.current?.setView(view.position, view.target);
+    // --- ADDED: Also update inspection state ---
+    setCameraPosition(view.position as [number, number, number]);
+    setCameraTarget(view.target as [number, number, number]);
+    // --- END ADDITION ---
     setShowViews(false);
   };
 
@@ -214,7 +218,12 @@ export default function App() {
       setCurrentTime(0);
       setHasFinished(false);
     }
+    
+    // --- THIS IS THE FIX ---
+    // Just toggle the state. No more manual sync.
+    // The Scene component will handle the rest.
     setIsPlaying(!isPlaying);
+    // --- END OF FIX ---
   };
 
   const handleExport = () => {
@@ -299,6 +308,17 @@ export default function App() {
 
 
   const frameStyle = getFrameStyle();
+
+  // --- ADDED: Handler for two-way binding ---
+  const handleLiveCameraChange = (
+    pos: [number, number, number],
+    target: [number, number, number]
+  ) => {
+    setCameraPosition(pos);
+    setCameraTarget(target);
+  };
+
+
   return (
     <div className={`w-full h-screen ${wrapperBg} relative overflow-hidden flex items-center justify-center transition-colors`}>
       <div style={frameStyle} className="">
@@ -328,6 +348,9 @@ export default function App() {
           directionalPosition={directionalPosition}
           environmentIntensity={environmentIntensity}
           screenReflection={screenReflection}
+          // --- ADD THIS PROP ---
+          onLiveCameraChange={handleLiveCameraChange}
+          // --- END OF ADDITION ---
         />
       </div>
 

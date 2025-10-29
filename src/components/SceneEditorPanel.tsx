@@ -45,11 +45,13 @@ const isPresetAnim = (
   presetAnimationTypes.includes(type as PresetAnimationType);
 // --- End Helper Types ---
 
-// --- *** MODIFIED: formatView now only shows Position *** ---
+// --- *** MODIFIED: formatView now shows Position and Target *** ---
 const formatView = (view: CameraView | undefined | null) => {
   if (!view) return 'Not Set';
-  // Only show the position
-  return `P:[${view.position.map((p) => p.toFixed(1)).join(', ')}]`;
+  // Show both position and target
+  const pos = `P:[${view.position.map((p) => p.toFixed(1)).join(', ')}]`;
+  const target = `T:[${view.target.map((t) => t.toFixed(1)).join(', ')}]`;
+  return `${pos} ${target}`;
 };
 // --- *** END MODIFICATION *** ---
 
@@ -315,8 +317,8 @@ export default function SceneEditorPanel({
                 </Button>
               )}
             </div>
-            {/* Coordinate Display (Only P) */}
-            <p className="text-[10px] text-slate-400 truncate leading-tight">
+            {/* Coordinate Display (P and T) */}
+            <p className="text-[10px] text-slate-400 leading-tight break-words">
               {formatView(selectedScene.startView)}
             </p>
           </div>
@@ -350,8 +352,8 @@ export default function SceneEditorPanel({
                   </Button>
                 )}
               </div>
-              {/* Coordinate Display (Only P) */}
-              <p className="text-[10px] text-slate-400 truncate leading-tight">
+              {/* Coordinate Display (P and T) */}
+              <p className="text-[10px] text-slate-400 leading-tight break-words">
                 {formatView(selectedScene.startView)}
               </p>
             </div>
@@ -381,8 +383,8 @@ export default function SceneEditorPanel({
                   </Button>
                 )}
               </div>
-              {/* Coordinate Display (Only P) */}
-              <p className="text-[10px] text-slate-400 truncate leading-tight">
+              {/* Coordinate Display (P and T) */}
+              <p className="text-[10px] text-slate-400 leading-tight break-words">
                 {formatView(selectedScene.endView)}
               </p>
             </div>
