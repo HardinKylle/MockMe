@@ -24,7 +24,7 @@ import { useAnimation } from '@/contexts/AnimationContext'; // --- IMPORT ---
 const DEFAULT_TOTAL_DURATION = 10;
 
 export default function App() {
-// --- Core Hooks ---
+  // --- Core Hooks ---
   const { sceneControls, dispatchSceneControls } = useScene();
   const {
     animationScenes,
@@ -77,7 +77,7 @@ export default function App() {
   const [showExportConfirm, setShowExportConfirm] = useState(false);
   const [showBrowserWarning, setShowBrowserWarning] = useState(false);
 
-useEffect(() => {
+  useEffect(() => {
     const prevFileType = prevUploadedFileTypeRef.current;
     if (uploadedFileType === 'video' && videoDuration !== null && videoDuration > 0) {
       setTotalVideoDuration(videoDuration);
@@ -270,12 +270,34 @@ useEffect(() => {
 
   const frameStyle = getFrameStyle();
 
+  // Throttle live camera updates to prevent excessive re-renders
+  const throttledUpdateRef = useRef<NodeJS.Timeout | null>(null);
+
   const handleLiveCameraChange = (newState: SceneState) => {
     if (isResetting.current) return;
-    dispatchSceneControls({ type: 'SET_VIEW', payload: newState });
+
+    // Clear any pending update
+    if (throttledUpdateRef.current) {
+      clearTimeout(throttledUpdateRef.current);
+    }
+
+    // Schedule update for after render cycle, throttled
+    throttledUpdateRef.current = setTimeout(() => {
+      dispatchSceneControls({ type: 'SET_VIEW', payload: newState });
+      throttledUpdateRef.current = null;
+    }, 16); // ~60fps throttle
   };
 
-return (
+  // Cleanup throttle timer on unmount
+  useEffect(() => {
+    return () => {
+      if (throttledUpdateRef.current) {
+        clearTimeout(throttledUpdateRef.current);
+      }
+    };
+  }, []);
+
+  return (
     <div className={`w-full h-screen ${wrapperBg} relative overflow-hidden flex items-center justify-center transition-colors`}>
       <div style={frameStyle} className="">
         <Scene
@@ -321,8 +343,8 @@ return (
         />
 
         <CameraControlsPanel onReset={handleResetSceneControls} />
-      
-    <div className="relative">
+
+        <div className="relative">
           <Button
             onClick={() => setShowViews(!showViews)}
             variant="primary"
@@ -425,7 +447,7 @@ return (
           </div>
         </div>
       )}
-{/* Bottom-Left Container */}
+      {/* Bottom-Left Container */}
       <div className="fixed bottom-4 left-4 z-20 flex flex-col-reverse items-end gap-2">
         <ContentEditorPanel
           isVisible={showTimeline}
