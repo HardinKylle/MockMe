@@ -443,7 +443,7 @@ export default function CameraControlsPanel({
                 <Input
                   type="number"
                   step="1"
-                  min="10"
+                  min="1"
                   max="120"
                   value={cameraFov}
                   onChange={(e) => {

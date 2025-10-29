@@ -218,7 +218,7 @@ const PhoneModel: React.FC<PhoneModelProps> = ({
             originalMapRef.current = null;
         };
         // This effect now only runs when the model itself changes
-    }, [scene, screenMaterialName, modelUrl, screenReflection]); // <-- We keep screenReflection here to set the *initial* state correctly
+    }, [scene, screenMaterialName, modelUrl]); // <-- We keep screenReflection here to set the *initial* state correctly
 
     // Effect 3: Update reflection property dynamically
     // This is small, fast, and only runs when the toggle changes.
