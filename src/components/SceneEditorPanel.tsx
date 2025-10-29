@@ -2,7 +2,7 @@
 
 import {
   AnimationScene,
-  CameraView,
+  SceneState,
   AnimationType,
   CustomAnimationType,
   PresetAnimationType,
@@ -45,13 +45,32 @@ const isPresetAnim = (
   presetAnimationTypes.includes(type as PresetAnimationType);
 // --- End Helper Types ---
 
-// --- *** MODIFIED: formatView now shows Position and Target *** ---
-const formatView = (view: CameraView | undefined | null) => {
-  if (!view) return 'Not Set';
-  // Show both position and target
-  const pos = `P:[${view.position.map((p) => p.toFixed(1)).join(', ')}]`;
-  const target = `T:[${view.target.map((t) => t.toFixed(1)).join(', ')}]`;
-  return `${pos} ${target}`;
+const formatView = (view: SceneState | undefined | null): React.ReactNode => {
+  if (!view) {
+    return <span className="text-slate-500">Not Set</span>;
+  }
+
+  // Helper function to format an array of numbers
+  const formatArray = (arr: number[]) => `[${arr.map((n) => n.toFixed(1)).join(', ')}]`;
+
+  return (
+    <div className="flex space-x-2"> {/* <-- Use flexbox for side-by-side */}
+      {/* Camera Stats */}
+      <div className="w-1/2 space-y-0.5"> {/* <-- Column 1 */}
+        <div className="font-medium text-slate-400">Camera</div>
+        <div className="pl-1">P: {formatArray(view.position)}</div>
+        <div className="pl-1">T: {formatArray(view.target)}</div>
+        <div className="pl-1">Fov: {view.fov.toFixed(0)}</div>
+      </div>
+      {/* Model Stats */}
+      <div className="w-1/2 space-y-0.5"> {/* <-- Column 2 */}
+        <div className="font-medium text-slate-400">Model</div>
+        <div className="pl-1">Pos: {formatArray(view.modelPosition)}</div>
+        <div className="pl-1">Rot: {formatArray(view.modelRotation)}</div>
+        <div className="pl-1">Scl: {view.modelScale.toFixed(2)}</div>
+      </div>
+    </div>
+  );
 };
 // --- *** END MODIFICATION *** ---
 
@@ -67,6 +86,7 @@ interface SceneEditorPanelProps {
   sceneCount: number;
   scenes: AnimationScene[];
   onReorderScenes: (scenes: AnimationScene[]) => void;
+  currentState: SceneState; // <--- NEW PROP
 }
 
 function reorder<T>(list: T[], startIndex: number, endIndex: number): T[] {
@@ -85,6 +105,7 @@ export default function SceneEditorPanel({
   sceneCount,
   scenes,
   onReorderScenes,
+  currentState,
 }: SceneEditorPanelProps) {
   const [showSavedMessage, setShowSavedMessage] = useState(false);
   const [durationInput, setDurationInput] = useState(
@@ -95,8 +116,8 @@ export default function SceneEditorPanel({
   const activeCategory = isCustomAnim(selectedScene.animationType)
     ? 'custom'
     : isPresetAnim(selectedScene.animationType)
-    ? 'preset'
-    : 'custom';
+      ? 'preset'
+      : 'custom';
 
   useEffect(() => {
     setDurationInput(selectedScene.duration.toString());
@@ -114,9 +135,8 @@ export default function SceneEditorPanel({
   };
 
   const handleSetView = (type: 'startView' | 'endView') => {
-    const view = sceneRef.current?.getView();
-    if (view) {
-      onUpdateScene(selectedScene.id, { [type]: view });
+    if (currentState) {
+      onUpdateScene(selectedScene.id, { [type]: currentState });
       setShowSavedMessage(true);
       setTimeout(() => {
         setShowSavedMessage(false);
@@ -148,19 +168,17 @@ export default function SceneEditorPanel({
 
   return (
     <div
-      className={`z-20 w-60 rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 backdrop-blur-xl transition-all duration-300 ease-out ${
-        isVisible
-          ? 'opacity-100 translate-y-0'
-          : 'opacity-0 translate-y-10 pointer-events-none'
-      }`}
+      className={`z-20 w-60 rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 backdrop-blur-xl transition-all duration-300 ease-out ${isVisible
+        ? 'opacity-100 translate-y-0'
+        : 'opacity-0 translate-y-10 pointer-events-none'
+        }`}
     >
       <div className="flex items-center justify-between px-3 py-1.5 border-b border-slate-700/50">
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-medium text-slate-100">Edit Scene</h3>
           <div
-            className={`flex items-center gap-1 rounded-full bg-green-500/20 px-2 py-0.5 transition-all duration-300 ${
-              showSavedMessage ? 'opacity-100' : 'opacity-0'
-            }`}
+            className={`flex items-center gap-1 rounded-full bg-green-500/20 px-2 py-0.5 transition-all duration-300 ${showSavedMessage ? 'opacity-100' : 'opacity-0'
+              }`}
           >
             <CheckIcon className="h-3 w-3 text-green-400" />
             <span className="text-[10px] font-medium text-green-300">
@@ -318,9 +336,9 @@ export default function SceneEditorPanel({
               )}
             </div>
             {/* Coordinate Display (P and T) */}
-            <p className="text-[10px] text-slate-400 leading-tight break-words">
+            <div className="text-[10px] text-slate-300 leading-tight wrap-break-words pt-1">
               {formatView(selectedScene.startView)}
-            </p>
+            </div>
           </div>
         )}
 
@@ -353,9 +371,9 @@ export default function SceneEditorPanel({
                 )}
               </div>
               {/* Coordinate Display (P and T) */}
-              <p className="text-[10px] text-slate-400 leading-tight break-words">
+              <div className="text-[10px] text-slate-300 leading-tight wrap-break-words pt-1">
                 {formatView(selectedScene.startView)}
-              </p>
+              </div>
             </div>
 
             {/* End View */}
@@ -384,9 +402,9 @@ export default function SceneEditorPanel({
                 )}
               </div>
               {/* Coordinate Display (P and T) */}
-              <p className="text-[10px] text-slate-400 leading-tight break-words">
+              <div className="text-[10px] text-slate-300 leading-tight wrap-break-words pt-1">
                 {formatView(selectedScene.endView)}
-              </p>
+              </div>
             </div>
           </div>
         )}

@@ -7,7 +7,7 @@ import * as THREE from 'three';
 import { SceneCaptureController } from './SceneCaptureController';
 import { ModelData, models } from '@/configs/models';
 import { type OrbitControls as OrbitControlsType } from 'three-stdlib';
-import { AnimationScene, CameraView, AnimationType } from '@/types/animation';
+import { AnimationScene, SceneState, AnimationType } from '@/types/animation';
 import { presetAnimationMap, isPresetAnim } from '@/types/animation-presets';
 
 interface SceneProps {
@@ -36,13 +36,13 @@ interface SceneProps {
   environmentIntensity: number;
   screenReflection: boolean;
   // --- ADD THIS PROP ---
-  onLiveCameraChange: (pos: [number, number, number], target: [number, number, number]) => void;
+  onLiveCameraChange: (newState: SceneState) => void;
 }
 
 export interface SceneApi {
   capture: (aspectRatio: string) => string | undefined;
   setView: (position: readonly [number, number, number], target: readonly [number, number, number]) => void;
-  getView: () => CameraView | null;
+  getView: () => SceneState | null;
   startRecording: (aspectRatio: string) => void;
   stopRecording: () => void;
 }
@@ -57,6 +57,12 @@ const startPos = new THREE.Vector3();
 const endPos = new THREE.Vector3();
 const startTarget = new THREE.Vector3();
 const endTarget = new THREE.Vector3();
+
+// --- Add these near your other THREE.Vector3 definitions ---
+const startModelPos = new THREE.Vector3();
+const endModelPos = new THREE.Vector3();
+const startModelRot = new THREE.Vector3();
+const endModelRot = new THREE.Vector3();
 
 // Helper function to convert Cartesian to Spherical coordinates
 const cartesianToSpherical = (vec: THREE.Vector3) => {
@@ -123,11 +129,10 @@ function SceneContent({
   backgroundColor: string;
   isScrubbing: boolean;
   // --- ADD THIS PROP ---
-  onLiveCameraChange: (pos: [number, number, number], target: [number, number, number]) => void;
 }) {
   const { gl, camera, controls } = useThree(); // <--- GET CONTROLS FROM USETHREE
   const modelRef = useRef<THREE.Group>(null);
-  
+
   // --- CAST CONTROLS TO THE CORRECT TYPE ---
   const controlsRef = useRef<OrbitControlsType>(controls as OrbitControlsType);
   // Sync ref if `controls` from `useThree` changes
@@ -184,14 +189,14 @@ function SceneContent({
     }
   }, [gl, backgroundColor]);
 
-useFrame((state, delta) => {
+  useFrame((state, delta) => {
     const controls = controlsRef.current; // Get controls from ref
     if (!controls) return; // Safety check
 
     // 1. Advance time ONLY if isPlaying is true
     if (isPlaying) {
-      
-      const frameDelta = delta; 
+
+      const frameDelta = delta;
 
       setCurrentTime((prevTime) => {
         const newTime = prevTime + frameDelta;
@@ -199,11 +204,21 @@ useFrame((state, delta) => {
         if (newTime >= totalVideoDuration) {
           setIsPlaying(false);
           setHasFinished(true);
-          
+
           // --- FIX: Also sync state on the very last frame ---
           const pos = camera.position.toArray() as [number, number, number];
           const target = controls.target.toArray() as [number, number, number];
-          onLiveCameraChange(pos, target);
+          // --- UPDATED to pass full state ---
+          if (modelRef.current) {
+            onLiveCameraChange({
+              position: pos,
+              target: target,
+              fov: camera instanceof THREE.PerspectiveCamera ? camera.fov : 50,
+              modelPosition: modelRef.current.position.toArray() as [number, number, number],
+              modelRotation: [modelRef.current.rotation.x, modelRef.current.rotation.y, modelRef.current.rotation.z],
+              modelScale: modelRef.current.scale.x,
+            });
+          }
           // --- END FIX ---
 
           return totalVideoDuration;
@@ -243,6 +258,7 @@ useFrame((state, delta) => {
             }
             else if (scene.animationType === 'custom') {
               if (scene.startView && scene.endView) {
+                // --- Camera Position/Target (existing logic) ---
                 startPos.set(...scene.startView.position);
                 endPos.set(...scene.endView.position);
                 startTarget.set(...scene.startView.target);
@@ -285,15 +301,54 @@ useFrame((state, delta) => {
                 startTarget.lerp(endTarget, easedProgress);
                 (controls as OrbitControlsType).target.copy(startTarget);
                 (controls as OrbitControlsType).update();
+
+                // --- [NEW] INTERPOLATE FOV ---
+                const startFov = scene.startView.fov;
+                const endFov = scene.endView.fov;
+                if (camera instanceof THREE.PerspectiveCamera) {
+                  camera.fov = lerp(startFov, endFov, easedProgress);
+                  camera.updateProjectionMatrix(); // IMPORTANT!
+                }
+                // --- [NEW] INTERPOLATE MODEL TRANSFORMS ---
+                startModelPos.set(...scene.startView.modelPosition);
+                endModelPos.set(...scene.endView.modelPosition);
+                startModelPos.lerp(endModelPos, easedProgress);
+                modelRef.current.position.copy(startModelPos);
+
+                startModelRot.set(...scene.startView.modelRotation);
+                endModelRot.set(...scene.endView.modelRotation);
+                startModelRot.lerp(endModelRot, easedProgress);
+                modelRef.current.rotation.set(startModelRot.x, startModelRot.y, startModelRot.z);
+
+                const startScale = scene.startView.modelScale;
+                const endScale = scene.endView.modelScale;
+                const newScale = lerp(startScale, endScale, easedProgress);
+                modelRef.current.scale.set(newScale, newScale, newScale);
+                // --- END OF NEW LOGIC ---
               }
+
+              // This was in your original file, but you may want to remove
+              // it now that 'custom' controls model rotation
               if (modelRef.current) {
-                modelRef.current.rotation.y = 0;
+                // modelRef.current.rotation.y = 0; // <-- Consider removing
               }
             }
             else if (scene.animationType === 'hold') {
               if (scene.startView) {
+                // --- APPLY ALL PROPERTIES FROM STARTVIEW ---
                 camera.position.set(...scene.startView.position);
                 (controls as OrbitControlsType).target.set(...scene.startView.target);
+
+                if (camera instanceof THREE.PerspectiveCamera) {
+                  camera.fov = scene.startView.fov;
+                  camera.updateProjectionMatrix();
+                }
+
+                modelRef.current.position.set(...scene.startView.modelPosition);
+                modelRef.current.rotation.set(...scene.startView.modelRotation);
+                modelRef.current.scale.set(scene.startView.modelScale, scene.startView.modelScale, scene.startView.modelScale);
+                // --- END OF NEW LOGIC ---
+
               } else {
                 camera.position.set(0, 0, 2);
                 (controls as OrbitControlsType).target.set(0, 0, 0);
@@ -308,13 +363,23 @@ useFrame((state, delta) => {
         }
         timeSoFar = sceneEndTime;
       }
-      
+
       // --- [FIX 2: Animation -> Sliders] ---
       // After the animation logic runs, report the new animated position
       // back up to the parent (which updates the sliders).
+      // --- [UPDATED] ---
       const pos = camera.position.toArray() as [number, number, number];
       const target = controls.target.toArray() as [number, number, number];
-      onLiveCameraChange(pos, target);
+      if (modelRef.current) {
+        onLiveCameraChange({
+          position: pos,
+          target: target,
+          fov: camera instanceof THREE.PerspectiveCamera ? camera.fov : 50,
+          modelPosition: modelRef.current.position.toArray() as [number, number, number],
+          modelRotation: [modelRef.current.rotation.x, modelRef.current.rotation.y, modelRef.current.rotation.z],
+          modelScale: modelRef.current.scale.x, // (assuming uniform scale)
+        });
+      }
       // --- END OF FIX 2 ---
     }
   });
@@ -359,11 +424,23 @@ useFrame((state, delta) => {
         // --- [FIX 3: Drag -> Sliders] ---
         // When dragging (paused), report the new position up to the parent
         // (which updates the sliders).
-        onChange={() => {
+       onChange={() => {
           if (controlsRef.current && !isPlaying && !isScrubbing) {
             const pos = controlsRef.current.object.position.toArray() as [number, number, number];
             const target = controlsRef.current.target.toArray() as [number, number, number];
-            onLiveCameraChange(pos, target);
+            
+            // --- THIS IS THE FIX ---
+            if (modelRef.current) {
+              onLiveCameraChange({
+                position: pos,
+                target: target,
+                // --- ADDED CHECK FOR READING ---
+                fov: camera instanceof THREE.PerspectiveCamera ? camera.fov : 50,
+                modelPosition: modelRef.current.position.toArray() as [number, number, number],
+                modelRotation: [modelRef.current.rotation.x, modelRef.current.rotation.y, modelRef.current.rotation.z],
+                modelScale: modelRef.current.scale.x,
+              });
+            }
           }
         }}
       />

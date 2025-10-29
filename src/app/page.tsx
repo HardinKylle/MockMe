@@ -13,7 +13,7 @@ import { Crosshair } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useWindowSize } from '@/hooks/useWindowSize';
 import TimelinePanel from '@/components/TimelinePanel';
-import { AnimationScene } from '@/types/animation';
+import { AnimationScene, SceneState } from '@/types/animation';
 import SceneEditorPanel from '@/components/SceneEditorPanel';
 import ContentEditorPanel from '@/components/ContentEditorPanel';
 import CameraControlsPanel from '@/components/CameraControlsPanel';
@@ -35,13 +35,25 @@ const DEFAULT_SCENE_CONTROLS = {
   screenReflection: true,
 };
 
+const getCurrentSceneState = (): AnimationScene['startView'] => ({
+  position: DEFAULT_SCENE_CONTROLS.cameraPosition,
+  target: DEFAULT_SCENE_CONTROLS.cameraTarget,
+  fov: DEFAULT_SCENE_CONTROLS.cameraFov,
+  modelPosition: DEFAULT_SCENE_CONTROLS.modelPosition,
+  modelRotation: DEFAULT_SCENE_CONTROLS.modelRotation,
+  modelScale: DEFAULT_SCENE_CONTROLS.modelScale,
+});
+
 // Define the default "spin" scene
 const defaultScene: AnimationScene = {
   id: generateId(),
   name: 'Default Spin',
   duration: 3,
   animationType: 'spin',
-};
+  // Note: 'spin' is a preset, but other types like 'hold' 
+  // will rely on startView. Let's add it for consistency.
+  startView: getCurrentSceneState(),
+}
 
 const DEFAULT_TOTAL_DURATION = 10;
 
@@ -175,6 +187,17 @@ export default function App() {
       name: `Scene ${animationScenes.length + 1}`,
       duration: 3,
       animationType: 'hold',
+      // --- THIS IS THE KEY ---
+      // Capture the current state of *all* controls
+      startView: {
+        position: cameraPosition,
+        target: cameraTarget,
+        fov: cameraFov,
+        modelPosition: modelPosition,
+        modelRotation: modelRotation,
+        modelScale: modelScale,
+      },
+      // --- END OF CHANGE ---
     };
     setAnimationScenes([...animationScenes, newScene]);
     setSelectedSceneId(newScene.id);
@@ -212,13 +235,28 @@ export default function App() {
     (s) => s.id === selectedSceneId
   );
 
+  useEffect(() => {
+    if (selectedScene && selectedScene.startView && !isPlaying && !isScrubbing) {
+      // Find the scene's starting state
+      const stateToLoad = selectedScene.startView;
+
+      // Update all the global control sliders
+      setCameraPosition(stateToLoad.position);
+      setCameraTarget(stateToLoad.target);
+      setCameraFov(stateToLoad.fov);
+      setModelPosition(stateToLoad.modelPosition);
+      setModelRotation(stateToLoad.modelRotation);
+      setModelScale(stateToLoad.modelScale);
+    }
+  }, [selectedScene, isPlaying, isScrubbing]);
+
   const handleTogglePlay = () => {
     if (isRecording) return; // Don't allow user to pause during recording
     if (!isPlaying && hasFinished) {
       setCurrentTime(0);
       setHasFinished(false);
     }
-    
+
     // --- THIS IS THE FIX ---
     // Just toggle the state. No more manual sync.
     // The Scene component will handle the rest.
@@ -291,6 +329,15 @@ export default function App() {
     };
   };
 
+  const currentState: SceneState = {
+    position: cameraPosition,
+    target: cameraTarget,
+    fov: cameraFov,
+    modelPosition: modelPosition,
+    modelRotation: modelRotation,
+    modelScale: modelScale,
+  };
+
   const handleResetSceneControls = () => {
     setCameraPosition(DEFAULT_SCENE_CONTROLS.cameraPosition);
     setCameraTarget(DEFAULT_SCENE_CONTROLS.cameraTarget);
@@ -310,12 +357,13 @@ export default function App() {
   const frameStyle = getFrameStyle();
 
   // --- ADDED: Handler for two-way binding ---
-  const handleLiveCameraChange = (
-    pos: [number, number, number],
-    target: [number, number, number]
-  ) => {
-    setCameraPosition(pos);
-    setCameraTarget(target);
+const handleLiveCameraChange = (newState: SceneState) => {
+    setCameraPosition(newState.position);
+    setCameraTarget(newState.target);
+    setCameraFov(newState.fov);
+    setModelPosition(newState.modelPosition);
+    setModelRotation(newState.modelRotation);
+    setModelScale(newState.modelScale);
   };
 
 
@@ -350,7 +398,7 @@ export default function App() {
           screenReflection={screenReflection}
           // --- ADD THIS PROP ---
           onLiveCameraChange={handleLiveCameraChange}
-          // --- END OF ADDITION ---
+        // --- END OF ADDITION ---
         />
       </div>
 
@@ -514,6 +562,7 @@ export default function App() {
             sceneCount={animationScenes.length}
             scenes={animationScenes}
             onReorderScenes={setAnimationScenes}
+            currentState={currentState}
           />
         )}
       </div>

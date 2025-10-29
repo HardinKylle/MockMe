@@ -11,16 +11,32 @@ export type PresetAnimationType =
 // The main type is now a union of the two.
 export type AnimationType = CustomAnimationType | PresetAnimationType;
 
+// --- RENAMED and EXPANDED this type ---
+export type SceneState = {
+  // Camera
+  position: [number, number, number];
+  target: [number, number, number];
+  fov: number; // <-- ADDED
+  
+  // Model
+  modelPosition: [number, number, number]; // <-- ADDED
+  modelRotation: [number, number, number]; // <-- ADDED
+  modelScale: number; // <-- ADDED
+};
+
 export interface AnimationScene {
   id: string;
   name: string;
   duration: number;
-  animationType: AnimationType; // <-- This is now updated
-  startView?: CameraView;
-  endView?: CameraView;
+  animationType: AnimationType; 
+  // --- UPDATED to use the new type ---
+  startView?: SceneState;
+  endView?: SceneState;
 }
 
-export type CameraView = {
-  position: [number, number, number];
-  target: [number, number, number];
-};
+// --- This type is no longer needed, but you can keep it as an alias
+// if other files use it, or remove it.
+// export type CameraView = {
+//   position: [number, number, number];
+//   target: [number, number, number];
+// };

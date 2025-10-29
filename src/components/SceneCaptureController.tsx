@@ -5,7 +5,7 @@ import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { SceneApi } from '@/components/Scene';
 import { OrbitControls } from 'three-stdlib';
-import { CameraView } from '@/types/animation';
+import { SceneState } from '@/types/animation';
 
 export const SceneCaptureController = forwardRef<SceneApi>((props, ref) => {
   // Get controls from useThree
@@ -91,13 +91,22 @@ export const SceneCaptureController = forwardRef<SceneApi>((props, ref) => {
       orbitControls.update();
     },
     
-    getView: () => {
-      if (!controls) return null;
-      
-      const position = camera.position.clone().toArray();
-      const target = (controls as OrbitControls).target.clone().toArray();
-      
-      return { position, target } as CameraView;
+  getView: (): SceneState | null => {
+      if (controls && camera) {
+        return {
+          // These are correct
+          position: camera.position.toArray() as [number, number, number],
+          target: (controls as OrbitControls).target.toArray() as [number, number, number],
+          fov: camera instanceof THREE.PerspectiveCamera ? camera.fov : 50,
+          
+          // These are defaults. This component CANNOT access modelRef.
+          // This is why we use the currentState prop in SceneEditorPanel.
+          modelPosition: [0, 0, 0], 
+          modelRotation: [0, 0, 0],
+          modelScale: 1,
+        };
+      }
+      return null;
     },
    // --- MODIFIED: Now accepts aspectRatio ---
     startRecording: (aspectRatio: string) => {
