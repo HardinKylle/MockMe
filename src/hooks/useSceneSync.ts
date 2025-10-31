@@ -27,31 +27,11 @@ export const useSceneSync = (isResetting: React.RefObject<boolean>) => {
     }
   }, [selectedScene, isPlaying, isScrubbing, dispatchSceneControls]);
 
-  //Sync live camera changes from 3d view
-  const throttledUpdateRef = useRef<NodeJS.Timeout | null>(null);
-
   const handleLiveCameraChange = (newState: SceneState) => {
     if (isResetting.current) return;
 
-    if (throttledUpdateRef.current) {
-      clearTimeout(throttledUpdateRef.current);
-    }
-
-    //Schedule update, throttled
-    throttledUpdateRef.current = setTimeout(() => {
       dispatchSceneControls({ type: "SET_VIEW", payload: newState });
-      throttledUpdateRef.current = null;
-    }, 16);
   };
-
-  //Cleanup throttle timer on unmount
-  useEffect(() => {
-    return () => {
-      if (throttledUpdateRef.current) {
-        clearTimeout(throttledUpdateRef.current);
-      }
-    };
-  }, []);
 
   return {
     selectedScene,
