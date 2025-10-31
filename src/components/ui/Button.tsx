@@ -15,7 +15,7 @@ const buttonVariants = cva(
           'bg-blue-950/90 text-white hover:bg-blue-800/80 border border-blue-800/80 shadow-sm rounded-full',
         // --- *** END MODIFICATION *** ---
         secondary:
-          'bg-slate-700/50 text-slate-100 hover:bg-slate-600/50 border border-slate-600/50 shadow-sm',
+          'bg-slate-700/50 text-slate-100 hover:bg-slate-500/50 border border-slate-600/50 shadow-sm',
         ghost: 'text-slate-400 hover:bg-slate-700/50 hover:text-slate-100',
         danger:
           'text-red-500 hover:bg-red-500/10 hover:text-red-400 disabled:text-red-500/50 disabled:hover:bg-transparent rounded-full',

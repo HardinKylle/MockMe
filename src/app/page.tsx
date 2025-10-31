@@ -17,8 +17,8 @@ import { AnimationScene, SceneState } from '@/types/animation';
 import SceneEditorPanel from '@/components/SceneEditorPanel';
 import ContentEditorPanel from '@/components/ContentEditorPanel';
 import CameraControlsPanel from '@/components/CameraControlsPanel';
-import { useScene } from '@/contexts/SceneContext'; // --- IMPORT ---
-import { useAnimation } from '@/contexts/AnimationContext'; // --- IMPORT ---
+import { useScene } from '@/contexts/SceneContext'; 
+import { useAnimation } from '@/contexts/AnimationContext'; 
 
 
 const DEFAULT_TOTAL_DURATION = 10;
