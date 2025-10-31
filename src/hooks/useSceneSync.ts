@@ -12,20 +12,20 @@ export const useSceneSync = (isResetting: React.RefObject<boolean>) => {
 
   const selectedScene = animationScenes.find((s) => s.id === selectedSceneId);
 
-  //Sync selected scene to the camera controls
-  useEffect(() => {
-    if (
-      selectedScene &&
-      selectedScene.startView &&
-      !isPlaying &&
-      !isScrubbing
-    ) {
-      dispatchSceneControls({
-        type: "SET_VIEW",
-        payload: selectedScene.startView,
-      });
-    }
-  }, [selectedScene, isPlaying, isScrubbing, dispatchSceneControls]);
+  // //Sync selected scene to the camera controls
+  // useEffect(() => {
+  //   if (
+  //     selectedScene &&
+  //     selectedScene.startView &&
+  //     !isPlaying &&
+  //     !isScrubbing
+  //   ) {
+  //     dispatchSceneControls({
+  //       type: "SET_VIEW",
+  //       payload: selectedScene.startView,
+  //     });
+  //   }
+  // }, [selectedScene, isPlaying, isScrubbing, dispatchSceneControls]);
 
   const handleLiveCameraChange = (newState: SceneState) => {
     if (isResetting.current) return;

@@ -193,6 +193,7 @@ function SceneContent({
     const controls = controlsRef.current; // Get controls from ref
     if (!controls) return; // Safety check
 
+    let videoJustFinished = false;
     // 1. Advance time ONLY if isPlaying is true
     if (isPlaying) {
 
@@ -205,26 +206,33 @@ function SceneContent({
           setIsPlaying(false);
           setHasFinished(true);
 
-          // --- FIX: Also sync state on the very last frame ---
-          const pos = camera.position.toArray() as [number, number, number];
-          const target = controls.target.toArray() as [number, number, number];
-          // --- UPDATED to pass full state ---
-          if (modelRef.current) {
-            onLiveCameraChange({
-              position: pos,
-              target: target,
-              fov: camera instanceof THREE.PerspectiveCamera ? camera.fov : 50,
-              modelPosition: modelRef.current.position.toArray() as [number, number, number],
-              modelRotation: [modelRef.current.rotation.x, modelRef.current.rotation.y, modelRef.current.rotation.z],
-              modelScale: modelRef.current.scale.x,
-            });
-          }
+          videoJustFinished = true;
+
           // --- END FIX ---
 
           return totalVideoDuration;
         }
         return newTime;
       });
+    }
+
+    // Check the flag *after* the state update has been queued
+    if (videoJustFinished) {
+      // --- FIX: Also sync state on the very last frame ---
+      const pos = camera.position.toArray() as [number, number, number];
+      const target = controls.target.toArray() as [number, number, number];
+      // --- UPDATED to pass full state ---
+      if (modelRef.current) {
+        onLiveCameraChange({
+          position: pos,
+          target: target,
+          fov: camera instanceof THREE.PerspectiveCamera ? camera.fov : 50,
+          modelPosition: modelRef.current.position.toArray() as [number, number, number],
+          modelRotation: [modelRef.current.rotation.x, modelRef.current.rotation.y, modelRef.current.rotation.z],
+          modelScale: modelRef.current.scale.x,
+        });
+      }
+      // --- END FIX ---
     }
 
     // 2. Animate camera/model ONLY if playing OR scrubbing
