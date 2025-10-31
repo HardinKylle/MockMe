@@ -19,7 +19,9 @@ import ContentEditorPanel from '@/components/ContentEditorPanel';
 import CameraControlsPanel from '@/components/CameraControlsPanel';
 import { useScene } from '@/contexts/SceneContext'; 
 import { useAnimation } from '@/contexts/AnimationContext'; 
-
+import { useCapture } from '@/hooks/useCapture'
+import { useExport } from '@/hooks/useExport'
+import { ViewPresetsPanel } from '@/components/Panels/ViewPresetsPanel';
 
 const DEFAULT_TOTAL_DURATION = 10;
 
@@ -58,24 +60,46 @@ export default function App() {
     screenReflection,
   } = sceneControls;
 
+
   // --- Local UI State (Not part of global context) ---
+
   const { uploadedFileUrl, uploadedFileType, videoDuration, handleFileUpload } =
     useUploadedFile();
   const sceneRef = useRef<SceneApi>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [capturedImageUrl, setCapturedImageUrl] = useState<string | null>(null);
   const { selectedModel, setModel, allModels } = useModelSwitcher();
   const [backgroundColor, setBackgroundColor] = useState('#ffffff');
-  const [showViews, setShowViews] = useState(false);
   const [aspectRatio, setAspectRatio] = useState('16:9');
   const [showTimeline, setShowTimeline] = useState(false);
   const { width: windowWidth, height: windowHeight } = useWindowSize();
   const [wrapperBg, setWrapperBg] = useState('bg-white');
   const isResetting = useRef(false);
   const prevUploadedFileTypeRef = useRef<string | null>(null);
-  const [isRecording, setIsRecording] = useState(false);
-  const [showExportConfirm, setShowExportConfirm] = useState(false);
-  const [showBrowserWarning, setShowBrowserWarning] = useState(false);
+
+  const { 
+    isLoading, 
+    capturedImageUrl, 
+    handleCapture, 
+    handleClosePreview 
+  } = useCapture(sceneRef, aspectRatio);
+
+    const {
+    isRecording,
+    showExportConfirm,
+    showBrowserWarning,
+    setShowBrowserWarning,
+    handleExport,
+    handleConfirmExport,
+    handleCancelExport,
+  } = useExport({
+    sceneRef,
+    aspectRatio,
+    hasFinished,
+    setIsPlaying,
+    setCurrentTime,
+    setHasFinished,
+  });
+
+
 
   useEffect(() => {
     const prevFileType = prevUploadedFileTypeRef.current;
@@ -88,26 +112,6 @@ export default function App() {
     prevUploadedFileTypeRef.current = uploadedFileType;
   }, [uploadedFileType, videoDuration, setTotalVideoDuration]);
 
-  useEffect(() => {
-    if (hasFinished && isRecording) {
-      sceneRef.current?.stopRecording();
-      setIsRecording(false);
-    }
-  }, [hasFinished, isRecording]);
-
-  const handleCapture = () => {
-    setIsLoading(true);
-    try {
-      const dataUrl = sceneRef.current?.capture(aspectRatio);
-      if (dataUrl) {
-        setCapturedImageUrl(dataUrl);
-      }
-    } catch (error) {
-      console.error('Error during capture:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   useEffect(() => {
     if (aspectRatio === '16:9') {
@@ -119,18 +123,6 @@ export default function App() {
 
   const handleModelChange = (modelName: string) => {
     setModel(modelName);
-  };
-
-  const handlePresetClick = (view: typeof presetViews[number]) => {
-    sceneRef.current?.setView(view.position, view.target);
-    dispatchSceneControls({
-      type: 'SET_PRESET',
-      payload: {
-        position: view.position as [number, number, number],
-        target: view.target as [number, number, number],
-      },
-    });
-    setShowViews(false);
   };
 
   const currentState: SceneState = {
@@ -199,37 +191,6 @@ export default function App() {
       setHasFinished(false);
     }
     setIsPlaying(!isPlaying);
-  };
-
-  const handleExport = () => {
-    if (isRecording) return;
-    const mimeType = 'video/webm; codecs=vp9';
-    if (
-      typeof MediaRecorder === 'undefined' ||
-      !MediaRecorder.isTypeSupported(mimeType)
-    ) {
-      setShowBrowserWarning(true);
-      return;
-    }
-    setShowExportConfirm(true);
-  };
-
-  const handleConfirmExport = () => {
-    if (!sceneRef.current || isRecording) return;
-    setShowExportConfirm(false);
-    setIsRecording(true);
-    setIsPlaying(false);
-    setCurrentTime(0.1);
-    setHasFinished(false);
-    setTimeout(() => {
-      sceneRef.current?.startRecording(aspectRatio);
-      setCurrentTime(0.1);
-      setIsPlaying(true);
-    }, 100);
-  };
-
-  const handleCancelExport = () => {
-    setShowExportConfirm(false);
   };
 
   const getFrameStyle = () => {
@@ -344,44 +305,8 @@ export default function App() {
 
         <CameraControlsPanel onReset={handleResetSceneControls} />
 
-        <div className="relative">
-          <Button
-            onClick={() => setShowViews(!showViews)}
-            variant="primary"
-            size="default"
-            tooltip="Preset Views"
-            tooltipSide="bottom"
-            isActive={showViews}
-          >
-            <Crosshair className="h-6 w-6 text-white" />
-          </Button>
-          {showViews && (
-            <div
-              className="absolute top-full right-0 mt-2 w-48 rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 backdrop-blur-xl z-20 p-1.5"
-              style={{ animation: 'slideUp 0.2s ease-out' }}
-            >
-              <style>{`
-                  @keyframes slideUp {
-                    from { opacity: 0; transform: translateY(10px); }
-                    to { opacity: 1; transform: translateY(0); }
-                  }
-                `}</style>
-              <div className="space-y-1">
-                {presetViews.map((view) => (
-                  <Button
-                    key={view.name}
-                    onClick={() => handlePresetClick(view)}
-                    variant="menu-item"
-                    size="menu-item"
-                    className="w-full"
-                  >
-                    {view.name}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+       <ViewPresetsPanel sceneRef={sceneRef} />
+       
       </div>
       {/* ... (Rest of the JSX remains unchanged) ... */}
       {/* Bottom-Right Container */}
@@ -406,7 +331,7 @@ export default function App() {
       {capturedImageUrl && (
         <PreviewModal
           imageUrl={capturedImageUrl}
-          onClose={() => setCapturedImageUrl(null)}
+          onClose={handleClosePreview}
         />
       )}
 
