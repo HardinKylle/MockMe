@@ -8,20 +8,19 @@ import PreviewModal from '@/components/PreviewModal';
 import { useModelSwitcher } from '@/hooks/useModelSwitcher';
 import ModelSelector from '@/components/ModelSelector';
 import BackgroundPicker from '@/components/BackgroundPicker';
-import { presetViews } from '@/configs/views';
-import { Crosshair } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
 import { useWindowSize } from '@/hooks/useWindowSize';
 import TimelinePanel from '@/components/TimelinePanel';
 import { AnimationScene, SceneState } from '@/types/animation';
 import SceneEditorPanel from '@/components/SceneEditorPanel';
 import ContentEditorPanel from '@/components/ContentEditorPanel';
 import CameraControlsPanel from '@/components/CameraControlsPanel';
-import { useScene } from '@/contexts/SceneContext'; 
-import { useAnimation } from '@/contexts/AnimationContext'; 
+import { useScene } from '@/contexts/SceneContext';
+import { useAnimation } from '@/contexts/AnimationContext';
 import { useCapture } from '@/hooks/useCapture'
 import { useExport } from '@/hooks/useExport'
 import { ViewPresetsPanel } from '@/components/Panels/ViewPresetsPanel';
+import { BrowserWarningModal } from '@/components/Modals/BrowserWarningModal';
+import {useSceneSync} from '@/hooks/useSceneSync'
 
 const DEFAULT_TOTAL_DURATION = 10;
 
@@ -45,7 +44,6 @@ export default function App() {
     setIsScrubbing,
   } = useAnimation();
 
-  // --- Destructure sceneControls for easier prop-passing ---
   const {
     cameraPosition,
     cameraTarget,
@@ -61,8 +59,6 @@ export default function App() {
   } = sceneControls;
 
 
-  // --- Local UI State (Not part of global context) ---
-
   const { uploadedFileUrl, uploadedFileType, videoDuration, handleFileUpload } =
     useUploadedFile();
   const sceneRef = useRef<SceneApi>(null);
@@ -75,14 +71,14 @@ export default function App() {
   const isResetting = useRef(false);
   const prevUploadedFileTypeRef = useRef<string | null>(null);
 
-  const { 
-    isLoading, 
-    capturedImageUrl, 
-    handleCapture, 
-    handleClosePreview 
+  const {
+    isLoading,
+    capturedImageUrl,
+    handleCapture,
+    handleClosePreview
   } = useCapture(sceneRef, aspectRatio);
 
-    const {
+  const {
     isRecording,
     showExportConfirm,
     showBrowserWarning,
@@ -98,6 +94,8 @@ export default function App() {
     setCurrentTime,
     setHasFinished,
   });
+
+  const { selectedScene, handleLiveCameraChange } = useSceneSync(isResetting);
 
 
 
@@ -174,15 +172,6 @@ export default function App() {
     }
   };
 
-  const selectedScene = animationScenes.find(
-    (s) => s.id === selectedSceneId
-  );
-
-  useEffect(() => {
-    if (selectedScene && selectedScene.startView && !isPlaying && !isScrubbing) {
-      dispatchSceneControls({ type: 'SET_VIEW', payload: selectedScene.startView });
-    }
-  }, [selectedScene, isPlaying, isScrubbing, dispatchSceneControls]);
 
   const handleTogglePlay = () => {
     if (isRecording) return;
@@ -231,32 +220,6 @@ export default function App() {
 
   const frameStyle = getFrameStyle();
 
-  // Throttle live camera updates to prevent excessive re-renders
-  const throttledUpdateRef = useRef<NodeJS.Timeout | null>(null);
-
-  const handleLiveCameraChange = (newState: SceneState) => {
-    if (isResetting.current) return;
-
-    // Clear any pending update
-    if (throttledUpdateRef.current) {
-      clearTimeout(throttledUpdateRef.current);
-    }
-
-    // Schedule update for after render cycle, throttled
-    throttledUpdateRef.current = setTimeout(() => {
-      dispatchSceneControls({ type: 'SET_VIEW', payload: newState });
-      throttledUpdateRef.current = null;
-    }, 16); // ~60fps throttle
-  };
-
-  // Cleanup throttle timer on unmount
-  useEffect(() => {
-    return () => {
-      if (throttledUpdateRef.current) {
-        clearTimeout(throttledUpdateRef.current);
-      }
-    };
-  }, []);
 
   return (
     <div className={`w-full h-screen ${wrapperBg} relative overflow-hidden flex items-center justify-center transition-colors`}>
@@ -305,10 +268,10 @@ export default function App() {
 
         <CameraControlsPanel onReset={handleResetSceneControls} />
 
-       <ViewPresetsPanel sceneRef={sceneRef} />
-       
+        <ViewPresetsPanel sceneRef={sceneRef} />
+
       </div>
-      {/* ... (Rest of the JSX remains unchanged) ... */}
+
       {/* Bottom-Right Container */}
       <div className="fixed bottom-4 right-7 z-10">
         <div className="flex flex-row items-center gap-3">
@@ -336,42 +299,9 @@ export default function App() {
       )}
 
       {showBrowserWarning && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div
-            className="w-full max-w-md rounded-lg border shadow-xl p-6 space-y-4 bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50"
-            style={{ animation: 'slideUp 0.2s ease-out' }}
-          >
-            <style>{`
-                @keyframes slideUp {
-                  from { opacity: 0; transform: translateY(10px); }
-                  to { opacity: 1; transform: translateY(0); }
-                }
-              `}</style>
-            <h3 className="text-xl font-semibold text-white">
-              Browser Not Supported
-            </h3>
-            <p className="text-slate-300">
-              Unfortunately, your browser does not support the required video
-              codec (<code>video/webm; codecs=vp9</code>) for exporting this
-              animation.
-            </p>
-            <p className="text-slate-300">
-              Please try again using a different browser like{' '}
-              <strong className="text-white">Google Chrome</strong> or{' '}
-              <strong className="text-white">Microsoft Edge</strong> for full
-              export functionality.
-            </p>
-            <div className="flex justify-end pt-2">
-              <Button
-                variant="primary"
-                onClick={() => setShowBrowserWarning(false)}
-              >
-                Got it
-              </Button>
-            </div>
-          </div>
-        </div>
+        <BrowserWarningModal onClose={() => setShowBrowserWarning(false)} />
       )}
+
       {/* Bottom-Left Container */}
       <div className="fixed bottom-4 left-4 z-20 flex flex-col-reverse items-end gap-2">
         <ContentEditorPanel
