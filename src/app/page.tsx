@@ -20,7 +20,7 @@ import { useCapture } from '@/hooks/useCapture'
 import { useExport } from '@/hooks/useExport'
 import { ViewPresetsPanel } from '@/components/Panels/ViewPresetsPanel';
 import { BrowserWarningModal } from '@/components/Modals/BrowserWarningModal';
-import {useSceneSync} from '@/hooks/useSceneSync'
+import { useSceneSync } from '@/hooks/useSceneSync'
 
 const DEFAULT_TOTAL_DURATION = 10;
 
@@ -327,24 +327,13 @@ export default function App() {
       {/* Bottom-Center Container */}
       <TimelinePanel
         isVisible={showTimeline}
-        scenes={animationScenes}
         onAddScene={handleAddScene}
         onExport={handleExport}
         isRecording={isRecording}
         showExportConfirm={showExportConfirm}
         onConfirmExport={handleConfirmExport}
         onCancelExport={handleCancelExport}
-        isPlaying={isPlaying}
-        onTogglePlay={handleTogglePlay}
-        currentTime={currentTime}
-        selectedSceneId={selectedSceneId}
-        onSelectScene={setSelectedSceneId}
-        totalVideoDuration={totalVideoDuration}
         uploadedFileType={uploadedFileType}
-        setCurrentTime={setCurrentTime}
-        setIsPlaying={setIsPlaying}
-        isScrubbing={isScrubbing}
-        setIsScrubbing={setIsScrubbing}
       />
     </div>
   );
