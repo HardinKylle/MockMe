@@ -267,8 +267,6 @@ export default function App() {
       <div className="fixed bottom-4 left-4 z-20 flex flex-col-reverse items-end gap-2">
         <ContentEditorPanel
           isVisible={showTimeline}
-          totalVideoDuration={totalVideoDuration}
-          setTotalVideoDuration={setTotalVideoDuration}
         />
         {selectedScene && (
           <SceneEditorPanel

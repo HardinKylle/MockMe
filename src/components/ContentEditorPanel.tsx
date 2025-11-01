@@ -4,20 +4,17 @@ import { Input } from './ui/Input';
 import { Label } from './ui/Label';
 import { TimerIcon } from 'lucide-react';
 import { useState, useEffect } from 'react';
-
+import { useAnimation } from '@/contexts/AnimationContext';
 interface ContentEditorPanelProps {
   isVisible: boolean;
-  totalVideoDuration: number;
-  setTotalVideoDuration: (duration: number) => void;
 }
 
 const MIN_DURATION = 1;
 
 export default function ContentEditorPanel({
   isVisible,
-  totalVideoDuration,
-  setTotalVideoDuration,
 }: ContentEditorPanelProps) {
+  const { totalVideoDuration, setTotalVideoDuration} = useAnimation();
   const [inputValue, setInputValue] = useState(totalVideoDuration.toString());
 
   useEffect(() => {
