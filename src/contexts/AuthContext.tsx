@@ -1,15 +1,21 @@
-'use client'
+'use client';
 
 import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
-import { Auth, User, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut as firebaseSignOut, onAuthStateChanged } from 'firebase/auth';
+import { 
+  Auth, 
+  User, 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  signOut as firebaseSignOut, 
+  onAuthStateChanged, 
+  sendEmailVerification,
+} from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-
-// Shape of AuthContext value
 interface AuthContextType {
     user: User | null;
     authLoading: boolean;
-    signIn: (email: string, pass: string) => Promise<User | null>;
-    signUp: (email: string, pass: string) => Promise<User | null>;
+    signIn: (email: string, pass: string) => Promise<User>; 
+    signUp: (email: string, pass: string) => Promise<User>;
     signOut: () => Promise<void>;
 }
 
@@ -37,22 +43,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const signUp = async (email: string, pass: string) => {
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-            setUser(userCredential.user);
+            await sendEmailVerification(userCredential.user);
             return userCredential.user;
         } catch (error) {
-            console.error('Error signing up:', error);
-            return null;
+            console.error("Error signing up:", error);
+            throw error; 
         }
     };
 
+    // Sign-in function
     const signIn = async (email: string, pass: string) => {
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, pass);
-            setUser(userCredential.user);
             return userCredential.user;
         } catch (error) {
             console.error("Error signing in:", error);
-            return null;
+            throw error;
         }
     };
 

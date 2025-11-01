@@ -25,10 +25,32 @@ import { ViewPresetsPanel } from '@/components/Panels/ViewPresetsPanel';
 import { BrowserWarningModal } from '@/components/Modals/BrowserWarningModal';
 import { useSceneSync } from '@/hooks/useSceneSync'
 import { useAsset } from '@/contexts/AssetContext';
+import { HeaderAuth } from '@/components/HeaderAuth';
+import { SignInModal } from '@/components/Modals/SignInModal';
+import { VerifyEmailPage } from '@/components/VerifyEmailPage';
+import { Loader } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const DEFAULT_TOTAL_DURATION = 10;
 
 export default function App() {
+
+  const { user, authLoading } = useAuth();
+
+  if (authLoading) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center bg-slate-900">
+        <Loader className="h-10 w-10 animate-spin text-white" />
+      </div>
+    );
+  }
+
+  if (user && !user.emailVerified) {
+    // User is logged in BUT has not clicked the email link.
+    // Show them the "waiting room" page.
+    return <VerifyEmailPage />;
+  }
+  
   // --- Core Hooks ---
   const { sceneControls, dispatchSceneControls } = useScene();
   const {
@@ -227,7 +249,10 @@ export default function App() {
 
         <ViewPresetsPanel sceneRef={sceneRef} />
 
+        <HeaderAuth />
+
       </div>
+
 
       {/* Bottom-Right Container */}
       <div className="fixed bottom-4 right-7 z-10">
@@ -246,6 +271,8 @@ export default function App() {
           />
         </div>
       </div>
+
+      <SignInModal /> 
 
       {/* Modals and Panels */}
       {capturedImageUrl && (

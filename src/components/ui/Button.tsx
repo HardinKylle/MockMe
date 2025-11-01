@@ -10,10 +10,8 @@ const buttonVariants = cva(
     variants: {
       // Different button types
       variant: {
-        // --- *** MODIFIED: New Darker Glassy Blue Style *** ---
         primary:
           'bg-blue-950/90 text-white hover:bg-blue-800/80 border border-blue-800/80 shadow-sm rounded-full',
-        // --- *** END MODIFICATION *** ---
         secondary:
           'bg-slate-700/50 text-slate-100 hover:bg-slate-500/50 border border-slate-600/50 shadow-sm',
         ghost: 'text-slate-400 hover:bg-slate-700/50 hover:text-slate-100',
@@ -21,6 +19,7 @@ const buttonVariants = cva(
           'text-red-500 hover:bg-red-500/10 hover:text-red-400 disabled:text-red-500/50 disabled:hover:bg-transparent rounded-full',
         'menu-item':
           'w-full justify-start text-left px-3 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-700/50 rounded-md',
+        link: 'text-slate-400 hover:text-white hover:underline p-0 h-auto',
       },
       // Different button sizes
       size: {
@@ -30,6 +29,7 @@ const buttonVariants = cva(
         xs: 'h-6 px-2 text-xs rounded-md',
         full: 'h-12 flex-1',
         'menu-item': 'h-auto',
+        link: 'p-0 h-auto',
       },
     },
     // Default styles if none are provided
@@ -62,6 +62,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
+
+    const effectiveSize = variant === 'link' ? 'link' : size;
+    
     const tooltipPositionClasses = {
       top: 'bottom-full mb-2 left-1/2 -translate-x-1/2',
       bottom: 'top-full mt-2 left-1/2 -translate-x-1/2',
@@ -71,7 +74,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     return (
       <button
-        className={cn(buttonVariants({ variant, size, className }))}
+        // --- *** MODIFIED TO USE 'effectiveSize' *** ---
+        className={cn(buttonVariants({ variant, size: effectiveSize, className }))}
         ref={ref}
         {...props}
       >
