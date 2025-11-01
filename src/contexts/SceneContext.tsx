@@ -58,6 +58,9 @@ const sceneControlsReducer = (
         ...state,
         cameraPosition: action.payload.position,
         cameraTarget: action.payload.target,
+        modelPosition: DEFAULT_SCENE_CONTROLS.modelPosition,
+        modelRotation: DEFAULT_SCENE_CONTROLS.modelRotation,
+        modelScale: DEFAULT_SCENE_CONTROLS.modelScale,
       };
 
     case 'UPDATE_RAW':
