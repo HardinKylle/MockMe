@@ -1,4 +1,3 @@
-// src/contexts/AnimationContext.tsx
 'use client';
 
 import {
@@ -12,7 +11,6 @@ import {
 import { AnimationScene } from '@/types/animation';
 import { DEFAULT_SCENE_CONTROLS } from './SceneContext';
 
-// --- Logic moved from page.tsx ---
 const generateId = () => `scene_${Math.random().toString(36).substr(2, 9)}`;
 const DEFAULT_TOTAL_DURATION = 10;
 
@@ -32,7 +30,6 @@ const defaultScene: AnimationScene = {
   animationType: 'spin',
   startView: getCurrentSceneState(),
 };
-// --- End of moved logic ---
 
 interface AnimationContextType {
   animationScenes: AnimationScene[];

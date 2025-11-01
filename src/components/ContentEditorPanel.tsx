@@ -5,22 +5,27 @@ import { Label } from './ui/Label';
 import { TimerIcon } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAnimation } from '@/contexts/AnimationContext';
+
+//props
 interface ContentEditorPanelProps {
   isVisible: boolean;
 }
 
+//minimum content duration
 const MIN_DURATION = 1;
 
 export default function ContentEditorPanel({
   isVisible,
 }: ContentEditorPanelProps) {
-  const { totalVideoDuration, setTotalVideoDuration} = useAnimation();
+  const { totalVideoDuration, setTotalVideoDuration } = useAnimation();
   const [inputValue, setInputValue] = useState(totalVideoDuration.toString());
 
+  //sync input value when total video duration changes
   useEffect(() => {
     setInputValue(totalVideoDuration.toString());
   }, [totalVideoDuration]);
 
+  //handle input change
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setInputValue(val);
@@ -31,6 +36,7 @@ export default function ContentEditorPanel({
     }
   };
 
+  //validate and update duration on blur
   const handleOnBlur = () => {
     const parsedVal = parseFloat(inputValue);
     if (isNaN(parsedVal) || parsedVal < MIN_DURATION) {
@@ -45,12 +51,12 @@ export default function ContentEditorPanel({
 
   return (
     <div
-      className={`z-20 w-60 rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 backdrop-blur-xl transition-all duration-300 ease-out ${
-        isVisible
-          ? 'opacity-100 translate-y-0'
-          : 'opacity-0 translate-y-10 pointer-events-none'
-      }`}
+      className={`z-20 w-60 rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 backdrop-blur-xl transition-all duration-300 ease-out ${isVisible
+        ? 'opacity-100 translate-y-0'
+        : 'opacity-0 translate-y-10 pointer-events-none'
+        }`}
     >
+      {/* Header */}
       <div className="flex items-center justify-between px-3 py-1.5 border-b border-slate-700/50">
         <div className="flex items-center gap-2">
           <TimerIcon className="h-3.5 w-3.5 text-slate-400" />
@@ -62,9 +68,8 @@ export default function ContentEditorPanel({
 
       {/* Form */}
       <div className="p-3 space-y-3">
-        {/* Duration */}
+        {/* Duration input */}
         <div className="space-y-1.5">
-          {/* --- MODIFICATION: Added text-xs for consistency --- */}
           <Label htmlFor="total-duration" className="text-xs">
             Duration (s)
           </Label>

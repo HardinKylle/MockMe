@@ -9,11 +9,9 @@ import { ModelData, models } from '@/configs/models';
 import { type OrbitControls as OrbitControlsType } from 'three-stdlib';
 import { AnimationScene, SceneState, AnimationType } from '@/types/animation';
 import { presetAnimationMap, isPresetAnim } from '@/types/animation-presets';
+import { useAsset } from '@/contexts/AssetContext';
 
 interface SceneProps {
-  textureUrl: string | null;
-  uploadedFileType: 'image' | 'video' | null;
-  model: ModelData;
   backgroundColor: string;
   isRecording: boolean
   isPlaying: boolean;
@@ -35,7 +33,6 @@ interface SceneProps {
   directionalPosition: [number, number, number];
   environmentIntensity: number;
   screenReflection: boolean;
-  // --- ADD THIS PROP ---
   onLiveCameraChange: (newState: SceneState) => void;
 }
 
@@ -100,9 +97,6 @@ const vec3 = new THREE.Vector3();
 
 function SceneContent({
   backgroundColor,
-  model,
-  textureUrl,
-  uploadedFileType,
   isPlaying,
   setIsPlaying,
   isRecording,
@@ -123,15 +117,19 @@ function SceneContent({
   directionalPosition,
   environmentIntensity,
   screenReflection,
-  // --- ADD THIS PROP ---
   onLiveCameraChange,
 }: Omit<SceneProps, 'backgroundColor' | 'isScrubbing'> & {
   backgroundColor: string;
   isScrubbing: boolean;
-  // --- ADD THIS PROP ---
 }) {
   const { gl, camera, controls } = useThree(); // <--- GET CONTROLS FROM USETHREE
   const modelRef = useRef<THREE.Group>(null);
+
+  const {
+    uploadedFileUrl,
+    uploadedFileType,
+    selectedModel
+  } = useAsset();
 
   // --- CAST CONTROLS TO THE CORRECT TYPE ---
   const controlsRef = useRef<OrbitControlsType>(controls as OrbitControlsType);
@@ -252,8 +250,8 @@ function SceneContent({
 
           if (modelRef.current && controls) {
             // --- ALL YOUR ANIMATION LOGIC MOVES THE CAMERA ---
-           if (isPresetAnim(scene.animationType)) {
-              
+            if (isPresetAnim(scene.animationType)) {
+
               // --- [START FIX] ---
               // Apply the base state from startView first.
               // This resets properties like scale and position
@@ -270,7 +268,7 @@ function SceneContent({
                 modelRef.current.position.set(...scene.startView.modelPosition);
                 modelRef.current.rotation.set(...scene.startView.modelRotation);
                 modelRef.current.scale.set(scene.startView.modelScale, scene.startView.modelScale, scene.startView.modelScale);
-                
+
                 (controls as OrbitControlsType).update();
               }
               // --- [END FIX] ---
@@ -323,24 +321,20 @@ function SceneContent({
 
                   camera.position.copy(interpolatedPos);
                 } else {
-                  // Use standard linear interpolation for close positions
                   startPos.lerp(endPos, easedProgress);
                   camera.position.copy(startPos);
                 }
 
-                // Always interpolate target linearly
                 startTarget.lerp(endTarget, easedProgress);
                 (controls as OrbitControlsType).target.copy(startTarget);
                 (controls as OrbitControlsType).update();
 
-                // --- [NEW] INTERPOLATE FOV ---
                 const startFov = scene.startView.fov;
                 const endFov = scene.endView.fov;
                 if (camera instanceof THREE.PerspectiveCamera) {
                   camera.fov = lerp(startFov, endFov, easedProgress);
                   camera.updateProjectionMatrix(); // IMPORTANT!
                 }
-                // --- [NEW] INTERPOLATE MODEL TRANSFORMS ---
                 startModelPos.set(...scene.startView.modelPosition);
                 endModelPos.set(...scene.endView.modelPosition);
                 startModelPos.lerp(endModelPos, easedProgress);
@@ -355,18 +349,15 @@ function SceneContent({
                 const endScale = scene.endView.modelScale;
                 const newScale = lerp(startScale, endScale, easedProgress);
                 modelRef.current.scale.set(newScale, newScale, newScale);
-                // --- END OF NEW LOGIC ---
               }
 
-              // This was in your original file, but you may want to remove
-              // it now that 'custom' controls model rotation
+
               if (modelRef.current) {
                 // modelRef.current.rotation.y = 0; // <-- Consider removing
               }
             }
             else if (scene.animationType === 'hold') {
               if (scene.startView) {
-                // --- APPLY ALL PROPERTIES FROM STARTVIEW ---
                 camera.position.set(...scene.startView.position);
                 (controls as OrbitControlsType).target.set(...scene.startView.target);
 
@@ -378,14 +369,13 @@ function SceneContent({
                 modelRef.current.position.set(...scene.startView.modelPosition);
                 modelRef.current.rotation.set(...scene.startView.modelRotation);
                 modelRef.current.scale.set(scene.startView.modelScale, scene.startView.modelScale, scene.startView.modelScale);
-                // --- END OF NEW LOGIC ---
 
               } else {
                 camera.position.set(0, 0, 2);
                 (controls as OrbitControlsType).target.set(0, 0, 0);
               }
               (controls as OrbitControlsType).update();
-           
+
             }
           }
           break;
@@ -393,10 +383,6 @@ function SceneContent({
         timeSoFar = sceneEndTime;
       }
 
-      // --- [FIX 2: Animation -> Sliders] ---
-      // After the animation logic runs, report the new animated position
-      // back up to the parent (which updates the sliders).
-      // --- [UPDATED] ---
       const pos = camera.position.toArray() as [number, number, number];
       const target = controls.target.toArray() as [number, number, number];
       if (modelRef.current) {
@@ -406,10 +392,9 @@ function SceneContent({
           fov: camera instanceof THREE.PerspectiveCamera ? camera.fov : 50,
           modelPosition: modelRef.current.position.toArray() as [number, number, number],
           modelRotation: [modelRef.current.rotation.x, modelRef.current.rotation.y, modelRef.current.rotation.z],
-          modelScale: modelRef.current.scale.x, // (assuming uniform scale)
+          modelScale: modelRef.current.scale.x, 
         });
       }
-      // --- END OF FIX 2 ---
     }
   });
 
@@ -422,27 +407,24 @@ function SceneContent({
       />
       <Environment preset="studio" environmentIntensity={environmentIntensity} />
 
-      {model && (
-        <group ref={modelRef}>
-          <PhoneModel
-            modelUrl={model.path}
-            screenMaterialName={model.screenMaterial}
-            textureUrl={textureUrl}
-            uploadedFileType={uploadedFileType}
-            scale={model.scale}
-            flipY={model.flipY}
-            textureRepeat={model.textureRepeat}
-            textureOffset={model.textureOffset}
-            rotation={model.rotation}
-            screenReflection={screenReflection}
-            isPlaying={isPlaying}
-            currentTime={currentTime}
-          />
-        </group>
-      )}
+      <group ref={modelRef}>
+        <PhoneModel
+          modelUrl={selectedModel.path}
+          screenMaterialName={selectedModel.screenMaterial}
+          textureUrl={uploadedFileUrl}
+          uploadedFileType={uploadedFileType}
+          scale={selectedModel.scale}
+          flipY={selectedModel.flipY}
+          textureRepeat={selectedModel.textureRepeat}
+          textureOffset={selectedModel.textureOffset}
+          rotation={selectedModel.rotation}
+          screenReflection={screenReflection}
+          isPlaying={isPlaying}
+          currentTime={currentTime}
+        />
+      </group>
 
       <OrbitControls
-        // --- ADD REF ---
         ref={controlsRef}
         enableZoom={true}
         minDistance={0.5}
@@ -450,20 +432,16 @@ function SceneContent({
         makeDefault
         target={[0, 0, 0]}
         enabled={!isPlaying && !isScrubbing}
-        // --- [FIX 3: Drag -> Sliders] ---
-        // When dragging (paused), report the new position up to the parent
-        // (which updates the sliders).
-       onChange={() => {
+       
+        onChange={() => {
           if (controlsRef.current && !isPlaying && !isScrubbing) {
             const pos = controlsRef.current.object.position.toArray() as [number, number, number];
             const target = controlsRef.current.target.toArray() as [number, number, number];
-            
-            // --- THIS IS THE FIX ---
+
             if (modelRef.current) {
               onLiveCameraChange({
                 position: pos,
                 target: target,
-                // --- ADDED CHECK FOR READING ---
                 fov: camera instanceof THREE.PerspectiveCamera ? camera.fov : 50,
                 modelPosition: modelRef.current.position.toArray() as [number, number, number],
                 modelRotation: [modelRef.current.rotation.x, modelRef.current.rotation.y, modelRef.current.rotation.z],
@@ -478,14 +456,10 @@ function SceneContent({
 }
 
 export default forwardRef<SceneApi, SceneProps>(function Scene(
-  props, // --- CHANGED TO 'props'
+  props, 
   ref
 ) {
-  // --- DESTRUCTURE PROPS ---
   const {
-    textureUrl,
-    uploadedFileType,
-    model,
     backgroundColor,
     isRecording,
     isPlaying,
@@ -507,7 +481,7 @@ export default forwardRef<SceneApi, SceneProps>(function Scene(
     directionalPosition,
     environmentIntensity,
     screenReflection,
-    onLiveCameraChange, // --- GET THE NEW PROP ---
+    onLiveCameraChange, 
   } = props;
 
   return (
@@ -522,9 +496,6 @@ export default forwardRef<SceneApi, SceneProps>(function Scene(
     >
       <SceneContent
         backgroundColor={backgroundColor}
-        model={model}
-        textureUrl={textureUrl}
-        uploadedFileType={uploadedFileType}
         isRecording={isRecording}
         isPlaying={isPlaying}
         setIsPlaying={setIsPlaying}
@@ -545,7 +516,7 @@ export default forwardRef<SceneApi, SceneProps>(function Scene(
         directionalPosition={directionalPosition}
         environmentIntensity={environmentIntensity}
         screenReflection={screenReflection}
-        onLiveCameraChange={onLiveCameraChange} // --- PASS PROP DOWN ---
+        onLiveCameraChange={onLiveCameraChange}
       />
 
       <SceneCaptureController ref={ref} />

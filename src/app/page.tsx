@@ -21,6 +21,7 @@ import { useExport } from '@/hooks/useExport'
 import { ViewPresetsPanel } from '@/components/Panels/ViewPresetsPanel';
 import { BrowserWarningModal } from '@/components/Modals/BrowserWarningModal';
 import { useSceneSync } from '@/hooks/useSceneSync'
+import { useAsset } from '@/contexts/AssetContext';
 
 const DEFAULT_TOTAL_DURATION = 10;
 
@@ -58,11 +59,7 @@ export default function App() {
     screenReflection,
   } = sceneControls;
 
-
-  const { uploadedFileUrl, uploadedFileType, videoDuration, handleFileUpload } =
-    useUploadedFile();
   const sceneRef = useRef<SceneApi>(null);
-  const { selectedModel, setModel, allModels } = useModelSwitcher();
   const [backgroundColor, setBackgroundColor] = useState('#ffffff');
   const [aspectRatio, setAspectRatio] = useState('16:9');
   const [showTimeline, setShowTimeline] = useState(false);
@@ -94,6 +91,16 @@ export default function App() {
     setCurrentTime,
     setHasFinished,
   });
+
+  const {
+    handleFileUpload,
+    uploadedFileUrl,
+    uploadedFileType,
+    videoDuration,
+    selectedModel,
+    setModel,
+    allModels,
+  } = useAsset();
 
   const { selectedScene, handleLiveCameraChange } = useSceneSync(isResetting);
 
@@ -187,9 +194,6 @@ export default function App() {
       <div style={frameStyle} className="">
         <Scene
           ref={sceneRef}
-          textureUrl={uploadedFileUrl}
-          uploadedFileType={uploadedFileType}
-          model={selectedModel}
           backgroundColor={backgroundColor}
           isRecording={isRecording}
           isPlaying={isPlaying}

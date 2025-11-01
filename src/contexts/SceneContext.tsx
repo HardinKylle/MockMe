@@ -1,13 +1,6 @@
-// src/contexts/SceneContext.tsx
 'use client';
 
-import {
-  createContext,
-  useContext,
-  useReducer,
-  ReactNode,
-  Dispatch,
-} from 'react';
+import {createContext, useContext, useReducer, ReactNode, Dispatch,} from 'react';
 import { SceneState } from '@/types/animation';
 
 // Default scene controls values
@@ -51,7 +44,7 @@ const sceneControlsReducer = (
       const { position, target, fov, modelPosition, modelRotation, modelScale } =
         action.payload;
       return {
-        ...state, // Keep lighting controls
+        ...state,
         cameraPosition: position,
         cameraTarget: target,
         cameraFov: fov,
