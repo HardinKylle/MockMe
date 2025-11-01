@@ -1,4 +1,5 @@
 'use client';
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { SlidersHorizontal, RotateCcw } from 'lucide-react';
@@ -7,10 +8,12 @@ import { Label } from '@/components/ui/Label';
 import { Input } from '@/components/ui/Input';
 import { useScene } from '@/contexts/SceneContext';
 
+// Props for CameraControlsPanel
 interface CameraControlsPanelProps {
-  onReset: () => void;
+  onReset: () => void; // Callback to reset all controls
 }
 
+// Number input for scalar values (e.g. FOV, scale, intensity)
 const NumberInput = ({
   label,
   id,
@@ -45,6 +48,7 @@ const NumberInput = ({
   </div>
 );
 
+// Vector input for 3D values (e.g. position, rotation)
 const VectorInput = ({
   label,
   id,
@@ -78,11 +82,14 @@ const VectorInput = ({
   </div>
 );
 
+// Main camera controls panel component
 export default function CameraControlsPanel({
   onReset,
 }: CameraControlsPanelProps) {
+  // Panel open/close state
   const [isOpen, setIsOpen] = useState(false);
 
+  // Get scene controls and dispatcher from context
   const { sceneControls, dispatchSceneControls } = useScene();
   const {
     cameraPosition,
@@ -98,8 +105,10 @@ export default function CameraControlsPanel({
     screenReflection,
   } = sceneControls;
 
+  // Render panel UI
   return (
     <div className="relative">
+      {/* Button to open/close panel */}
       <Button
         onClick={() => setIsOpen(!isOpen)}
         variant="primary"
@@ -111,11 +120,13 @@ export default function CameraControlsPanel({
         <SlidersHorizontal className="h-6 w-6 text-white" />
       </Button>
 
+      {/* Panel content */}
       {isOpen && (
         <div
           className="absolute top-full right-0 mt-2 w-72 h-[75vh] overflow-y-auto overflow-x-hidden rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 backdrop-blur-xl z-20 p-4"
           style={{ animation: 'slideUp 0.2s ease-out' }}
         >
+          {/* Slide up animation for panel */}
           <style>{`
             @keyframes slideUp {
               from { opacity: 0; transform: translateY(10px); }
@@ -123,6 +134,7 @@ export default function CameraControlsPanel({
             }
           `}</style>
           <div className="space-y-4">
+            {/* Panel header with reset button */}
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold text-white">Scene Controls</h3>
               <Button
@@ -136,6 +148,7 @@ export default function CameraControlsPanel({
               </Button>
             </div>
 
+            {/* Camera controls */}
             <h4 className="text-sm font-medium text-slate-200 border-b border-slate-700/50 pb-1">
               Camera
             </h4>
@@ -176,6 +189,7 @@ export default function CameraControlsPanel({
               max={120}
             />
 
+            {/* Model controls */}
             <h4 className="text-sm font-medium text-slate-200 border-b border-slate-700/50 pb-1">
               Model
             </h4>
@@ -214,6 +228,7 @@ export default function CameraControlsPanel({
               min={0.1}
             />
 
+            {/* Lighting and environment controls */}
             <h4 className="text-sm font-medium text-slate-200 border-b border-slate-700/50 pb-1">
               Lighting & Environment
             </h4>
@@ -267,6 +282,7 @@ export default function CameraControlsPanel({
               min={0}
               max={2}
             />
+            {/* Toggle for screen reflection */}
             <div className="flex items-center justify-between pt-2">
               <Label
                 htmlFor="screen-reflection"

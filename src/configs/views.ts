@@ -1,3 +1,6 @@
+// Defines preset camera views for quick selection in the scene.
+
+
 export const presetViews = [
   // Basic Views
   { name: 'Front', position: [0, 0, 2], target: [0, 0, 0] },

@@ -1,4 +1,7 @@
 'use client';
+ 
+//Main timeline ui for animation and content tracks, playhead, scene management and export controls.
+
 import { useScene } from '@/contexts/SceneContext'
 import { useAnimation } from '@/contexts/AnimationContext'
 import { Button } from '@/components/ui/Button' ;

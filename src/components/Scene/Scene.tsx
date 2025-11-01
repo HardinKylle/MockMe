@@ -1,4 +1,7 @@
 'use client';
+
+// Main 3D scene component for rendering phone model, camera controls, and animation
+
 import { forwardRef, useEffect, useRef } from 'react';
 import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { OrbitControls, Environment, useGLTF } from '@react-three/drei';
@@ -44,32 +47,32 @@ export interface SceneApi {
   stopRecording: () => void;
 }
 
+// Preload all model GLTFs for faster switching
 models.forEach(model => useGLTF.preload(model.path));
 
+// Easing function for animation progress
 const easeInOutCubic = (t: number) => {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 };
 
+// Shared vectors for interpolation
 const startPos = new THREE.Vector3();
 const endPos = new THREE.Vector3();
 const startTarget = new THREE.Vector3();
 const endTarget = new THREE.Vector3();
-
-// --- Add these near your other THREE.Vector3 definitions ---
 const startModelPos = new THREE.Vector3();
 const endModelPos = new THREE.Vector3();
 const startModelRot = new THREE.Vector3();
 const endModelRot = new THREE.Vector3();
+const vec3 = new THREE.Vector3();
 
-// Helper function to convert Cartesian to Spherical coordinates
+// Cartesian <-> Spherical helpers for camera animation
 const cartesianToSpherical = (vec: THREE.Vector3) => {
   const radius = vec.length();
-  const theta = Math.atan2(vec.x, vec.z); // Horizontal angle
-  const phi = Math.acos(vec.y / radius); // Vertical angle
+  const theta = Math.atan2(vec.x, vec.z);
+  const phi = Math.acos(vec.y / radius);
   return { radius, theta, phi };
 };
-
-// Helper function to convert Spherical to Cartesian coordinates
 const sphericalToCartesian = (radius: number, theta: number, phi: number) => {
   return new THREE.Vector3(
     radius * Math.sin(phi) * Math.sin(theta),
@@ -77,23 +80,15 @@ const sphericalToCartesian = (radius: number, theta: number, phi: number) => {
     radius * Math.sin(phi) * Math.cos(theta)
   );
 };
-
-// Helper to find shortest angle between two angles
 const shortestAngleDelta = (start: number, end: number) => {
   let delta = end - start;
-  // Normalize to [-PI, PI]
   while (delta > Math.PI) delta -= 2 * Math.PI;
   while (delta < -Math.PI) delta += 2 * Math.PI;
   return delta;
 };
-
-// Linear interpolation helper
 const lerp = (start: number, end: number, t: number) => {
   return start + (end - start) * t;
 };
-
-// --- CREATE A REUSABLE VECTOR FOR THE EFFECT ---
-const vec3 = new THREE.Vector3();
 
 function SceneContent({
   backgroundColor,
@@ -122,7 +117,7 @@ function SceneContent({
   backgroundColor: string;
   isScrubbing: boolean;
 }) {
-  const { gl, camera, controls } = useThree(); // <--- GET CONTROLS FROM USETHREE
+  const { gl, camera, controls } = useThree();
   const modelRef = useRef<THREE.Group>(null);
 
   const {
@@ -131,15 +126,13 @@ function SceneContent({
     selectedModel
   } = useAsset();
 
-  // --- CAST CONTROLS TO THE CORRECT TYPE ---
+  // OrbitControls ref for imperative updates
   const controlsRef = useRef<OrbitControlsType>(controls as OrbitControlsType);
-  // Sync ref if `controls` from `useThree` changes
   useEffect(() => {
     controlsRef.current = controls as OrbitControlsType;
   }, [controls]);
 
-
-  // Apply camera FOV
+  // Sync camera FOV
   useEffect(() => {
     if (camera instanceof THREE.PerspectiveCamera) {
       camera.fov = cameraFov;
@@ -147,15 +140,11 @@ function SceneContent({
     }
   }, [camera, cameraFov]);
 
-  // --- [FIX 1: Sliders -> Camera] ---
-  // This effect applies the inspection state (from sliders) to the camera
-  // ONLY when we are PAUSED.
+  // Apply camera position/target from sliders when paused
   useEffect(() => {
     if (controlsRef.current && !isPlaying && !isScrubbing) {
       const camPos = controlsRef.current.object.position;
       const targetPos = controlsRef.current.target;
-
-      // Check if different to prevent infinite loops from floating point noise
       if (
         !camPos.equals(vec3.set(...cameraPosition)) ||
         !targetPos.equals(vec3.set(...cameraTarget))
@@ -165,11 +154,9 @@ function SceneContent({
         controlsRef.current.update();
       }
     }
-    // This effect runs when the *props* change, or when we pause/play
   }, [isPlaying, isScrubbing, cameraPosition, cameraTarget]);
 
-
-  // Apply model transforms
+  // Apply model transforms from sliders
   useEffect(() => {
     if (modelRef.current) {
       modelRef.current.position.set(...modelPosition);
@@ -178,6 +165,7 @@ function SceneContent({
     }
   }, [modelPosition, modelRotation, modelScale]);
 
+  // Set background color or transparency
   useEffect(() => {
     if (backgroundColor === 'transparent') {
       gl.setClearAlpha(0);
@@ -187,39 +175,31 @@ function SceneContent({
     }
   }, [gl, backgroundColor]);
 
+  // Animation frame loop for playback and scrubbing
   useFrame((state, delta) => {
-    const controls = controlsRef.current; // Get controls from ref
-    if (!controls) return; // Safety check
+    const controls = controlsRef.current;
+    if (!controls) return;
 
     let videoJustFinished = false;
-    // 1. Advance time ONLY if isPlaying is true
+    // Advance time if playing
     if (isPlaying) {
-
       const frameDelta = delta;
-
       setCurrentTime((prevTime) => {
         const newTime = prevTime + frameDelta;
-
         if (newTime >= totalVideoDuration) {
           setIsPlaying(false);
           setHasFinished(true);
-
           videoJustFinished = true;
-
-          // --- END FIX ---
-
           return totalVideoDuration;
         }
         return newTime;
       });
     }
 
-    // Check the flag *after* the state update has been queued
+    // Sync state on last frame
     if (videoJustFinished) {
-      // --- FIX: Also sync state on the very last frame ---
       const pos = camera.position.toArray() as [number, number, number];
       const target = controls.target.toArray() as [number, number, number];
-      // --- UPDATED to pass full state ---
       if (modelRef.current) {
         onLiveCameraChange({
           position: pos,
@@ -230,10 +210,9 @@ function SceneContent({
           modelScale: modelRef.current.scale.x,
         });
       }
-      // --- END FIX ---
     }
 
-    // 2. Animate camera/model ONLY if playing OR scrubbing
+    // Animate camera/model if playing or scrubbing
     if (isPlaying || isScrubbing) {
       let timeSoFar = 0;
       let sceneFound = false;
@@ -249,33 +228,22 @@ function SceneContent({
           const easedProgress = easeInOutCubic(sceneProgress);
 
           if (modelRef.current && controls) {
-            // --- ALL YOUR ANIMATION LOGIC MOVES THE CAMERA ---
             if (isPresetAnim(scene.animationType)) {
-
-              // --- [START FIX] ---
-              // Apply the base state from startView first.
-              // This resets properties like scale and position
-              // before the preset animation (e.g., spin) runs.
+              // Apply base state from startView before preset animation
               if (scene.startView && modelRef.current && controls) {
                 camera.position.set(...scene.startView.position);
                 (controls as OrbitControlsType).target.set(...scene.startView.target);
-
                 if (camera instanceof THREE.PerspectiveCamera) {
                   camera.fov = scene.startView.fov;
                   camera.updateProjectionMatrix();
                 }
-
                 modelRef.current.position.set(...scene.startView.modelPosition);
                 modelRef.current.rotation.set(...scene.startView.modelRotation);
                 modelRef.current.scale.set(scene.startView.modelScale, scene.startView.modelScale, scene.startView.modelScale);
-
                 (controls as OrbitControlsType).update();
               }
-              // --- [END FIX] ---
-
               const animFn = presetAnimationMap[scene.animationType];
               if (animFn) {
-                // Now, the animFn will animate *over* the base state
                 animFn({
                   camera,
                   controls: controls as OrbitControlsType,
@@ -287,38 +255,28 @@ function SceneContent({
             }
             else if (scene.animationType === 'custom') {
               if (scene.startView && scene.endView) {
-                // --- Camera Position/Target (existing logic) ---
+                // Camera position/target interpolation
                 startPos.set(...scene.startView.position);
                 endPos.set(...scene.endView.position);
                 startTarget.set(...scene.startView.target);
                 endTarget.set(...scene.endView.target);
 
-                // Convert to spherical coordinates
+                // Spherical interpolation for orbital movement
                 const startSphere = cartesianToSpherical(startPos);
                 const endSphere = cartesianToSpherical(endPos);
-
-                // Check if positions are on opposite sides (angle difference > 90°)
                 const angleDiff = Math.abs(shortestAngleDelta(startSphere.theta, endSphere.theta));
                 const shouldUseSpherical = angleDiff > Math.PI / 2;
 
                 if (shouldUseSpherical) {
-                  // Use spherical interpolation for smooth orbital movement
                   const interpolatedRadius = lerp(startSphere.radius, endSphere.radius, easedProgress);
-
-                  // Interpolate theta (horizontal angle) using shortest path
                   const thetaDelta = shortestAngleDelta(startSphere.theta, endSphere.theta);
                   const interpolatedTheta = startSphere.theta + thetaDelta * easedProgress;
-
-                  // Interpolate phi (vertical angle)
                   const interpolatedPhi = lerp(startSphere.phi, endSphere.phi, easedProgress);
-
-                  // Convert back to Cartesian
                   const interpolatedPos = sphericalToCartesian(
                     interpolatedRadius,
                     interpolatedTheta,
                     interpolatedPhi
                   );
-
                   camera.position.copy(interpolatedPos);
                 } else {
                   startPos.lerp(endPos, easedProgress);
@@ -329,12 +287,14 @@ function SceneContent({
                 (controls as OrbitControlsType).target.copy(startTarget);
                 (controls as OrbitControlsType).update();
 
+                // FOV interpolation
                 const startFov = scene.startView.fov;
                 const endFov = scene.endView.fov;
                 if (camera instanceof THREE.PerspectiveCamera) {
                   camera.fov = lerp(startFov, endFov, easedProgress);
-                  camera.updateProjectionMatrix(); // IMPORTANT!
+                  camera.updateProjectionMatrix();
                 }
+                // Model position/rotation/scale interpolation
                 startModelPos.set(...scene.startView.modelPosition);
                 endModelPos.set(...scene.endView.modelPosition);
                 startModelPos.lerp(endModelPos, easedProgress);
@@ -350,32 +310,23 @@ function SceneContent({
                 const newScale = lerp(startScale, endScale, easedProgress);
                 modelRef.current.scale.set(newScale, newScale, newScale);
               }
-
-
-              if (modelRef.current) {
-                // modelRef.current.rotation.y = 0; // <-- Consider removing
-              }
             }
             else if (scene.animationType === 'hold') {
               if (scene.startView) {
                 camera.position.set(...scene.startView.position);
                 (controls as OrbitControlsType).target.set(...scene.startView.target);
-
                 if (camera instanceof THREE.PerspectiveCamera) {
                   camera.fov = scene.startView.fov;
                   camera.updateProjectionMatrix();
                 }
-
                 modelRef.current.position.set(...scene.startView.modelPosition);
                 modelRef.current.rotation.set(...scene.startView.modelRotation);
                 modelRef.current.scale.set(scene.startView.modelScale, scene.startView.modelScale, scene.startView.modelScale);
-
               } else {
                 camera.position.set(0, 0, 2);
                 (controls as OrbitControlsType).target.set(0, 0, 0);
               }
               (controls as OrbitControlsType).update();
-
             }
           }
           break;
@@ -383,6 +334,7 @@ function SceneContent({
         timeSoFar = sceneEndTime;
       }
 
+      // Sync live camera/model state
       const pos = camera.position.toArray() as [number, number, number];
       const target = controls.target.toArray() as [number, number, number];
       if (modelRef.current) {
@@ -432,12 +384,10 @@ function SceneContent({
         makeDefault
         target={[0, 0, 0]}
         enabled={!isPlaying && !isScrubbing}
-       
         onChange={() => {
           if (controlsRef.current && !isPlaying && !isScrubbing) {
             const pos = controlsRef.current.object.position.toArray() as [number, number, number];
             const target = controlsRef.current.target.toArray() as [number, number, number];
-
             if (modelRef.current) {
               onLiveCameraChange({
                 position: pos,

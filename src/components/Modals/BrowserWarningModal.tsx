@@ -1,11 +1,15 @@
 'use client'
 
+// Modal warning for unsupported browser video export
+
 import { Button } from '@/components/ui/Button';
 
+// Props for BrowserWarningModal
 interface BrowserWarningModalProps {
-    onClose: () => void;
+    onClose: () => void; // Callback to close modal
 }
 
+// Modal component to inform user about browser limitations
 export const BrowserWarningModal = ({ onClose }: BrowserWarningModalProps) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -13,6 +17,7 @@ export const BrowserWarningModal = ({ onClose }: BrowserWarningModalProps) => {
         className="w-full max-w-md rounded-lg border shadow-xl p-6 space-y-4 bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50"
         style={{ animation: 'slideUp 0.2s ease-out' }}
       >
+        {/* Slide up animation for modal */}
         <style>{`
             @keyframes slideUp {
               from { opacity: 0; transform: translateY(10px); }

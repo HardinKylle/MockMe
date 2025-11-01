@@ -1,11 +1,12 @@
 'use client';
-import { useState } from 'react';
-import { Camera, Loader2, Check, Video, CircleStop } from 'lucide-react';
-import { Button, buttonVariants } from '@/components/ui/Button';
-import Image from 'next/image';
-import { cn } from '@/lib/utils';
 
-// Aspect ratio options
+// Capture controls for screenshots and video timeline
+
+import { useState } from 'react';
+import { Camera, Loader2, Video } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+
+// Aspect ratio options for download
 const aspectRatios = [
   { label: '16:9', value: '16:9' },
   { label: '9:16', value: '9:16' },
@@ -13,14 +14,14 @@ const aspectRatios = [
   { label: '4:3', value: '4:3' },
 ];
 
-// Define the props interface
+// Props for CaptureControls component
 interface CaptureControlsProps {
-  onCapture: () => void;
-  isLoading?: boolean;
-  aspectRatio: string;
-  onAspectRatioChange: (value: string) => void;
-  showTimeline: boolean;
-  onToggleTimeline: () => void;
+  onCapture: () => void; // Callback for screenshot
+  isLoading?: boolean; // Loading state for capture
+  aspectRatio: string; // Current aspect ratio
+  onAspectRatioChange: (value: string) => void; // Handler for aspect ratio change
+  showTimeline: boolean; // Show/hide timeline
+  onToggleTimeline: () => void; // Handler for toggling timeline
 }
 
 export default function CaptureControls({
@@ -31,12 +32,15 @@ export default function CaptureControls({
   showTimeline,
   onToggleTimeline,
 }: CaptureControlsProps) {
+  // Dropdown open/close state
   const [isOpen, setIsOpen] = useState(false);
 
+  // Handle screenshot button click
   const handleCaptureClick = () => {
     onCapture();
   };
 
+  // Handle aspect ratio selection
   const handleSelect = (value: string) => {
     onAspectRatioChange(value);
     setIsOpen(false);
@@ -45,7 +49,7 @@ export default function CaptureControls({
   return (
     <>
       <div className="relative">
-        {/* --- Dropdown Menu (UI MODIFIED) --- */}
+        {/* Aspect Ratio Dropdown */}
         {isOpen && (
           <div
             className="absolute bottom-full right-0 mb-2 w-32 rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 backdrop-blur-xl z-20 p-1.5"
@@ -62,7 +66,6 @@ export default function CaptureControls({
                 <Button
                   key={ratio.value}
                   onClick={() => handleSelect(ratio.value)}
-                  // Use 'secondary' for active, 'menu-item' for inactive
                   variant={
                     ratio.value === aspectRatio ? 'secondary' : 'menu-item'
                   }
@@ -76,43 +79,42 @@ export default function CaptureControls({
           </div>
         )}
 
-        {/* --- Main Button (UI MODIFIED) --- */}
+        {/* Aspect Ratio Button */}
         <Button
           onClick={() => setIsOpen(!isOpen)}
           disabled={isLoading}
-          variant="secondary" // This will now use our dark 'secondary' style
-          size="default" // This is our 56x56 icon button
+          variant="secondary"
+          size="default"
           isActive={isOpen}
           tooltip={!isLoading ? 'Aspect Ratio' : undefined}
           tooltipSide="top"
-          className="w-28 justify-center rounded-full" // Changed to rounded-lg to fit text
+          className="w-28 justify-center rounded-full"
         >
           {aspectRatio}
         </Button>
       </div>
 
-      {/* --- Timeline Button (UI MODIFIED) --- */}
+      {/* Timeline Toggle Button */}
       <Button
         onClick={onToggleTimeline}
-        variant="secondary" // Changed to 'secondary' to match other controls
+        variant="secondary"
         size="default"
         tooltip="Video Animation"
         tooltipSide="top"
         isActive={showTimeline}
       >
         {showTimeline ? (
-          // Use a more standard icon, perhaps just Video with an "active" color
           <Video className="text-blue-400" size={24} />
         ) : (
           <Video size={24} />
         )}
       </Button>
 
-      {/* --- Capture Button (UI MODIFIED) --- */}
+      {/* Screenshot Capture Button */}
       <Button
         onClick={handleCaptureClick}
         disabled={isLoading}
-        variant="primary" // This remains 'primary' as it's a main action
+        variant="primary"
         size="default"
         tooltip={!isLoading ? 'Screenshot' : undefined}
         tooltipSide="top"

@@ -1,12 +1,18 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode, Dispatch, SetStateAction, } from 'react';
+// Provides global state for animation scenes, timeline, playback, and scene management.
+
+import { createContext, useContext, useState, ReactNode, Dispatch, SetStateAction } from 'react';
 import { AnimationScene, SceneState } from '@/types/animation';
 import { DEFAULT_SCENE_CONTROLS } from './SceneContext';
 
+// Helper to generate unique scene IDs
 const generateId = () => `scene_${Math.random().toString(36).substr(2, 9)}`;
+
+// Default total video duration (seconds)
 const DEFAULT_TOTAL_DURATION = 10;
 
+// Returns the current default scene state
 const getCurrentSceneState = (): AnimationScene['startView'] => ({
   position: DEFAULT_SCENE_CONTROLS.cameraPosition,
   target: DEFAULT_SCENE_CONTROLS.cameraTarget,
@@ -16,6 +22,7 @@ const getCurrentSceneState = (): AnimationScene['startView'] => ({
   modelScale: DEFAULT_SCENE_CONTROLS.modelScale,
 });
 
+// Default initial scene
 const defaultScene: AnimationScene = {
   id: generateId(),
   name: 'Default Spin',
@@ -59,10 +66,10 @@ export const AnimationProvider = ({ children }: { children: ReactNode }) => {
   const [hasFinished, setHasFinished] = useState(false);
   const [isScrubbing, setIsScrubbing] = useState(false);
 
-  //handler of adding
+  // Adds a new scene to the timeline using the current camera/model state
   const handleAddScene = (currentState: SceneState) => {
     const newScene: AnimationScene = {
-      id: `scene_${Math.random().toString(36).substr(2, 9)}`,
+      id: generateId(),
       name: `Scene ${animationScenes.length + 1}`,
       duration: 3,
       animationType: 'hold',

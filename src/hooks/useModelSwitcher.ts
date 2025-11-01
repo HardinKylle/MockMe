@@ -1,4 +1,7 @@
 'use client';
+
+// Hook for switching between available 3D device models.
+
 import { useState } from 'react';
 import { models, ModelData } from '@/configs/models'; 
 

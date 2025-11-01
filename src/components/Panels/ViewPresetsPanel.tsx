@@ -1,5 +1,7 @@
 'use client'
 
+// Panel for selecting preset camera views
+
 import { useState, RefObject } from 'react';
 import { SceneApi } from '@/components/Scene/Scene';
 import { useScene } from '@/contexts/SceneContext';
@@ -15,7 +17,7 @@ export const ViewPresetsPanel = ({ sceneRef }: ViewPresetPanelProps) => {
     const [showViews, setShowViews] = useState(false);
     const { dispatchSceneControls } = useScene();
 
-    //Handles user click on a preset camera view. 
+    // Handles user click on a preset camera view
     const handlePresetClick = (view: typeof presetViews[number]) => {
         sceneRef.current?.setView(view.position, view.target);
         dispatchSceneControls({
@@ -30,6 +32,7 @@ export const ViewPresetsPanel = ({ sceneRef }: ViewPresetPanelProps) => {
 
     return (
         <div className='relative'>
+            {/* Button to open/close preset views panel */}
             <Button
                 onClick={() => setShowViews(!showViews)}
                 variant='primary'
@@ -41,9 +44,11 @@ export const ViewPresetsPanel = ({ sceneRef }: ViewPresetPanelProps) => {
                 <Crosshair className='h-6 w-6 text-white' />
             </Button>
 
+            {/* Preset views dropdown panel */}
             {showViews && (
                 <div
-                    className="absolute top-full right-0 mt-2 w-48 rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 backdrop-blur-xl z-20 p-1.5" style={{ animation: 'slideUp 0.2s ease-out' }}
+                    className="absolute top-full right-0 mt-2 w-48 rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 backdrop-blur-xl z-20 p-1.5"
+                    style={{ animation: 'slideUp 0.2s ease-out' }}
                 >
                     <style>{`
                     @keyframes slideUp {

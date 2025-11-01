@@ -1,6 +1,8 @@
 'use client';
 
-import {createContext, useContext, useReducer, ReactNode, Dispatch,} from 'react';
+// Provides global state and reducer for camera/model controls in the 3D scene.
+
+import { createContext, useContext, useReducer, ReactNode, Dispatch } from 'react';
 import { SceneState } from '@/types/animation';
 
 // Default scene controls values
@@ -32,6 +34,7 @@ type SceneControlAction =
     }
   | { type: 'UPDATE_RAW'; payload: Partial<SceneControlState> }; // For direct slider updates
 
+// Reducer for scene controls state
 const sceneControlsReducer = (
   state: SceneControlState,
   action: SceneControlAction

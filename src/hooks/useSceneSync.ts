@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+// Hook for syncing selected scene state to camera/model controls.
+
+import React from "react";
 import { useScene } from "@/contexts/SceneContext";
 import { useAnimation } from "@/contexts/AnimationContext";
-import { SceneState, AnimationScene } from "@/types/animation";
+import { SceneState} from "@/types/animation";
 
 export const useSceneSync = (isResetting: React.RefObject<boolean>) => {
   const { dispatchSceneControls } = useScene();

@@ -2,28 +2,34 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Upload, X, UploadCloud } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
+// Props for file upload component
 interface FileUploadProps {
-  onFileUpload: (file: File | null) => void;
-  previewUrl: string | null;
+  onFileUpload: (file: File | null) => void; // Callback for file upload or removal
+  previewUrl: string | null; // Preview URL for uploaded file
 }
 
-const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25 MB max size
+// Maximum allowed file size (25 MB)
+const MAX_FILE_SIZE = 25 * 1024 * 1024;
 
 const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, previewUrl }) => {
+  // State for drag-and-drop UI
   const [isDragging, setIsDragging] = React.useState<boolean>(false);
+  // Ref for file input element
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  // Reset file input if preview is cleared
   useEffect(() => {
     if (previewUrl === null && fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   }, [previewUrl]);
 
+  // Validate and handle file upload
   const handleFileChange = (file: File | null) => {
     if (file && file.size > MAX_FILE_SIZE) {
       alert(`File is too large. Please upload a file 25MB or less.`);
       if (fileInputRef.current) {
-        fileInputRef.current.value = ''; // Clear the input
+        fileInputRef.current.value = '';
       }
       return;
     }
@@ -32,22 +38,24 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, previewUrl }) => 
       file &&
       (file.type.startsWith('image/') || file.type.startsWith('video/'))
     ) {
-      onFileUpload(file); // Forward the file to the parent hook
+      onFileUpload(file); // Forward valid file to parent
     } else if (file === null) {
       onFileUpload(null); // Notify parent to clear
     } else if (file) {
       alert('Please upload a valid image or video file.');
       if (fileInputRef.current) {
-        fileInputRef.current.value = ''; // Clear the input
+        fileInputRef.current.value = '';
       }
     }
   };
 
+  // Handle file input change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
     handleFileChange(file);
   };
 
+  // Add/remove drag event listeners for drag-and-drop
   useEffect(() => {
     window.addEventListener('dragover', handleDragOver);
     window.addEventListener('dragleave', handleDragLeave);
@@ -59,6 +67,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, previewUrl }) => 
     };
   }, []);
 
+  // Handle file drop event
   const handleDrop = (e: DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -67,12 +76,14 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, previewUrl }) => 
     handleFileChange(file);
   };
 
+  // Handle drag over event
   const handleDragOver = (e: DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(true);
   };
 
+  // Handle drag leave event
   const handleDragLeave = (e: DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -85,20 +96,22 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, previewUrl }) => 
     setIsDragging(false);
   };
 
+  // Remove uploaded file
   const handleRemove = () => {
-    onFileUpload(null); // Notify parent to clear
+    onFileUpload(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
+  // Open file picker dialog
   const handleClick = () => {
     fileInputRef.current?.click();
   };
 
   return (
     <>
-      {/* --- UI MODIFIED: Using dark panel styles for the overlay --- */}
+      {/* Drag-and-drop overlay UI */}
       {isDragging && (
         <div className="fixed inset-0 z-20 flex items-center justify-center pointer-events-none">
           <div className="absolute inset-0 bg-linear-to-br from-slate-900/90 to-slate-800/90 backdrop-blur-md"></div>
@@ -111,6 +124,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, previewUrl }) => 
         </div>
       )}
 
+      {/* Hidden file input */}
       <input
         ref={fileInputRef}
         type="file"
@@ -118,6 +132,8 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, previewUrl }) => 
         onChange={handleInputChange}
         className="hidden"
       />
+
+      {/* Upload/remove button UI */}
       <div>
         {previewUrl ? (
           <Button
@@ -125,7 +141,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, previewUrl }) => 
               e.stopPropagation();
               handleRemove();
             }}
-            variant="danger" // This will now use our dark 'danger' style
+            variant="danger"
             size="default"
             tooltip="Remove file"
             tooltipSide="top"
@@ -135,7 +151,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, previewUrl }) => 
         ) : (
           <Button
             onClick={handleClick}
-            variant="primary" // --- UI MODIFIED: Changed from primary to secondary ---
+            variant="primary"
             size="default"
             tooltip="Upload file"
             tooltipSide="top"

@@ -1,3 +1,5 @@
+// Hook for capturing the current scene as an image and managing preview state.
+
 import { useState, RefObject } from "react";
 import { SceneApi } from "@/components/Scene/Scene";
 

@@ -1,4 +1,5 @@
 'use client';
+
 import { useState, useRef, useEffect } from 'react';
 import { Palette, Check, Pipette } from 'lucide-react';
 import { HexColorPicker } from 'react-colorful';
@@ -7,53 +8,46 @@ import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label'; 
 import { cn } from '@/lib/utils'; 
 
+// Props for the color picker component
 interface PickerProps {
   color: string;
   onChange: (color: string) => void;
 }
 
+// EyeDropper API types
 interface EyeDropperResult {
   sRGBHex: string;
 }
-
 interface EyeDropper {
   open: () => Promise<EyeDropperResult>;
 }
-
 interface EyeDropperConstructor {
   new (): EyeDropper;
 }
+
+// Preset color values for quick selection
 const presetColors = [
-  '#FFFFFF',
-  '#9e9e9e',
-  '#333333',
-  '#f44336',
-  '#e91e63',
-  '#9c27b0',
-  '#673ab7',
-  '#3f51b5',
-  '#2196f3',
-  '#03a9f4',
-  '#00bcd4',
-  '#009688',
-  '#4caf50',
-  '#8bc34a',
-  '#cddc39',
-  '#ffeb3b',
-  '#ffc107',
-  '#ff9800',
+  '#FFFFFF', '#9e9e9e', '#333333', '#f44336', '#e91e63', '#9c27b0',
+  '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688',
+  '#4caf50', '#8bc34a', '#cddc39', '#ffeb3b', '#ffc107', '#ff9800',
 ];
 
+// Main background color picker component
 export default function BackgroundColorPicker({ color, onChange }: PickerProps) {
+  // Local state for picker open/close and input value
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState(color);
+
+  // Refs for detecting outside clicks
   const pickerRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
+  // Sync input value with color prop
   useEffect(() => {
     setInputValue(color);
   }, [color]);
 
+  // Close picker when clicking outside
   useEffect(() => {
     if (!isOpen) return;
     function handleClickOutside(event: MouseEvent) {
@@ -66,16 +60,17 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
         setIsOpen(false);
       }
     }
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
 
+  // Handle color change from picker or preset
   const handleColorChange = (newColor: string) => {
     onChange(newColor);
     setInputValue(newColor);
   };
 
+  // Handle manual hex input change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputValue(value);
@@ -84,6 +79,7 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
     }
   };
 
+  // Utility: Get contrast color for icons/text
   const getContrastColor = (hexColor: string) => {
     if (hexColor === 'transparent') {
       return '#000000';
@@ -95,6 +91,7 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
     return luminance > 0.5 ? '#000000' : '#FFFFFF';
   };
 
+  // Checkerboard style for transparent preview
   const checkerboardStyle = {
     backgroundImage:
       'linear-gradient(45deg, #808080 25%, transparent 25%), linear-gradient(-45deg, #808080 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #808080 75%), linear-gradient(-45deg, transparent 75%, #808080 75%)',
@@ -102,6 +99,7 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
     backgroundPosition: '0 0, 0 4px, 4px -4px, -4px 0px',
   };
 
+  // Open browser EyeDropper API for color picking
   const openEyeDropper = async () => {
     const eyeDropperApi = (
       window as Window & { EyeDropper?: EyeDropperConstructor }
@@ -126,9 +124,10 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
     }
   };
 
+  // Render picker button and popup panel
   return (
     <div className="relative">
-      {/* This button is already consistent */}
+      {/* Picker open/close button */}
       <Button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
@@ -149,14 +148,14 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
         />
       </Button>
 
+      {/* Color picker panel */}
       {isOpen && (
         <div
           ref={pickerRef}
-          // --- UI MODIFIED: Dark panel styles ---
           className="absolute top-full mt-2 right-0 w-72 rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 backdrop-blur-xl z-20 overflow-hidden"
           style={{ animation: 'slideUp 0.2s ease-out' }}
         >
-          {/* --- UI MODIFIED: Dark theme for react-colorful --- */}
+          {/* Custom styles for react-colorful */}
           <style>{`
             @keyframes slideUp {
               from { opacity: 0; transform: translateY(10px); }
@@ -172,10 +171,10 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
             }
             .react-colorful__saturation {
               border: 1px solid var(--colorful-border-hsl);
-              border-radius: 0.375rem; /* rounded-md */
+              border-radius: 0.375rem;
             }
             .react-colorful__hue, .react-colorful__alpha {
-              border-radius: 0.375rem; /* rounded-md */
+              border-radius: 0.375rem;
               height: 12px;
             }
             .react-colorful__saturation-pointer, 
@@ -187,7 +186,7 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
             }
           `}</style>
 
-          {/* Header */}
+          {/* Panel header with eyedropper */}
           <div className="px-4 pt-3 pb-3 border-b border-slate-700/50">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-medium text-slate-100">
@@ -197,7 +196,7 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
                 type="button"
                 onClick={openEyeDropper}
                 variant="ghost"
-                size="sm" // Consistent icon button size
+                size="sm"
                 tooltip="Use Eyedropper"
                 tooltipSide="left"
               >
@@ -205,7 +204,7 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
               </Button>
             </div>
 
-            {/* Color Preview & Hex Input */}
+            {/* Color preview and hex input */}
             <div className="flex items-center gap-3">
               <div
                 className="w-10 h-10 rounded-md border border-slate-700/50 shadow-sm shrink-0"
@@ -231,7 +230,7 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
             </div>
           </div>
 
-          {/* Color Picker */}
+          {/* Main color picker */}
           <div className="p-4 pt-3">
             <HexColorPicker
               color={color === 'transparent' ? '#FFFFFF' : color}
@@ -241,7 +240,7 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
             />
           </div>
 
-          {/* Transparent & Preset Colors */}
+          {/* Transparent and preset color buttons */}
           <div className="px-4 pb-4 space-y-3">
             <Button
               onClick={() => handleColorChange('transparent')}
@@ -250,7 +249,6 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
               className="w-full relative"
               style={checkerboardStyle}
             >
-
               {color === 'transparent' && (
                 <Check
                   size={16}

@@ -1,5 +1,7 @@
 'use client';
 
+// Panel for editing a single animation scene (name, duration, type, camera/model views, reorder, delete)
+
 import { AnimationScene, SceneState, AnimationType, CustomAnimationType, PresetAnimationType } from '@/types/animation';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
@@ -11,11 +13,10 @@ import React, { useState, useEffect } from 'react';
 import { useScene } from '@/contexts/SceneContext';
 import { useAnimation } from '@/contexts/AnimationContext'
 
-
-//minimum duration for each scenes
+// Minimum duration for each scene
 const MIN_DURATION = 0.1;
 
-//animation type lists
+// Animation type lists
 const customAnimationTypes: CustomAnimationType[] = ['hold', 'custom'];
 const presetAnimationTypes: PresetAnimationType[] = [
   'spin',
@@ -23,27 +24,23 @@ const presetAnimationTypes: PresetAnimationType[] = [
   'reveal-from-top',
 ];
 
-//type guards for animation types
+// Type guards for animation types
 const isCustomAnim = (
   type: AnimationType
 ): type is CustomAnimationType =>
   customAnimationTypes.includes(type as CustomAnimationType);
 
-
-//format camera/model view for display
 const isPresetAnim = (
   type: AnimationType
 ): type is PresetAnimationType =>
   presetAnimationTypes.includes(type as PresetAnimationType);
 
+// Format camera/model view for display
 const formatView = (view: SceneState | undefined | null): React.ReactNode => {
   if (!view) {
     return <span className="text-slate-500">Not Set</span>;
   }
-
-
   const formatArray = (arr: number[]) => `[${arr.map((n) => n.toFixed(1)).join(', ')}]`;
-
   return (
     <div className="flex space-x-2">
       {/* Camera Stats */}
@@ -64,12 +61,13 @@ const formatView = (view: SceneState | undefined | null): React.ReactNode => {
   );
 };
 
-//Props
+// Props for SceneEditorPanel
 interface SceneEditorPanelProps {
   isVisible: boolean;
   sceneRef: React.RefObject<SceneApi | null>;
 }
 
+// Helper to reorder scenes in array
 function reorder<T>(list: T[], startIndex: number, endIndex: number): T[] {
   const result = Array.from(list);
   const [removed] = result.splice(startIndex, 1);
@@ -81,8 +79,7 @@ export default function SceneEditorPanel({
   isVisible,
   sceneRef,
 }: SceneEditorPanelProps) {
-
-  //animation context values
+  // Animation context values
   const {
     animationScenes,
     setAnimationScenes,
@@ -90,7 +87,7 @@ export default function SceneEditorPanel({
     setSelectedSceneId,
   } = useAnimation();
 
-  //scene context values
+  // Scene context values
   const { sceneControls } = useScene();
 
   // Find selected scene and current state
@@ -103,19 +100,19 @@ export default function SceneEditorPanel({
     selectedScene ? selectedScene.duration.toString() : '0.1'
   );
 
-  // Effect hook
-  useEffect(() => { //
+  // Sync duration input with selected scene
+  useEffect(() => {
     if (selectedScene) {
       setDurationInput(selectedScene.duration.toString());
     }
   }, [selectedScene?.duration]);
 
-  // Now that all hooks are called, we can safely return early.
+  // Hide panel if not visible or no scene selected
   if (!isVisible || !selectedScene) return null;
 
   const currentIndex = animationScenes.findIndex((s) => s.id === selectedScene.id);
 
-  //update scene with new values
+  // Update scene with new values
   const handleUpdateScene = (
     sceneId: string,
     updates: Partial<AnimationScene>
@@ -127,7 +124,7 @@ export default function SceneEditorPanel({
     );
   };
 
-  //delete scene and select next/previous if needed
+  // Delete scene and select next/previous if needed
   const handleDeleteScene = (sceneId: string) => {
     if (animationScenes.length <= 1) return;
 
@@ -148,19 +145,19 @@ export default function SceneEditorPanel({
     }
   };
 
-  //reorder scene handler
+  // Reorder scenes handler
   const handleReorderScenes = (newScenes: AnimationScene[]) => {
     setAnimationScenes(newScenes);
   };
 
-  //determine active animation category
+  // Determine active animation category
   const activeCategory = isCustomAnim(selectedScene.animationType)
     ? 'custom'
     : isPresetAnim(selectedScene.animationType)
       ? 'preset'
       : 'custom';
 
-  //move scene left/right in timeline
+  // Move scene left/right in timeline
   const handleMove = (direction: 'left' | 'right') => {
     const newIndex = direction === 'left' ? currentIndex - 1 : currentIndex + 1;
     if (newIndex < 0 || newIndex >= animationScenes.length) {
@@ -170,11 +167,9 @@ export default function SceneEditorPanel({
     handleReorderScenes(newScenes);
   };
 
-  //set camera/model view for start/end
+  // Set camera/model view for start/end
   const handleSetView = (type: 'startView' | 'endView') => {
     if (currentState) {
-
-
       const newView: SceneState = {
         position: currentState.cameraPosition,
         target: currentState.cameraTarget,
@@ -183,21 +178,20 @@ export default function SceneEditorPanel({
         modelRotation: currentState.modelRotation,
         modelScale: currentState.modelScale,
       };
-
       handleUpdateScene(selectedScene.id, { [type]: newView });
-
       setShowSavedMessage(true);
       setTimeout(() => {
         setShowSavedMessage(false);
       }, 1500);
     }
   };
-  //clear camera view
+
+  // Clear camera/model view
   const handleClearView = (viewType: 'startView' | 'endView') => {
     handleUpdateScene(selectedScene.id, { [viewType]: undefined });
   };
 
-  //handle duration input change
+  // Handle duration input change
   const handleDurationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setDurationInput(val);
@@ -207,8 +201,7 @@ export default function SceneEditorPanel({
     }
   };
 
-
-  //validation duration on lbur
+  // Validate duration on blur
   const handleDurationBlur = () => {
     const parsedVal = parseFloat(durationInput);
     if (isNaN(parsedVal) || parsedVal < MIN_DURATION) {

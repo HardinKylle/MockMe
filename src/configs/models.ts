@@ -1,3 +1,4 @@
+// Defines available 3D device models and their screen material/configuration.
 export interface ModelData {
   name: string;
   path: string;

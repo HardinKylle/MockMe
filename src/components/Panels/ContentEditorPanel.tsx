@@ -1,31 +1,35 @@
 'use client';
 
+// Panel for editing the total video/content duration
+
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { TimerIcon } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAnimation } from '@/contexts/AnimationContext';
 
-//props
+// Props for ContentEditorPanel
 interface ContentEditorPanelProps {
-  isVisible: boolean;
+  isVisible: boolean; // Show/hide panel
 }
 
-//minimum content duration
+// Minimum allowed content duration
 const MIN_DURATION = 1;
 
 export default function ContentEditorPanel({
   isVisible,
 }: ContentEditorPanelProps) {
+  // Get total duration and setter from animation context
   const { totalVideoDuration, setTotalVideoDuration } = useAnimation();
+  // Local state for input value
   const [inputValue, setInputValue] = useState(totalVideoDuration.toString());
 
-  //sync input value when total video duration changes
+  // Sync input value when total video duration changes
   useEffect(() => {
     setInputValue(totalVideoDuration.toString());
   }, [totalVideoDuration]);
 
-  //handle input change
+  // Handle input change
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setInputValue(val);
@@ -36,7 +40,7 @@ export default function ContentEditorPanel({
     }
   };
 
-  //validate and update duration on blur
+  // Validate and update duration on blur
   const handleOnBlur = () => {
     const parsedVal = parseFloat(inputValue);
     if (isNaN(parsedVal) || parsedVal < MIN_DURATION) {
@@ -47,6 +51,7 @@ export default function ContentEditorPanel({
     }
   };
 
+  // Hide panel if not visible
   if (!isVisible) return null;
 
   return (

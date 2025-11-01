@@ -1,3 +1,6 @@
+// Hook for handling video export/recording logic and confirmation UI.
+
+
 import { useEffect, useState, RefObject } from "react";
 import { SceneApi } from "@/components/Scene/Scene";
 

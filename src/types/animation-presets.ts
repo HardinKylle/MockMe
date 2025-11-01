@@ -1,3 +1,8 @@
+/**
+ *  Defines preset animation logic for the timeline.
+ * Includes type guards, preset animation functions, and export map.
+ */
+
 import { Camera } from '@react-three/fiber';
 import * as THREE from 'three';
 import { RefObject } from 'react';
@@ -7,7 +12,6 @@ import { AnimationType, PresetAnimationType } from '@/types/animation';
  * Defines the properties passed to every preset animation function
  * on each frame.
  */
-
 interface MinimalControls {
   target: THREE.Vector3;
   update: () => void;
@@ -22,15 +26,14 @@ export interface PresetAnimationProps {
 }
 
 // --- Helper for lerping ---
-// We use this in the new presets
 const lerp = THREE.MathUtils.lerp;
 
 // --- Type Guards ---
 
 const presetTypes: PresetAnimationType[] = [
   'spin',
-  'dolly-pan-up', // <-- Added
-  'reveal-from-top', // <-- Added
+  'dolly-pan-up',
+  'reveal-from-top',
 ];
 
 /**
@@ -67,8 +70,7 @@ const spin: (props: PresetAnimationProps) => void = ({
 };
 
 /**
- * NEW: DOLLY-PAN-UP
- * Starts low, moves up and slightly forward, tilting camera up.
+ * DOLLY-PAN-UP: Starts low, moves up and slightly forward, tilting camera up.
  */
 const dollyPanUp: (props: PresetAnimationProps) => void = ({
   camera,
@@ -113,8 +115,7 @@ const dollyPanUp: (props: PresetAnimationProps) => void = ({
 };
 
 /**
- * NEW: REVEAL-FROM-TOP
- * Starts directly above the model and swoops down to a front-on view.
+ * REVEAL-FROM-TOP: Starts directly above the model and swoops down to a front-on view.
  */
 const revealFromTop: (props: PresetAnimationProps) => void = ({
   camera,
@@ -125,7 +126,7 @@ const revealFromTop: (props: PresetAnimationProps) => void = ({
   // Start position (high above)
   const startX = 0;
   const startY = 3;
-  const startZ = 0.1; // Sightly in front to avoid gimbal lock
+  const startZ = 0.1; // Slightly in front to avoid gimbal lock
 
   // End position (standard hero shot)
   const endX = 0;
@@ -160,6 +161,6 @@ export const presetAnimationMap: Record<
   (props: PresetAnimationProps) => void
 > = {
   spin,
-  'dolly-pan-up': dollyPanUp, // <-- Added
-  'reveal-from-top': revealFromTop, // <-- Added
+  'dolly-pan-up': dollyPanUp,
+  'reveal-from-top': revealFromTop,
 };

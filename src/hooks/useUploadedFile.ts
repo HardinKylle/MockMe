@@ -1,3 +1,5 @@
+//  Hook for managing uploaded image/video files and their URLs.
+
 import { useState, useEffect } from "react";
 import { useTexture } from "@react-three/drei";
 
@@ -7,13 +9,14 @@ export function useUploadedFile() {
   const [videoDuration, setVideoDuration] = useState<number | null>(null);
   const [internalFile, setInternalFile] = useState<File | null>(null); // Keep track of the file itself
 
+  // Handles file upload and sets state
   const handleFileUpload = (file: File | null) => {
     // Revoke previous URL if it exists, before setting new state
     if (uploadedFileUrl) {
-       URL.revokeObjectURL(uploadedFileUrl);
-       if (uploadedFileType === 'image') {
-         useTexture.clear(uploadedFileUrl);
-       }
+      URL.revokeObjectURL(uploadedFileUrl);
+      if (uploadedFileType === 'image') {
+        useTexture.clear(uploadedFileUrl);
+      }
     }
 
     setInternalFile(file); // Update internal file state
@@ -30,7 +33,6 @@ export function useUploadedFile() {
         const video = document.createElement('video');
         video.preload = 'metadata';
         video.onloadedmetadata = () => {
-          // No need to revoke here, URL.createObjectURL creates a *new* reference
           setVideoDuration(video.duration);
         };
         video.onerror = () => {
@@ -63,11 +65,11 @@ export function useUploadedFile() {
     // Return the cleanup function
     return () => {
       if (currentUrl) {
-         console.log("Cleaning up URL:", currentUrl);
-         URL.revokeObjectURL(currentUrl);
-         if (currentType === 'image') {
-           useTexture.clear(currentUrl); // Clear drei cache if it was an image
-         }
+        console.log("Cleaning up URL:", currentUrl);
+        URL.revokeObjectURL(currentUrl);
+        if (currentType === 'image') {
+          useTexture.clear(currentUrl); // Clear drei cache if it was an image
+        }
       }
     };
   }, [uploadedFileUrl, uploadedFileType]); // Re-run if URL or type changes

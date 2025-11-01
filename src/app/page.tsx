@@ -1,4 +1,7 @@
 'use client';
+
+// Main entry point for the mock-me editor UI. Handles scene, timeline, panels, and global state.
+
 import FileUpload from '@/components/Controls/FileUpload';
 import { useUploadedFile } from '@/hooks/useUploadedFile';
 import Scene, { SceneApi } from '@/components/Scene/Scene';
@@ -104,6 +107,7 @@ export default function App() {
 
   const { selectedScene, handleLiveCameraChange } = useSceneSync(isResetting);
 
+  // Update timeline duration based on uploaded video
   useEffect(() => {
     const prevFileType = prevUploadedFileTypeRef.current;
     if (uploadedFileType === 'video' && videoDuration !== null && videoDuration > 0) {
@@ -115,7 +119,7 @@ export default function App() {
     prevUploadedFileTypeRef.current = uploadedFileType;
   }, [uploadedFileType, videoDuration, setTotalVideoDuration]);
 
-
+  // Change wrapper background based on aspect ratio
   useEffect(() => {
     if (aspectRatio === '16:9') {
       setWrapperBg('bg-white');
@@ -137,7 +141,7 @@ export default function App() {
     modelScale: modelScale,
   };
 
-
+  // Calculates the frame style for the main scene area based on aspect ratio and window size
   const getFrameStyle = () => {
     if (aspectRatio === '16:9') return { width: '100%', height: '100%' };
     if (windowWidth === 0 || windowHeight === 0)
@@ -160,6 +164,7 @@ export default function App() {
     };
   };
 
+  // Resets camera/model controls to default
   const handleResetSceneControls = () => {
     isResetting.current = true;
     dispatchSceneControls({ type: 'RESET' });
@@ -175,7 +180,6 @@ export default function App() {
   };
 
   const frameStyle = getFrameStyle();
-
 
   return (
     <div className={`w-full h-screen ${wrapperBg} relative overflow-hidden flex items-center justify-center transition-colors`}>

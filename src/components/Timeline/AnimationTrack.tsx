@@ -1,5 +1,7 @@
 'use client';
 
+// Renders the timeline track with scene clips and playhead indicator.
+
 import { AnimationScene } from '@/types/animation';
 
 interface AnimationTrackProps {
@@ -47,6 +49,11 @@ export default function AnimationTrack({
             </span>
           </div>
         ))}
+        {/* Playhead indicator */}
+        <div
+          className="absolute top-0 bottom-0 w-0.5 bg-yellow-400 z-30 pointer-events-none"
+          style={{ left: `${playheadPercent}%` }}
+        />
       </div>
     </div>
   );

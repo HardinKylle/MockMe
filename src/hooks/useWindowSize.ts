@@ -1,4 +1,5 @@
-// src/hooks/useWindowSize.ts
+// Hook for getting the current window size and updating on resize.
+
 'use client';
 
 import { useState, useLayoutEffect } from 'react';
@@ -9,13 +10,14 @@ export const useWindowSize = () => {
     height: typeof window !== 'undefined' ? window.innerHeight : 0,
   });
 
-  useLayoutEffect(() => { // Use useLayoutEffect for immediate resize
+  // Use useLayoutEffect for immediate resize updates
+  useLayoutEffect(() => {
     const handleResize = () => {
       setSize({ width: window.innerWidth, height: window.innerHeight });
     };
 
     window.addEventListener('resize', handleResize);
-    handleResize(); // Call once to set initial size
+    handleResize(); // Set initial size
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
