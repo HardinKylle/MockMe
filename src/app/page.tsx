@@ -116,20 +116,6 @@ export default function App() {
   const { selectedScene, handleLiveCameraChange } = useSceneSync(isResetting);
 
 
-  if (authLoading) {
-    return (
-      <div className="w-full h-screen flex items-center justify-center bg-slate-900">
-        <Loader className="h-10 w-10 animate-spin text-white" />
-      </div>
-    );
-  }
-
-  if (user && !user.emailVerified) {
-    // User is logged in BUT has not clicked the email link.
-    // Show them the "waiting room" page.
-    return <VerifyEmailPage />;
-  }
-
   // Update timeline duration based on uploaded video
   useEffect(() => {
     const prevFileType = prevUploadedFileTypeRef.current;
@@ -190,6 +176,21 @@ export default function App() {
       isResetting.current = false;
     }, 600);
   };
+
+  if (authLoading) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center bg-slate-900">
+        <Loader className="h-10 w-10 animate-spin text-white" />
+      </div>
+    );
+  }
+
+  if (user && !user.emailVerified) {
+    // User is logged in BUT has not clicked the email link.
+    // Show them the "waiting room" page.
+    return <VerifyEmailPage />;
+  }
+
 
   return (
     <div className={`w-full h-screen ${wrapperBg} relative overflow-hidden flex items-center justify-center transition-colors`}>
