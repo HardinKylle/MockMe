@@ -4,13 +4,16 @@ import { ReactNode } from 'react';
 import { SceneProvider } from './SceneContext';
 import { AnimationProvider } from './AnimationContext';
 import { AssetProvider } from './AssetContext';
+import { AuthProvider } from './AuthContext';
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   return (
-    <SceneProvider>
-      <AnimationProvider>
-        <AssetProvider>{children}</AssetProvider> 
-      </AnimationProvider>
-    </SceneProvider>
+    <AuthProvider> {/* <-- 2. WRAP ALL OTHERS */}
+      <SceneProvider>
+        <AnimationProvider>
+          <AssetProvider>{children}</AssetProvider>
+        </AnimationProvider>
+      </SceneProvider>
+    </AuthProvider>
   );
 };
