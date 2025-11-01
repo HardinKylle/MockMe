@@ -216,7 +216,7 @@ export default function SceneEditorPanel({
       className={`z-20 w-60 rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 backdrop-blur-xl transition-all duration-300 ease-out ${isVisible
         ? 'opacity-100 translate-y-0'
         : 'opacity-0 translate-y-10 pointer-events-none'
-        }`}
+        } flex flex-col max-h-[75h]`}
     >
       {/* Header with title and delete button */}
       <div className="flex items-center justify-between px-3 py-1.5 border-b border-slate-700/50">
@@ -247,7 +247,7 @@ export default function SceneEditorPanel({
       </div>
 
       {/* Scene edit form */}
-      <div className="p-3 space-y-3">
+      <div className="p-3 space-y-3 ">
         {/* Scene name input */}
         <div className="space-y-1.5">
           <Label htmlFor="scene-name" className="text-xs">

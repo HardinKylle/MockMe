@@ -260,7 +260,7 @@ export default function App() {
       )}
 
       {/* Bottom-Left Container */}
-      <div className="fixed bottom-4 left-4 z-20 flex flex-col-reverse items-end gap-2">
+      <div className="fixed bottom-4 left-4 z-20 flex flex-col-reverse items-end gap-2 max-h-[calc(100vh-2rem)] overflow-y-auto overflow-x-hidden">
         <ContentEditorPanel
           isVisible={showTimeline}
         />
