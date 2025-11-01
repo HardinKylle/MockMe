@@ -2,12 +2,10 @@
 
 // Renders the timeline track for the uploaded content (image or video).
 interface ContentTrackProps {
-  playheadPercent: number;
   uploadedFileType: 'image' | 'video' | null;
 }
 
 export default function ContentTrack({
-  playheadPercent,
   uploadedFileType,
 }: ContentTrackProps) {
   return (
@@ -22,7 +20,7 @@ export default function ContentTrack({
           className="absolute top-1 bottom-1 left-0 right-0 rounded bg-linear-to-r from-teal-700 to-cyan-700 border border-teal-500/60 shadow-inner"
           style={{
             // This ensures the clip doesn't have tiny gaps
-            left: '0.125rem', 
+            left: '0.125rem',
             right: '0.125rem',
           }}
         >
@@ -37,11 +35,6 @@ export default function ContentTrack({
             </span>
           )}
         </div>
-        {/* Playhead indicator */}
-        <div
-          className="absolute top-0 bottom-0 w-0.5 bg-yellow-400 z-30 pointer-events-none"
-          style={{ left: `${playheadPercent}%` }}
-        />
       </div>
     </div>
   );

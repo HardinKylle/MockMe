@@ -274,11 +274,9 @@ export default function TimelinePanel({
                 onSelectScene={setSelectedSceneId}
                 getClipLeftPercent={getClipLeftPercent}
                 getClipWidthPercent={getClipWidthPercent}
-                playheadPercent={playheadPercent}
               />
               {/* Content track */}
               <ContentTrack
-                playheadPercent={playheadPercent}
                 uploadedFileType={uploadedFileType}
               />
             </div>

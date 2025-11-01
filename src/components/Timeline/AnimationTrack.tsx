@@ -10,7 +10,6 @@ interface AnimationTrackProps {
   onSelectScene: (id: string) => void;
   getClipLeftPercent: (index: number, scenes: AnimationScene[]) => number;
   getClipWidthPercent: (duration: number) => number;
-  playheadPercent: number;
 }
 
 export default function AnimationTrack({
@@ -19,7 +18,6 @@ export default function AnimationTrack({
   onSelectScene,
   getClipLeftPercent,
   getClipWidthPercent,
-  playheadPercent,
 }: AnimationTrackProps) {
   return (
     <div className="relative">
@@ -33,10 +31,9 @@ export default function AnimationTrack({
             key={scene.id}
             onClick={() => onSelectScene(scene.id)}
             className={`absolute top-1 bottom-1 rounded cursor-pointer flex items-center justify-center px-2 shadow-inner transition-all duration-150 ease-out
-              ${
-                selectedSceneId === scene.id
-                  ? 'bg-blue-600 border border-blue-400/80 ring-1 ring-yellow-400 z-20' // Selected state
-                  : 'bg-linear-to-r from-slate-600 to-slate-500 border border-slate-400/50 hover:border-slate-300/60 z-10' // Default state
+              ${selectedSceneId === scene.id
+                ? 'bg-blue-600 border border-blue-400/80 ring-1 ring-yellow-400 z-20' // Selected state
+                : 'bg-linear-to-r from-slate-600 to-slate-500 border border-slate-400/50 hover:border-slate-300/60 z-10' // Default state
               } 
             `}
             style={{
@@ -49,11 +46,6 @@ export default function AnimationTrack({
             </span>
           </div>
         ))}
-        {/* Playhead indicator */}
-        <div
-          className="absolute top-0 bottom-0 w-0.5 bg-yellow-400 z-30 pointer-events-none"
-          style={{ left: `${playheadPercent}%` }}
-        />
       </div>
     </div>
   );
