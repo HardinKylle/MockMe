@@ -1,5 +1,5 @@
 import { useEffect, useState, RefObject } from "react";
-import { SceneApi } from "@/components/Scene";
+import { SceneApi } from "@/components/Scene/Scene";
 
 interface UseExportProps {
   sceneRef: RefObject<SceneApi | null>;

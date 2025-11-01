@@ -1,16 +1,15 @@
 'use client';
-
+import { useScene } from '@/contexts/SceneContext'
 import { useAnimation } from '@/contexts/AnimationContext'
-import { Button } from './ui/Button';
+import { Button } from '@/components/ui/Button' ;
 import { Plus, Play, Pause, Download, Loader } from 'lucide-react';
-import { AnimationScene } from '@/types/animation';
+import { AnimationScene, SceneState } from '@/types/animation';
 import { useRef, useState, useEffect, useCallback } from 'react';
 import ContentTrack from './ContentTrack';
 import AnimationTrack from './AnimationTrack';
 
 interface TimelinePanelProps {
   isVisible: boolean;
-  onAddScene: () => void;
   onExport: () => void;
   isRecording: boolean;
   showExportConfirm: boolean;
@@ -21,7 +20,6 @@ interface TimelinePanelProps {
 
 export default function TimelinePanel({
   isVisible,
-  onAddScene,
   onExport,
   isRecording,
   showExportConfirm,
@@ -31,6 +29,9 @@ export default function TimelinePanel({
 }: TimelinePanelProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const trackContainerRef = useRef<HTMLDivElement>(null);
+  const { handleAddScene } = useAnimation();
+  const { sceneControls } = useScene();
+  const currentState = sceneControls;
 
   const {
     animationScenes,
@@ -56,7 +57,7 @@ export default function TimelinePanel({
     }
     setIsPlaying(!isPlaying);
   };
-
+  
   //Calculate playhead position as percent
   const playheadPercent =
     totalVideoDuration > 0 ? (currentTime / totalVideoDuration) * 100 : 0;
@@ -196,7 +197,17 @@ export default function TimelinePanel({
           <Button
             variant="secondary"
             size="xs"
-            onClick={onAddScene}
+            onClick={() => {
+              const newView: SceneState = {
+                position: currentState.cameraPosition,
+                target: currentState.cameraTarget,
+                fov: currentState.cameraFov,
+                modelPosition: currentState.modelPosition,
+                modelRotation: currentState.modelRotation,
+                modelScale: currentState.modelScale,
+              };
+              handleAddScene(newView);
+            }}
             tooltip="Add Scene"
             disabled={isRecording || showExportConfirm}
           >

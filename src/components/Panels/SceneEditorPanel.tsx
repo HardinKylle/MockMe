@@ -1,12 +1,12 @@
 'use client';
 
 import { AnimationScene, SceneState, AnimationType, CustomAnimationType, PresetAnimationType } from '@/types/animation';
-import { Button } from './ui/Button';
-import { Input } from './ui/Input';
-import { Label } from './ui/Label';
-import { Select } from './ui/Select';
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Label } from '../ui/Label';
+import { Select } from '../ui/Select';
 import { CameraIcon, SunsetIcon, ViewIcon, CheckIcon, Trash2Icon, ArrowLeft, ArrowRight, CameraOff } from 'lucide-react';
-import { SceneApi } from './Scene';
+import { SceneApi } from '@/components/Scene/Scene';
 import React, { useState, useEffect } from 'react';
 import { useScene } from '@/contexts/SceneContext';
 import { useAnimation } from '@/contexts/AnimationContext'

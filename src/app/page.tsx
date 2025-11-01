@@ -1,19 +1,19 @@
 'use client';
-import FileUpload from '@/components/FileUpload';
+import FileUpload from '@/components/Controls/FileUpload';
 import { useUploadedFile } from '@/hooks/useUploadedFile';
-import Scene, { SceneApi } from '@/components/Scene';
-import CaptureControls from '@/components/CaptureControls';
+import Scene, { SceneApi } from '@/components/Scene/Scene';
+import CaptureControls from '@/components/Controls/CaptureControls';
 import { useRef, useState, useEffect } from 'react';
-import PreviewModal from '@/components/PreviewModal';
+import PreviewModal from '@/components/Modals/PreviewModal';
 import { useModelSwitcher } from '@/hooks/useModelSwitcher';
-import ModelSelector from '@/components/ModelSelector';
-import BackgroundPicker from '@/components/BackgroundPicker';
+import ModelSelector from '@/components/Controls/ModelSelector';
+import BackgroundPicker from '@/components/Controls/BackgroundPicker';
 import { useWindowSize } from '@/hooks/useWindowSize';
-import TimelinePanel from '@/components/TimelinePanel';
+import TimelinePanel from '@/components/Timeline/TimelinePanel';
 import { AnimationScene, SceneState } from '@/types/animation';
-import SceneEditorPanel from '@/components/SceneEditorPanel';
-import ContentEditorPanel from '@/components/ContentEditorPanel';
-import CameraControlsPanel from '@/components/CameraControlsPanel';
+import SceneEditorPanel from '@/components/Panels/SceneEditorPanel';
+import ContentEditorPanel from '@/components/Panels/ContentEditorPanel';
+import CameraControlsPanel from '@/components/Controls/CameraControlsPanel';
 import { useScene } from '@/contexts/SceneContext';
 import { useAnimation } from '@/contexts/AnimationContext';
 import { useCapture } from '@/hooks/useCapture'
@@ -135,18 +135,6 @@ export default function App() {
     modelPosition: modelPosition,
     modelRotation: modelRotation,
     modelScale: modelScale,
-  };
-
-  const handleAddScene = () => {
-    const newScene: AnimationScene = {
-      id: `scene_${Math.random().toString(36).substr(2, 9)}`, // Use inline ID
-      name: `Scene ${animationScenes.length + 1}`,
-      duration: 3,
-      animationType: 'hold',
-      startView: currentState,
-    };
-    setAnimationScenes([...animationScenes, newScene]);
-    setSelectedSceneId(newScene.id);
   };
 
 
@@ -283,7 +271,6 @@ export default function App() {
       {/* Bottom-Center Container */}
       <TimelinePanel
         isVisible={showTimeline}
-        onAddScene={handleAddScene}
         onExport={handleExport}
         isRecording={isRecording}
         showExportConfirm={showExportConfirm}

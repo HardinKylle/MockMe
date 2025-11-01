@@ -1,7 +1,7 @@
 'use client';
 
-import { Input } from './ui/Input';
-import { Label } from './ui/Label';
+import { Input } from '@/components/ui/Input';
+import { Label } from '@/components/ui/Label';
 import { TimerIcon } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAnimation } from '@/contexts/AnimationContext';

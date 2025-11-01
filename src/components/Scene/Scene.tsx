@@ -2,9 +2,9 @@
 import { forwardRef, useEffect, useRef } from 'react';
 import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { OrbitControls, Environment, useGLTF } from '@react-three/drei';
-import PhoneModel from '@/components/PhoneModel';
+import PhoneModel from '@/components/Scene/PhoneModel';
 import * as THREE from 'three';
-import { SceneCaptureController } from './SceneCaptureController';
+import { SceneCaptureController } from './/SceneCaptureController';
 import { ModelData, models } from '@/configs/models';
 import { type OrbitControls as OrbitControlsType } from 'three-stdlib';
 import { AnimationScene, SceneState, AnimationType } from '@/types/animation';

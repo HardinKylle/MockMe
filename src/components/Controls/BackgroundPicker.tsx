@@ -3,9 +3,9 @@ import { useState, useRef, useEffect } from 'react';
 import { Palette, Check, Pipette } from 'lucide-react';
 import { HexColorPicker } from 'react-colorful';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input'; // <-- NEW IMPORT
-import { Label } from '@/components/ui/Label'; // <-- NEW IMPORT
-import { cn } from '@/lib/utils'; // <-- NEW IMPORT
+import { Input } from '@/components/ui/Input'; 
+import { Label } from '@/components/ui/Label'; 
+import { cn } from '@/lib/utils'; 
 
 interface PickerProps {
   color: string;

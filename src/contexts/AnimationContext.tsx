@@ -1,14 +1,7 @@
 'use client';
 
-import {
-  createContext,
-  useContext,
-  useState,
-  ReactNode,
-  Dispatch,
-  SetStateAction,
-} from 'react';
-import { AnimationScene } from '@/types/animation';
+import { createContext, useContext, useState, ReactNode, Dispatch, SetStateAction, } from 'react';
+import { AnimationScene, SceneState } from '@/types/animation';
 import { DEFAULT_SCENE_CONTROLS } from './SceneContext';
 
 const generateId = () => `scene_${Math.random().toString(36).substr(2, 9)}`;
@@ -46,6 +39,7 @@ interface AnimationContextType {
   setHasFinished: Dispatch<SetStateAction<boolean>>;
   isScrubbing: boolean;
   setIsScrubbing: Dispatch<SetStateAction<boolean>>;
+  handleAddScene: (currentState: SceneState) => void;
 }
 
 const AnimationContext = createContext<AnimationContextType | null>(null);
@@ -65,6 +59,19 @@ export const AnimationProvider = ({ children }: { children: ReactNode }) => {
   const [hasFinished, setHasFinished] = useState(false);
   const [isScrubbing, setIsScrubbing] = useState(false);
 
+  //handler of adding
+  const handleAddScene = (currentState: SceneState) => {
+    const newScene: AnimationScene = {
+      id: `scene_${Math.random().toString(36).substr(2, 9)}`,
+      name: `Scene ${animationScenes.length + 1}`,
+      duration: 3,
+      animationType: 'hold',
+      startView: currentState,
+    };
+    setAnimationScenes([...animationScenes, newScene]);
+    setSelectedSceneId(newScene.id);
+  };
+
   return (
     <AnimationContext.Provider
       value={{
@@ -82,6 +89,7 @@ export const AnimationProvider = ({ children }: { children: ReactNode }) => {
         setHasFinished,
         isScrubbing,
         setIsScrubbing,
+        handleAddScene
       }}
     >
       {children}

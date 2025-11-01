@@ -1,5 +1,5 @@
 import { useState, RefObject } from "react";
-import { SceneApi } from "@/components/Scene";
+import { SceneApi } from "@/components/Scene/Scene";
 
 export const useCapture = (
   sceneRef: RefObject<SceneApi | null>,

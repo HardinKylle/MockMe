@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, RefObject } from 'react';
-import { SceneApi } from '@/components/Scene';
+import { SceneApi } from '@/components/Scene/Scene';
 import { useScene } from '@/contexts/SceneContext';
 import { presetViews } from '@/configs/views';
 import { Button } from '@/components/ui/Button';

@@ -3,7 +3,7 @@
 import { useImperativeHandle, forwardRef, useRef } from 'react';
 import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
-import { SceneApi } from '@/components/Scene';
+import { SceneApi } from '@/components/Scene/Scene';
 import { OrbitControls } from 'three-stdlib';
 import { SceneState } from '@/types/animation';
 
