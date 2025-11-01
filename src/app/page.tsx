@@ -97,8 +97,6 @@ export default function App() {
 
   const { selectedScene, handleLiveCameraChange } = useSceneSync(isResetting);
 
-
-
   useEffect(() => {
     const prevFileType = prevUploadedFileTypeRef.current;
     if (uploadedFileType === 'video' && videoDuration !== null && videoDuration > 0) {
@@ -144,43 +142,6 @@ export default function App() {
     setSelectedSceneId(newScene.id);
   };
 
-  const handleUpdateScene = (
-    sceneId: string,
-    updates: Partial<AnimationScene>
-  ) => {
-    setAnimationScenes((currentScenes) =>
-      currentScenes.map((scene) =>
-        scene.id === sceneId ? { ...scene, ...updates } : scene
-      )
-    );
-  };
-
-  const handleDeleteScene = (sceneId: string) => {
-    if (animationScenes.length <= 1) return;
-    const deletedIndex = animationScenes.findIndex((s) => s.id === sceneId);
-    setAnimationScenes((currentScenes) =>
-      currentScenes.filter((scene) => scene.id !== sceneId)
-    );
-    if (selectedSceneId === sceneId) {
-      if (deletedIndex === 0 && animationScenes.length > 1) {
-        setSelectedSceneId(animationScenes[1].id);
-      } else if (deletedIndex > 0) {
-        setSelectedSceneId(animationScenes[deletedIndex - 1].id);
-      } else {
-        setSelectedSceneId(null);
-      }
-    }
-  };
-
-
-  const handleTogglePlay = () => {
-    if (isRecording) return;
-    if (!isPlaying && hasFinished) {
-      setCurrentTime(0);
-      setHasFinished(false);
-    }
-    setIsPlaying(!isPlaying);
-  };
 
   const getFrameStyle = () => {
     if (aspectRatio === '16:9') return { width: '100%', height: '100%' };
@@ -312,14 +273,7 @@ export default function App() {
         {selectedScene && (
           <SceneEditorPanel
             isVisible={showTimeline}
-            selectedScene={selectedScene}
-            onUpdateScene={handleUpdateScene}
             sceneRef={sceneRef}
-            onDeleteScene={handleDeleteScene}
-            sceneCount={animationScenes.length}
-            scenes={animationScenes}
-            onReorderScenes={setAnimationScenes}
-            currentState={currentState}
           />
         )}
       </div>

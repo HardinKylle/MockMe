@@ -1,32 +1,21 @@
 'use client';
 
-import {
-  AnimationScene,
-  SceneState,
-  AnimationType,
-  CustomAnimationType,
-  PresetAnimationType,
-} from '@/types/animation';
+import { AnimationScene, SceneState, AnimationType, CustomAnimationType, PresetAnimationType } from '@/types/animation';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 import { Label } from './ui/Label';
 import { Select } from './ui/Select';
-import {
-  CameraIcon,
-  SunsetIcon,
-  ViewIcon,
-  CheckIcon,
-  Trash2Icon,
-  ArrowLeft,
-  ArrowRight,
-  CameraOff,
-} from 'lucide-react';
+import { CameraIcon, SunsetIcon, ViewIcon, CheckIcon, Trash2Icon, ArrowLeft, ArrowRight, CameraOff } from 'lucide-react';
 import { SceneApi } from './Scene';
 import React, { useState, useEffect } from 'react';
+import { useScene } from '@/contexts/SceneContext';
+import { useAnimation } from '@/contexts/AnimationContext'
 
+
+//minimum duration for each scenes
 const MIN_DURATION = 0.1;
 
-// --- Helper Types for Animation Dropdowns ---
+//animation type lists
 const customAnimationTypes: CustomAnimationType[] = ['hold', 'custom'];
 const presetAnimationTypes: PresetAnimationType[] = [
   'spin',
@@ -34,36 +23,38 @@ const presetAnimationTypes: PresetAnimationType[] = [
   'reveal-from-top',
 ];
 
+//type guards for animation types
 const isCustomAnim = (
   type: AnimationType
 ): type is CustomAnimationType =>
   customAnimationTypes.includes(type as CustomAnimationType);
 
+
+//format camera/model view for display
 const isPresetAnim = (
   type: AnimationType
 ): type is PresetAnimationType =>
   presetAnimationTypes.includes(type as PresetAnimationType);
-// --- End Helper Types ---
 
 const formatView = (view: SceneState | undefined | null): React.ReactNode => {
-  if (!view) {
+  if (!view) {
     return <span className="text-slate-500">Not Set</span>;
   }
 
-  // Helper function to format an array of numbers
+
   const formatArray = (arr: number[]) => `[${arr.map((n) => n.toFixed(1)).join(', ')}]`;
 
-  return (
-    <div className="flex space-x-2"> {/* <-- Use flexbox for side-by-side */}
+  return (
+    <div className="flex space-x-2">
       {/* Camera Stats */}
-      <div className="w-1/2 space-y-0.5"> {/* <-- Column 1 */}
+      <div className="w-1/2 space-y-0.5">
         <div className="font-medium text-slate-400">Camera</div>
         <div className="pl-1">P: {formatArray(view.position)}</div>
         <div className="pl-1">T: {formatArray(view.target)}</div>
         <div className="pl-1">Fov: {view.fov.toFixed(0)}</div>
       </div>
       {/* Model Stats */}
-      <div className="w-1/2 space-y-0.5"> {/* <-- Column 2 */}
+      <div className="w-1/2 space-y-0.5">
         <div className="font-medium text-slate-400">Model</div>
         <div className="pl-1">Pos: {formatArray(view.modelPosition)}</div>
         <div className="pl-1">Rot: {formatArray(view.modelRotation)}</div>
@@ -72,21 +63,11 @@ const formatView = (view: SceneState | undefined | null): React.ReactNode => {
     </div>
   );
 };
-// --- *** END MODIFICATION *** ---
 
+//Props
 interface SceneEditorPanelProps {
   isVisible: boolean;
-  selectedScene: AnimationScene;
-  onUpdateScene: (
-    sceneId: string,
-    updates: Partial<AnimationScene>
-  ) => void;
   sceneRef: React.RefObject<SceneApi | null>;
-  onDeleteScene: (sceneId: string) => void;
-  sceneCount: number;
-  scenes: AnimationScene[];
-  onReorderScenes: (scenes: AnimationScene[]) => void;
-  currentState: SceneState; // <--- NEW PROP
 }
 
 function reorder<T>(list: T[], startIndex: number, endIndex: number): T[] {
@@ -98,71 +79,142 @@ function reorder<T>(list: T[], startIndex: number, endIndex: number): T[] {
 
 export default function SceneEditorPanel({
   isVisible,
-  selectedScene,
-  onUpdateScene,
   sceneRef,
-  onDeleteScene,
-  sceneCount,
-  scenes,
-  onReorderScenes,
-  currentState,
 }: SceneEditorPanelProps) {
+
+  //animation context values
+  const {
+    animationScenes,
+    setAnimationScenes,
+    selectedSceneId,
+    setSelectedSceneId,
+  } = useAnimation();
+
+  //scene context values
+  const { sceneControls } = useScene();
+
+  // Find selected scene and current state
+  const selectedScene = animationScenes.find((s) => s.id === selectedSceneId);
+  const currentState = sceneControls;
+
+  // Local state hooks
   const [showSavedMessage, setShowSavedMessage] = useState(false);
   const [durationInput, setDurationInput] = useState(
-    selectedScene.duration.toString()
+    selectedScene ? selectedScene.duration.toString() : '0.1'
   );
-  const currentIndex = scenes.findIndex((s) => s.id === selectedScene.id);
 
+  // Effect hook
+  useEffect(() => { //
+    if (selectedScene) {
+      setDurationInput(selectedScene.duration.toString());
+    }
+  }, [selectedScene?.duration]);
+
+  // Now that all hooks are called, we can safely return early.
+  if (!isVisible || !selectedScene) return null;
+
+  const currentIndex = animationScenes.findIndex((s) => s.id === selectedScene.id);
+
+  //update scene with new values
+  const handleUpdateScene = (
+    sceneId: string,
+    updates: Partial<AnimationScene>
+  ) => {
+    setAnimationScenes((currentScenes) =>
+      currentScenes.map((scene) =>
+        scene.id === sceneId ? { ...scene, ...updates } : scene
+      )
+    );
+  };
+
+  //delete scene and select next/previous if needed
+  const handleDeleteScene = (sceneId: string) => {
+    if (animationScenes.length <= 1) return;
+
+    const deletedIndex = animationScenes.findIndex((s) => s.id === sceneId);
+
+    setAnimationScenes((currentScenes) =>
+      currentScenes.filter((scene) => scene.id !== sceneId)
+    );
+
+    if (selectedSceneId === sceneId) {
+      if (deletedIndex === 0 && animationScenes.length > 1) {
+        setSelectedSceneId(animationScenes[1].id);
+      } else if (deletedIndex > 0) {
+        setSelectedSceneId(animationScenes[deletedIndex - 1].id);
+      } else {
+        setSelectedSceneId(null);
+      }
+    }
+  };
+
+  //reorder scene handler
+  const handleReorderScenes = (newScenes: AnimationScene[]) => {
+    setAnimationScenes(newScenes);
+  };
+
+  //determine active animation category
   const activeCategory = isCustomAnim(selectedScene.animationType)
     ? 'custom'
     : isPresetAnim(selectedScene.animationType)
       ? 'preset'
       : 'custom';
 
-  useEffect(() => {
-    setDurationInput(selectedScene.duration.toString());
-  }, [selectedScene.duration]);
-
-  if (!isVisible) return null;
-
+  //move scene left/right in timeline
   const handleMove = (direction: 'left' | 'right') => {
     const newIndex = direction === 'left' ? currentIndex - 1 : currentIndex + 1;
-    if (newIndex < 0 || newIndex >= scenes.length) {
+    if (newIndex < 0 || newIndex >= animationScenes.length) {
       return;
     }
-    const newScenes = reorder(scenes, currentIndex, newIndex);
-    onReorderScenes(newScenes);
+    const newScenes = reorder(animationScenes, currentIndex, newIndex);
+    handleReorderScenes(newScenes);
   };
 
+  //set camera/model view for start/end
   const handleSetView = (type: 'startView' | 'endView') => {
     if (currentState) {
-      onUpdateScene(selectedScene.id, { [type]: currentState });
+
+
+      const newView: SceneState = {
+        position: currentState.cameraPosition,
+        target: currentState.cameraTarget,
+        fov: currentState.cameraFov,
+        modelPosition: currentState.modelPosition,
+        modelRotation: currentState.modelRotation,
+        modelScale: currentState.modelScale,
+      };
+
+      handleUpdateScene(selectedScene.id, { [type]: newView });
+
       setShowSavedMessage(true);
       setTimeout(() => {
         setShowSavedMessage(false);
       }, 1500);
     }
   };
-
+  //clear camera view
   const handleClearView = (viewType: 'startView' | 'endView') => {
-    onUpdateScene(selectedScene.id, { [viewType]: undefined });
+    handleUpdateScene(selectedScene.id, { [viewType]: undefined });
   };
 
+  //handle duration input change
   const handleDurationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setDurationInput(val);
     const parsedVal = parseFloat(val);
     if (!isNaN(parsedVal) && parsedVal > 0) {
-      onUpdateScene(selectedScene.id, { duration: parsedVal });
+      handleUpdateScene(selectedScene.id, { duration: parsedVal });
     }
   };
 
+
+  //validation duration on lbur
   const handleDurationBlur = () => {
     const parsedVal = parseFloat(durationInput);
     if (isNaN(parsedVal) || parsedVal < MIN_DURATION) {
-      onUpdateScene(selectedScene.id, { duration: MIN_DURATION });
+      handleUpdateScene(selectedScene.id, { duration: MIN_DURATION });
     } else {
-      onUpdateScene(selectedScene.id, { duration: parsedVal });
+      handleUpdateScene(selectedScene.id, { duration: parsedVal });
     }
   };
 
@@ -173,9 +225,11 @@ export default function SceneEditorPanel({
         : 'opacity-0 translate-y-10 pointer-events-none'
         }`}
     >
+      {/* Header with title and delete button */}
       <div className="flex items-center justify-between px-3 py-1.5 border-b border-slate-700/50">
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-medium text-slate-100">Edit Scene</h3>
+          {/* Saved message */}
           <div
             className={`flex items-center gap-1 rounded-full bg-green-500/20 px-2 py-0.5 transition-all duration-300 ${showSavedMessage ? 'opacity-100' : 'opacity-0'
               }`}
@@ -186,12 +240,12 @@ export default function SceneEditorPanel({
             </span>
           </div>
         </div>
-
+        {/* Delete scene button */}
         <Button
           variant="danger"
           size="sm"
-          onClick={() => onDeleteScene(selectedScene.id)}
-          disabled={sceneCount <= 1}
+          onClick={() => handleDeleteScene(selectedScene.id)}
+          disabled={animationScenes.length <= 1}
           tooltip="Delete Scene"
           tooltipSide="bottom"
         >
@@ -199,9 +253,9 @@ export default function SceneEditorPanel({
         </Button>
       </div>
 
-      {/* Form */}
+      {/* Scene edit form */}
       <div className="p-3 space-y-3">
-        {/* Name */}
+        {/* Scene name input */}
         <div className="space-y-1.5">
           <Label htmlFor="scene-name" className="text-xs">
             Name
@@ -210,12 +264,12 @@ export default function SceneEditorPanel({
             id="scene-name"
             value={selectedScene.name}
             onChange={(e) =>
-              onUpdateScene(selectedScene.id, { name: e.target.value })
+              handleUpdateScene(selectedScene.id, { name: e.target.value })
             }
           />
         </div>
 
-        {/* Duration */}
+        {/* Duration input */}
         <div className="space-y-1.5">
           <Label htmlFor="scene-duration" className="text-xs">
             Duration (s)
@@ -240,7 +294,7 @@ export default function SceneEditorPanel({
               size="md"
               onClick={() => {
                 if (!isCustomAnim(selectedScene.animationType)) {
-                  onUpdateScene(selectedScene.id, {
+                  handleUpdateScene(selectedScene.id, {
                     animationType: customAnimationTypes[0],
                   });
                 }
@@ -254,7 +308,7 @@ export default function SceneEditorPanel({
               size="md"
               onClick={() => {
                 if (!isPresetAnim(selectedScene.animationType)) {
-                  onUpdateScene(selectedScene.id, {
+                  handleUpdateScene(selectedScene.id, {
                     animationType: presetAnimationTypes[0],
                   });
                 }
@@ -266,7 +320,7 @@ export default function SceneEditorPanel({
           </div>
         </div>
 
-        {/* Custom Animations Dropdown (Conditional) */}
+        {/* Custom animation type dropdown */}
         {activeCategory === 'custom' && (
           <div className="space-y-1.5 animate-in fade-in-0 duration-200">
             <Label htmlFor="scene-custom-animation" className="text-xs">
@@ -276,7 +330,7 @@ export default function SceneEditorPanel({
               id="scene-custom-animation"
               value={selectedScene.animationType}
               onChange={(e) => {
-                onUpdateScene(selectedScene.id, {
+                handleUpdateScene(selectedScene.id, {
                   animationType: e.target.value as CustomAnimationType,
                 });
               }}
@@ -287,7 +341,7 @@ export default function SceneEditorPanel({
           </div>
         )}
 
-        {/* Preset Animations Dropdown (Conditional) */}
+        {/* Preset animation type dropdown */}
         {activeCategory === 'preset' && (
           <div className="space-y-1.5 animate-in fade-in-0 duration-200">
             <Label htmlFor="scene-preset-animation" className="text-xs">
@@ -297,7 +351,7 @@ export default function SceneEditorPanel({
               id="scene-preset-animation"
               value={selectedScene.animationType}
               onChange={(e) => {
-                onUpdateScene(selectedScene.id, {
+                handleUpdateScene(selectedScene.id, {
                   animationType: e.target.value as PresetAnimationType,
                 });
               }}
@@ -309,7 +363,7 @@ export default function SceneEditorPanel({
           </div>
         )}
 
-        {/* 'hold' section */}
+        {/* Hold animation view controls */}
         {selectedScene.animationType === 'hold' && (
           <div className="space-y-2 pt-2 border-t border-slate-700/50 animate-in fade-in-0 duration-200">
             <Label className="text-xs">Camera View</Label>
@@ -335,14 +389,14 @@ export default function SceneEditorPanel({
                 </Button>
               )}
             </div>
-            {/* Coordinate Display (P and T) */}
+            {/* Display camera/model coordinates */}
             <div className="text-[10px] text-slate-300 leading-tight wrap-break-words pt-1">
               {formatView(selectedScene.startView)}
             </div>
           </div>
         )}
 
-        {/* 'custom' section */}
+        {/* Custom animation start/end view controls */}
         {selectedScene.animationType === 'custom' && (
           <div className="space-y-3 pt-2 border-t border-slate-700/50 animate-in fade-in-0 duration-200">
             {/* Start View */}
@@ -370,7 +424,7 @@ export default function SceneEditorPanel({
                   </Button>
                 )}
               </div>
-              {/* Coordinate Display (P and T) */}
+              {/* Display start view coordinates */}
               <div className="text-[10px] text-slate-300 leading-tight wrap-break-words pt-1">
                 {formatView(selectedScene.startView)}
               </div>
@@ -401,7 +455,7 @@ export default function SceneEditorPanel({
                   </Button>
                 )}
               </div>
-              {/* Coordinate Display (P and T) */}
+              {/* Display end view coordinates */}
               <div className="text-[10px] text-slate-300 leading-tight wrap-break-words pt-1">
                 {formatView(selectedScene.endView)}
               </div>
@@ -409,7 +463,7 @@ export default function SceneEditorPanel({
           </div>
         )}
 
-        {/* Reorder Section */}
+        {/* Reorder scene controls */}
         <div className="flex items-center justify-between pt-3 border-t border-slate-700/50">
           <Label className="text-xs">Reorder</Label>
           <div className="flex items-center gap-1">
@@ -426,7 +480,7 @@ export default function SceneEditorPanel({
               variant="ghost"
               size="sm"
               onClick={() => handleMove('right')}
-              disabled={currentIndex === scenes.length - 1}
+              disabled={currentIndex === animationScenes.length - 1}
               tooltip="Move Right"
             >
               <ArrowRight className="h-4 w-4" />
