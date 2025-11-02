@@ -12,6 +12,9 @@ interface AssetContextType {
     videoDuration: number | null;
     handleFileUpload: (file: File | null) => void;
 
+    setUploadedFileUrl: (url: string | null) => void;
+    setUploadedFileType: (type: 'image' |'video' | null) => void;
+
     // State from useModelSwitcher
     selectedModel: ModelData;
     setModel: (modelName: string) => void;
@@ -26,7 +29,9 @@ export const AssetProvider = ({ children }: { children: ReactNode }) => {
         uploadedFileUrl,
         uploadedFileType,
         videoDuration,
-        handleFileUpload
+        handleFileUpload,
+        setUploadedFileType,
+        setUploadedFileUrl
     } = useUploadedFile();
 
     const { selectedModel, setModel, allModels } = useModelSwitcher();
@@ -36,6 +41,8 @@ export const AssetProvider = ({ children }: { children: ReactNode }) => {
         uploadedFileType,
         videoDuration,
         handleFileUpload,
+        setUploadedFileType,
+        setUploadedFileUrl,
         selectedModel,
         setModel,
         allModels,

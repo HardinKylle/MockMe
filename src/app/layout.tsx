@@ -39,7 +39,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      {/* USE YOUR GEIST FONT VARIABLES HERE */}
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <DesktopOnlyMessage />
         <div id="main-app-content">

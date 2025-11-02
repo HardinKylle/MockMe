@@ -30,6 +30,7 @@ import { SignInModal } from '@/components/Modals/SignInModal';
 import { VerifyEmailPage } from '@/components/VerifyEmailPage';
 import { Loader } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { MyProjectsModal } from '@/components/Modals/MyProjectsModal';
 
 const DEFAULT_TOTAL_DURATION = 10;
 
@@ -262,6 +263,7 @@ export default function App() {
       </div>
 
       <SignInModal />
+      <MyProjectsModal />
 
       {/* Modals and Panels */}
       {capturedImageUrl && (

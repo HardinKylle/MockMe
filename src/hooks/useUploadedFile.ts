@@ -74,5 +74,5 @@ export function useUploadedFile() {
     };
   }, [uploadedFileUrl, uploadedFileType]); // Re-run if URL or type changes
 
-  return { uploadedFileUrl, uploadedFileType, videoDuration, handleFileUpload };
+  return { uploadedFileUrl, uploadedFileType, videoDuration, handleFileUpload, setUploadedFileType, setUploadedFileUrl };
 }
