@@ -84,151 +84,135 @@ export const MyProjectsModal = () => {
         setIsDeleting(null); // Hide spinner
     };
 
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
             <div
-                className="w-full max-w-lg rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50"
+                className="w-full max-w-3xl rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 flex flex-col"
                 style={{ animation: 'slideUp 0.2s ease-out' }}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700/50">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700/50">
                     <h3 className="text-lg font-medium text-white">My Projects</h3>
                     <Button
                         variant="ghost"
                         size="sm"
                         onClick={handleClose}
-                        disabled={isSaving || !!isDeleting} // Updated
+                        disabled={isSaving || !!isDeleting}
                     >
                         <X className="h-5 w-5 text-slate-400" />
                     </Button>
                 </div>
 
-                {/* Body */}
-                <div className="flex flex-col md:flex-row">
-                    {/* Left Side: Save New Project */}
-                    <div className="w-full md:w-1/2 p-5 border-b md:border-b-0 md:border-r border-slate-700/50">
-                        <form onSubmit={handleSave} className="space-y-4">
-                            <h4 className="text-md font-medium text-white">
-                                Save Current Project
-                            </h4>
-                            <div className="space-y-1.5">
-                                <Label htmlFor="project-name" className="text-slate-300">
-                                    Project Name
-                                </Label>
-                                <Input
-                                    id="project-name"
-                                    placeholder="My Awesome Animation"
-                                    value={projectName}
-                                    onChange={(e) => setProjectName(e.target.value)}
-                                    disabled={isSaving || !!isDeleting} // Updated
-                                />
-                            </div>
-                            <Button
-                                type="submit"
-                                variant="primary"
-                                className="w-full"
-                                disabled={isSaving || !!isDeleting || projectName.trim() === ''} // Updated
-                            >
-                                {isSaving ? (
-                                    <Loader className="h-4 w-4 animate-spin" />
-                                ) : (
-                                    <>
-                                        <Save className="h-4 w-4 mr-2" />
-                                        Save
-                                    </>
-                                )}
-                            </Button>
-                            {error && <p className="text-sm text-red-400">{error}</p>}
-                        </form>
-                    </div>
-
-                    {/* Right Side: Load Existing */}
-                    <div className="w-full md:w-1/2 p-5">
-                        <h4 className="text-md font-medium text-white mb-4">
-                            Load Project
-                        </h4>
-                        <div className="space-y-2 max-h-60 overflow-y-auto">
-                            {/* 1. Show loader when LIST is loading */}
-                            {isListLoading && (
-                                <div className="flex justify-center p-4">
-                                    <Loader className="h-6 w-6 animate-spin text-white" />
-                                </div>
-                            )}
-
-                            {/* 2. Show error if FETCH failed */}
-                            {!isListLoading && fetchError && (
-                                <p className="text-sm text-red-400">{fetchError}</p>
-                            )}
-
-                            {/* 3. Show "No projects" only after loading is false AND no error */}
-                            {!isListLoading && !fetchError && projects.length === 0 && (
-                                <p className="text-sm text-slate-400">
-                                    You have no saved projects.
-                                </p>
-                            )}
-
-                            {/* 4. Show projects only after loading is false AND no error */}
-                            {!isListLoading &&
-                                !fetchError &&
-                                projects.map((project) => (
-                                    <div
-                                        key={project.id}
-                                        className="flex justify-between items-center p-3 rounded-lg bg-slate-800/50"
-                                    >
-                                        {/* Project Info */}
-                                        <div>
-                                            <p className="text-sm font-medium text-white">
-                                                {project.name}
-                                            </p>
-                                            <p className="text-xs text-slate-400">
-                                                Saved: {new Date(project.createdAt).toLocaleString()}
-                                            </p>
-                                        </div>
-
-                                        {/* Button Group */}
-                                        <div className="flex gap-2">
-                                            <Button
-                                                variant="secondary"
-                                                size="xs"
-                                                onClick={() => handleLoad(project.id)}
-                                                // Disable if a different action is in progress
-                                                disabled={isLoading || isSaving || !!isDeleting}
-                                            >
-                                                {/* We use 'isLoading' for the LOAD button */}
-                                                {isLoading ? (
-                                                    <Loader className="h-4 w-4 animate-spin" />
-                                                ) : (
-                                                    <>
-                                                        <FolderDown className="h-4 w-4 mr-1.5" />
-                                                        Load
-                                                    </>
-                                                )}
-                                            </Button>
-
-                                            {/* NEW DELETE BUTTON */}
-                                            <Button
-                                                variant="danger"
-                                                size="xs"
-                                                className="px-2"
-                                                onClick={() => handleDelete(project.id)}
-                                                // Disable if a different action is in progress
-                                                disabled={isLoading || isSaving || !!isDeleting}
-                                            >
-                                                {/* Show spinner only for the item being deleted */}
-                                                {isDeleting === project.id ? (
-                                                    <Loader className="h-4 w-4 animate-spin" />
-                                                ) : (
-                                                    <Trash2 className="h-4 w-4" />
-                                                )}
-                                            </Button>
-                                        </div>
-                                    </div>
-                                ))}
-
-                            {/* Show general hook error (e.g., from a failed loadProject) */}
-                            {error && <p className="text-sm text-red-400 mt-2">{error}</p>}
+                {/* Main Content: Load Existing Projects */}
+                <div className="p-6 h-[32rem] overflow-y-auto space-y-3">
+                    {/* 1. Show loader when LIST is loading */}
+                    {isListLoading && (
+                        <div className="flex justify-center items-center h-full">
+                            <Loader className="h-8 w-8 animate-spin text-white" />
                         </div>
-                    </div>
+                    )}
+
+                    {/* 2. Show error if FETCH failed */}
+                    {!isListLoading && fetchError && (
+                        <div className="flex justify-center items-center h-full">
+                            <p className="text-slate-400">{fetchError}</p>
+                        </div>
+                    )}
+
+                    {/* 3. Show "No projects" only after loading is false AND no error */}
+                    {!isListLoading && !fetchError && projects.length === 0 && (
+                        <div className="flex justify-center items-center h-full">
+                            <p className="text-slate-400">You have no saved projects.</p>
+                        </div>
+                    )}
+
+                    {/* 4. Show projects only after loading is false AND no error */}
+                    {!isListLoading &&
+                        !fetchError &&
+                        projects.map((project) => (
+                            <div
+                                key={project.id}
+                                className="flex justify-between items-center p-4 rounded-lg bg-slate-800/30 hover:bg-slate-800/60 transition-colors"
+                            >
+                                {/* Project Info */}
+                                <div>
+                                    <p className="text-base font-medium text-white">
+                                        {project.name}
+                                    </p>
+                                    <p className="text-xs text-slate-400">
+                                        Saved: {new Date(project.createdAt).toLocaleString()}
+                                    </p>
+                                </div>
+
+                                {/* Button Group */}
+                                <div className="flex gap-2">
+                                    <Button
+                                        variant="secondary"
+                                        size="md" // Made button bigger
+                                        onClick={() => handleLoad(project.id)}
+                                        disabled={isLoading || isSaving || !!isDeleting}
+                                    >
+                                        {isLoading ? (
+                                            <Loader className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                            <>
+                                                <FolderDown className="h-4 w-4 mr-2" />
+                                                Load
+                                            </>
+                                        )}
+                                    </Button>
+
+                                    <Button
+                                        variant="danger"
+                                        size="md" // Made button bigger
+                                        className="px-3" // Give icon-only button some padding
+                                        onClick={() => handleDelete(project.id)}
+                                        disabled={isLoading || isSaving || !!isDeleting}
+                                    >
+                                        {isDeleting === project.id ? (
+                                            <Loader className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                            <Trash2 className="h-4 w-4" />
+                                        )}
+                                    </Button>
+                                </div>
+                            </div>
+                        ))}
+                </div>
+
+                {/* Footer: Save New Project */}
+                <div className="p-6 border-t border-slate-700/50 bg-slate-900/50 rounded-b-lg">
+                    <form onSubmit={handleSave} className="flex items-end gap-3">
+                        <div className="flex-1 space-y-1.5">
+                            <Label htmlFor="project-name" className="text-xs text-slate-300">
+                                Save Current Project As...
+                            </Label>
+                            <Input
+                                id="project-name"
+                                placeholder="My Awesome Animation"
+                                value={projectName}
+                                onChange={(e) => setProjectName(e.target.value)}
+                                disabled={isSaving || !!isDeleting}
+                            />
+                        </div>
+                        <Button
+                            type="submit"
+                            variant="primary"
+                            size="md" // Made button bigger
+                            disabled={isSaving || !!isDeleting || projectName.trim() === ''}
+                        >
+                            {isSaving ? (
+                                <Loader className="h-4 w-4 animate-spin" />
+                            ) : (
+                                <>
+                                    <Save className="h-4 w-4 mr-2" />
+                                    Save
+                                </>
+                            )}
+                        </Button>
+                    </form>
+                    {error && <p className="text-sm text-red-400 mt-2">{error}</p>}
                 </div>
             </div>
         </div>
