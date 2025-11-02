@@ -18,6 +18,7 @@ export const DEFAULT_SCENE_CONTROLS = {
   directionalPosition: [2, 3, 4] as [number, number, number],
   environmentIntensity: 0.2,
   screenReflection: true,
+  backgroundColor: '#ffffff', 
 };
 
 export type SceneControlState = typeof DEFAULT_SCENE_CONTROLS;
@@ -54,6 +55,7 @@ const sceneControlsReducer = (
         modelPosition: modelPosition,
         modelRotation: modelRotation,
         modelScale: modelScale,
+        backgroundColor: state.backgroundColor
       };
 
     case 'SET_PRESET':
@@ -64,6 +66,7 @@ const sceneControlsReducer = (
         modelPosition: DEFAULT_SCENE_CONTROLS.modelPosition,
         modelRotation: DEFAULT_SCENE_CONTROLS.modelRotation,
         modelScale: DEFAULT_SCENE_CONTROLS.modelScale,
+        backgroundColor: state.backgroundColor
       };
 
     case 'UPDATE_RAW':

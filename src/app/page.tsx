@@ -198,7 +198,7 @@ export default function App() {
       <div style={frameStyle} className="">
         <Scene
           ref={sceneRef}
-          backgroundColor={backgroundColor}
+          backgroundColor={sceneControls.backgroundColor}
           isRecording={isRecording}
           isPlaying={isPlaying}
           setIsPlaying={setIsPlaying}
@@ -225,9 +225,14 @@ export default function App() {
 
       {/* Top-Right Container */}
       <div className="fixed top-4 right-7 z-10 flex items-end gap-3">
-        <BackgroundPicker
-          color={backgroundColor}
-          onChange={setBackgroundColor}
+       <BackgroundPicker
+         color={sceneControls.backgroundColor} 
+          onChange={(newColor) =>
+            dispatchSceneControls({
+              type: 'UPDATE_RAW',
+              payload: { backgroundColor: newColor },
+            })
+          } 
         />
         <ModelSelector
           allModels={allModels}
