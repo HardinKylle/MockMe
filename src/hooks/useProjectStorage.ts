@@ -1,18 +1,18 @@
+// src/hooks/useProjectStorage.ts
 "use client";
 
 import { useState, useCallback } from "react";
-import { db, storage, auth } from "@/lib/firebase";
+import { db, storage } from "@/lib/firebase";
 import {
   collection,
   doc,
   setDoc,
   getDoc,
   query,
-  where,
-  getDocs,
   limit,
-  serverTimestamp,
+  getDocs,
   deleteDoc,
+  updateDoc,
 } from "firebase/firestore";
 import {
   ref,
@@ -22,19 +22,29 @@ import {
 } from "firebase/storage";
 
 import { useAuth } from "@/contexts/AuthContext";
-import { useAnimation } from "@/contexts/AnimationContext";
-import { useScene } from "@/contexts/SceneContext";
-import { useAsset } from "@/contexts/AssetContext";
 
 import {
   ProjectData,
   SavedAnimationState,
   SavedAssetState,
 } from "@/types/project";
+import { SceneControlState } from "@/contexts/SceneContext";
 
 export interface UseProjectStorageReturn {
-  saveProject: (name: string) => Promise<string | null>;
-  loadProject: (projectId: string) => Promise<void>;
+  createProject: (
+    name: string,
+    animationState: SavedAnimationState,
+    sceneState: SceneControlState,
+    assetState: SavedAssetState
+  ) => Promise<string | null>;
+  updateProject: (
+    projectId: string,
+    name: string,
+    animationState: SavedAnimationState,
+    sceneState: SceneControlState,
+    assetState: SavedAssetState
+  ) => Promise<void>;
+  loadProject: (projectId: string) => Promise<ProjectData | null>;
   getProjects: () => Promise<ProjectData[]>;
   deleteProject: (projectId: string) => Promise<void>;
   isSaving: boolean;
@@ -45,218 +55,260 @@ export interface UseProjectStorageReturn {
 export const useProjectStorage = (): UseProjectStorageReturn => {
   const { user } = useAuth();
 
-  // Get All State "Getters"
-  const { animationScenes, totalVideoDuration } = useAnimation();
-  const { sceneControls } = useScene();
-  const { selectedModel, uploadedFileUrl, uploadedFileType } = useAsset();
-
-  // Get All State "Setters"
-  const { setAnimationScenes, setTotalVideoDuration } = useAnimation();
-  const { dispatchSceneControls } = useScene();
-  const { setModel, setUploadedFileUrl, setUploadedFileType } = useAsset();
-
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   /**
-   * Handles uploading a local file (blob) to Firebase Storage.
-   * If the file is already a Firebase URL, it returns it.
+   * Uploads a blob if needed.
+   * it just takes a URL and user ID.
    */
   const uploadFileAsNeeded = useCallback(
-    async (fileUrl: string | null): Promise<string | null> => {
+    async (fileUrl: string | null, userId: string): Promise<string | null> => {
       if (!fileUrl || !fileUrl.startsWith("blob:")) {
         return fileUrl;
       }
-      if (!user) throw new Error("User not authenticated for file upload.");
 
       const response = await fetch(fileUrl);
       const blob = await response.blob();
-      const storageRef = ref(storage, `user_files/${user.uid}/${Date.now()}`);
+      const storageRef = ref(storage, `user_files/${userId}/${Date.now()}`);
       await uploadBytes(storageRef, blob);
       const downloadURL = await getDownloadURL(storageRef);
       return downloadURL;
     },
-    [user]
+    []
   );
 
   /**
-   * Saves the entire current app state as a new project in Firestore.
+   * Creates a new project document in Firestore.
    */
-  const saveProject = useCallback(async (
-    name: string
-  ): Promise<string | null> => {
-    setIsSaving(true);
-    setError(null);
+  const createProject = useCallback(
+    async (
+      name: string,
+      animationState: SavedAnimationState,
+      sceneState: SceneControlState,
+      assetState: SavedAssetState
+    ): Promise<string | null> => {
+      setIsSaving(true);
+      setError(null);
 
-    if (!user || !user.emailVerified) {
-      setError('You must be signed in and verified to save a project.');
-      setIsSaving(false);
-      return null;
-    }
-
-    try {
-      const projectsCollection = collection(db, 'users', user.uid, 'projects');
-      const q = query(projectsCollection, limit(3));
-      const projectsSnapshot = await getDocs(q);
-
-      if (projectsSnapshot.size >= 3) {
-        throw new Error(
-          'Project limit (3) reached. Please delete an old project.'
-        );
+      if (!user || !user.emailVerified) {
+        setError("You must be signed in and verified to save a project.");
+        setIsSaving(false);
+        return null;
       }
 
-      const finalUploadedFileUrl = await uploadFileAsNeeded(uploadedFileUrl);
+      try {
+        const projectsCollection = collection(
+          db,
+          "users",
+          user.uid,
+          "projects"
+        );
+        const q = query(projectsCollection, limit(3));
+        const projectsSnapshot = await getDocs(q);
 
-      const animationState: SavedAnimationState = {
-        animationScenes,
-        totalVideoDuration,
-      };
-      const assetState: SavedAssetState = {
-        selectedModelName: selectedModel.name,
-        uploadedFileUrl: finalUploadedFileUrl,
-        uploadedFileType: uploadedFileType,
-      };
+        if (projectsSnapshot.size >= 3) {
+          throw new Error(
+            "Project limit (3) reached. Please delete an old project."
+          );
+        }
 
-      const newProjectRef = doc(projectsCollection);
-      const newProject: ProjectData = {
-        id: newProjectRef.id,
-        name: name,
-        ownerId: user.uid,
-        createdAt: Date.now(),
-        animationState,
-        sceneState: sceneControls,
-        assetState,
-      };
+        // Upload file if it's a new blob
+        const finalUploadedFileUrl = await uploadFileAsNeeded(
+          assetState.uploadedFileUrl,
+          user.uid
+        );
 
-      await setDoc(newProjectRef, newProject);
-      setIsSaving(false);
-      return newProjectRef.id;
-    } catch (err) {
-      console.error(err);
-      setError((err as Error).message);
-      setIsSaving(false);
-      return null;
-    }
-  }, [
-    user, 
-    uploadFileAsNeeded, 
-    animationScenes, 
-    totalVideoDuration, 
-    selectedModel, 
-    uploadedFileUrl, 
-    uploadedFileType, 
-    sceneControls
-  ]);
+        const newAssetSate: SavedAssetState = {
+          ...assetState,
+          uploadedFileUrl: finalUploadedFileUrl,
+        };
+
+        const newProjectRef = doc(projectsCollection);
+        const newProject: ProjectData = {
+          id: newProjectRef.id,
+          name: name,
+          ownerId: user.uid,
+          createdAt: Date.now(),
+          animationState,
+          sceneState,
+          assetState: newAssetSate,
+        };
+
+        await setDoc(newProjectRef, newProject);
+        setIsSaving(false);
+        return newProjectRef.id;
+      } catch (err) {
+        console.error(err);
+        setError((err as Error).message);
+        setIsSaving(false);
+        return null;
+      }
+    },
+    [user, uploadFileAsNeeded]
+  );
 
   /**
-   * Fetches a project from Firestore and "re-inflates" the app state.
+   * Updates an existing project document in Firestore.
    */
-  const loadProject = useCallback(async (projectId: string) => {
-    setIsLoading(true);
-    setError(null);
+  const updateProject = useCallback(
+    async (
+      projectId: string,
+      name: string,
+      animationState: SavedAnimationState,
+      sceneState: SceneControlState,
+      assetState: SavedAssetState
+    ) => {
+      setIsSaving(true);
+      setError(null);
 
-    if (!user) {
-      setError('You must be signed in to load a project.');
-      setIsLoading(false);
-      return;
-    }
+      if (!user || !user.emailVerified) {
+        setError("You must be signed in to update a project.");
+        setIsSaving(false);
+        return;
+      }
 
-    try {
-      const projectRef = doc(db, 'users', user.uid, 'projects', projectId);
-      const docSnap = await getDoc(projectRef);
-      if (!docSnap.exists()) throw new Error('Project not found.');
-      const project = docSnap.data() as ProjectData;
+      try {
+        // Upload file if it's a new blob
+        const finalUploadedFileUrl = await uploadFileAsNeeded(
+          assetState.uploadedFileUrl,
+          user.uid
+        );
 
-      setAnimationScenes(project.animationState.animationScenes);
-      setTotalVideoDuration(project.animationState.totalVideoDuration);
-      dispatchSceneControls({
-        type: 'UPDATE_RAW',
-        payload: project.sceneState,
-      });
-      setModel(project.assetState.selectedModelName);
-      setUploadedFileUrl(project.assetState.uploadedFileUrl);
-      setUploadedFileType(project.assetState.uploadedFileType);
+        const newAssetSate: SavedAssetState = {
+          ...assetState,
+          uploadedFileUrl: finalUploadedFileUrl,
+        };
 
-      setIsLoading(false);
-    } catch (err) {
-      console.error(err);
-      setError((err as Error).message);
-      setIsLoading(false);
-    }
-  }, [
-    user, 
-    setAnimationScenes, 
-    setTotalVideoDuration, 
-    dispatchSceneControls, 
-    setModel, 
-    setUploadedFileUrl, 
-    setUploadedFileType
-  ]);
+        const projectRef = doc(db, "users", user.uid, "projects", projectId);
+
+        // use updateDoc to only change these fields,
+        // keeping the createdAt date the same.
+        await updateDoc(projectRef, {
+          name: name, 
+          animationState,
+          sceneState,
+          assetState: newAssetSate,
+        });
+
+        setIsSaving(false);
+      } catch (err) {
+        console.error(err);
+        setError((err as Error).message);
+        setIsSaving(false);
+      }
+    },
+    [user, uploadFileAsNeeded]
+  );
+
+  /**
+   * Fetches a project from Firestore and RETURNS it.
+   */
+  const loadProject = useCallback(
+    async (projectId: string): Promise<ProjectData | null> => {
+      setIsLoading(true);
+      setError(null);
+
+      if (!user) {
+        setError("You must be signed in to load a project.");
+        setIsLoading(false);
+        return null;
+      }
+
+      try {
+        const projectRef = doc(db, "users", user.uid, "projects", projectId);
+        const docSnap = await getDoc(projectRef);
+
+        if (!docSnap.exists()) {
+          throw new Error("Project not found.");
+        }
+
+        const project = docSnap.data() as ProjectData;
+        setIsLoading(false);
+        return project; // Return the data
+      } catch (err) {
+        console.error(err);
+        setError((err as Error).message);
+        setIsLoading(false);
+        return null;
+      }
+    },
+    [user]
+  );
 
   /**
    * Fetches a list of all projects for the current user.
    */
   const getProjects = useCallback(async (): Promise<ProjectData[]> => {
     if (!user) {
-      throw new Error('You must be signed in to get projects.');
+      throw new Error("You must be signed in to get projects.");
     }
     try {
-      const projectsCollection = collection(db, 'users', user.uid, 'projects');
+      const projectsCollection = collection(db, "users", user.uid, "projects");
       const q = query(projectsCollection);
       const querySnapshot = await getDocs(q);
-      const projects = querySnapshot.docs.map((doc) => doc.data() as ProjectData);
+      const projects = querySnapshot.docs.map(
+        (doc) => doc.data() as ProjectData
+      );
       return projects.sort((a, b) => b.createdAt - a.createdAt);
     } catch (err) {
       console.error(err);
       throw err;
     }
-  }, [user]); // <-- Dependency
-
-  const deleteProject = useCallback(async (projectId: string) => {
-    setIsLoading(true); // Use 'isLoading' to block other actions
-    setError(null);
-
-    if (!user) {
-      setError('You must be signed in.');
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      const projectRef = doc(db, 'users', user.uid, 'projects', projectId);
-      
-      // --- First, get the doc to find its file URL ---
-      const docSnap = await getDoc(projectRef);
-      if (docSnap.exists()) {
-        const project = docSnap.data() as ProjectData;
-        const fileUrl = project.assetState.uploadedFileUrl;
-
-        // If it has a file and it's a Firebase file, delete it
-        if (fileUrl && fileUrl.includes('firebasestorage.googleapis.com')) {
-          try {
-            const fileStorageRef = ref(storage, fileUrl);
-            await deleteObject(fileStorageRef);
-          } catch (storageError) {
-            // Log the error, but don't block deleting the db entry
-            console.warn("Could not delete file from storage:", storageError);
-          }
-        }
-      }
-      
-      // --- Now, delete the Firestore document ---
-      await deleteDoc(projectRef);
-      
-    } catch (err) {
-      console.error(err);
-      setError((err as Error).message);
-    } finally {
-      setIsLoading(false);
-    }
   }, [user]);
 
-  return { saveProject, loadProject, getProjects, deleteProject,isSaving, isLoading, error };
+  /**
+   * Deletes a project from Firestore and its file from Storage.
+   */
+  const deleteProject = useCallback(
+    async (projectId: string) => {
+      setIsLoading(true);
+      setError(null);
 
-  
+      if (!user) {
+        setError("You must be signed in.");
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const projectRef = doc(db, "users", user.uid, "projects", projectId);
+
+        const docSnap = await getDoc(projectRef);
+        if (docSnap.exists()) {
+          const project = docSnap.data() as ProjectData;
+          const fileUrl = project.assetState.uploadedFileUrl;
+
+          if (fileUrl && fileUrl.includes("firebasestorage.googleapis.com")) {
+            try {
+              const fileStorageRef = ref(storage, fileUrl);
+              await deleteObject(fileStorageRef);
+            } catch (storageError) {
+              console.warn("Could not delete file from storage:", storageError);
+            }
+          }
+        }
+
+        await deleteDoc(projectRef);
+      } catch (err) {
+        console.error(err);
+        setError((err as Error).message);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [user]
+  );
+
+  return {
+    createProject,
+    updateProject,
+    loadProject,
+    getProjects,
+    deleteProject,
+    isSaving,
+    isLoading,
+    error,
+  };
 };
-

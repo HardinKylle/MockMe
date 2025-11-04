@@ -7,7 +7,7 @@ interface ModalContextType {
     openSignInModal: () => void;
     closeSignInModal: () => void;
 
-    isProjectModalOpen: boolean;
+    isProjectsModalOpen: boolean;
     openProjectsModal:() => void;
     closeProjectsModal:()=> void;
 }
@@ -20,16 +20,16 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
     const openSignInModal = () => setIsSignInModalOpen(true);
     const closeSignInModal = () => setIsSignInModalOpen(false);
 
-    const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
+    const [isProjectsModalOpen, setIsProjectsModalOpen] = useState(false);
 
-    const openProjectsModal = () => setIsProjectModalOpen(true);
-    const closeProjectsModal = () => setIsProjectModalOpen(false);
+    const openProjectsModal = () => setIsProjectsModalOpen(true);
+    const closeProjectsModal = () => setIsProjectsModalOpen(false);
 
     const value = {
         isSignInModalOpen,
         openSignInModal,
         closeSignInModal,
-        isProjectModalOpen,
+        isProjectsModalOpen,
         openProjectsModal,
         closeProjectsModal
     }

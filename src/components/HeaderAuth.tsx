@@ -2,14 +2,16 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useModal } from '@/contexts/ModalContext';
+import { useProject } from '@/contexts/ProjectContext';
 import { Button } from '@/components/ui/Button';
-import { Loader, User, LogOut, Folder } from 'lucide-react';
+import { Loader, User, LogOut, Folder, XCircle } from 'lucide-react';
 import { useState } from 'react';
 
 export const HeaderAuth = () => {
   const { user, authLoading, signOut } = useAuth();
   const { openSignInModal, openProjectsModal } = useModal();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { activeProject, closeProject } = useProject();
 
   const handleSignOut = () => {
     setIsMenuOpen(false);
@@ -19,6 +21,12 @@ export const HeaderAuth = () => {
   const handleOpenProjects = () => {
     setIsMenuOpen(false);
     openProjectsModal();
+  }
+
+  // --- 4. ADD NEW HANDLER ---
+  const handleCloseProject = () => {
+    setIsMenuOpen(false);
+    closeProject();
   }
 
   if (authLoading) {
@@ -73,6 +81,19 @@ export const HeaderAuth = () => {
               <Folder className="h-4 w-4 mr-2" />
               My Projects
             </Button>
+
+            {activeProject && (
+              <Button
+                variant="menu-item"
+                size="menu-item"
+                className="w-full"
+                onClick={handleCloseProject}
+              >
+                <XCircle className="h-4 w-4 mr-2" />
+                Close Project
+              </Button>
+            )}
+
             <Button
               variant="menu-item"
               size="menu-item"

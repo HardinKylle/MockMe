@@ -10,7 +10,7 @@ import { DEFAULT_SCENE_CONTROLS } from './SceneContext';
 const generateId = () => `scene_${Math.random().toString(36).substr(2, 9)}`;
 
 // Default total video duration (seconds)
-const DEFAULT_TOTAL_DURATION = 10;
+export const DEFAULT_TOTAL_DURATION = 10;
 
 // Returns the current default scene state
 const getCurrentSceneState = (): AnimationScene['startView'] => ({

@@ -18,7 +18,7 @@ import SceneEditorPanel from '@/components/Panels/SceneEditorPanel';
 import ContentEditorPanel from '@/components/Panels/ContentEditorPanel';
 import CameraControlsPanel from '@/components/Controls/CameraControlsPanel';
 import { useScene } from '@/contexts/SceneContext';
-import { useAnimation } from '@/contexts/AnimationContext';
+import { useAnimation, DEFAULT_TOTAL_DURATION } from '@/contexts/AnimationContext';
 import { useCapture } from '@/hooks/useCapture'
 import { useExport } from '@/hooks/useExport'
 import { ViewPresetsPanel } from '@/components/Panels/ViewPresetsPanel';
@@ -31,8 +31,6 @@ import { VerifyEmailPage } from '@/components/VerifyEmailPage';
 import { Loader } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { MyProjectsModal } from '@/components/Modals/MyProjectsModal';
-
-const DEFAULT_TOTAL_DURATION = 10;
 
 export default function App() {
 
@@ -273,7 +271,7 @@ export default function App() {
       {/* Modals and Panels */}
       {capturedImageUrl && (
         <PreviewModal
-          imageUrl={capturedImageUrl}
+          imageUrl={capturedImageUrl }
           onClose={handleClosePreview}
         />
       )}
