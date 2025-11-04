@@ -7,18 +7,21 @@ import {
   ReactNode,
   useState,
   useCallback,
+  useMemo,
+  useEffect
 } from 'react';
 import { useProjectStorage } from '@/hooks/useProjectStorage';
 
 // Import all the contexts this "brain" will control
 import { useAuth } from '@/contexts/AuthContext';
-import { useAnimation, DEFAULT_TOTAL_DURATION } from '@/contexts/AnimationContext';
+import { useAnimation, DEFAULT_TOTAL_DURATION, defaultScene } from '@/contexts/AnimationContext';
 import { useScene, DEFAULT_SCENE_CONTROLS } from '@/contexts/SceneContext';
 import { useAsset } from '@/contexts/AssetContext';
 
 // Import types
 import { SavedAnimationState, SavedAssetState, ProjectData } from '@/types/project';
 import { SceneControlState } from '@/contexts/SceneContext';
+
 
 interface ActiveProject {
   id: string;
@@ -59,7 +62,9 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
   const [activeProject, setActiveProject] = useState<ActiveProject | null>(null);
   const [projects, setProjects] = useState<ProjectData[]>([]);
   const [isListLoading, setIsListLoading] = useState(false);
-
+  const [loadedProjectData, setLoadedProjectData] = useState<ProjectData | null>(
+    null
+  );
   // --- 3. GETTERS (from all contexts) ---
   const { user } = useAuth();
   const { animationScenes, totalVideoDuration } = useAnimation();
@@ -84,7 +89,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
       uploadedFileType: uploadedFileType,
     };
     const sceneState: SceneControlState = sceneControls;
-    
+
     return { animationState, sceneState, assetState };
   }, [
     animationScenes,
@@ -94,6 +99,26 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     uploadedFileType,
     sceneControls,
   ]);
+
+  const isDirty = useMemo(() => {
+    // If no project is loaded, it's not "dirty" (it's a new, unsaved project)
+    if (!loadedProjectData) {
+      return false;
+    }
+
+    // Gather the current state
+    const currentState = gatherCurrentState();
+
+    // Get the equivalent "saved" state from our stored data
+    const savedState = {
+      animationState: loadedProjectData.animationState,
+      sceneState: loadedProjectData.sceneState,
+      assetState: loadedProjectData.assetState,
+    };
+
+    // A simple, effective way to deep-compare the states
+    return JSON.stringify(currentState) !== JSON.stringify(savedState);
+  }, [loadedProjectData, gatherCurrentState]);
 
   /** "Re-inflates" the app from loaded data */
   const reinflateState = useCallback((project: ProjectData) => {
@@ -106,7 +131,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     setModel(project.assetState.selectedModelName);
     setUploadedFileUrl(project.assetState.uploadedFileUrl);
     setUploadedFileType(project.assetState.uploadedFileType);
-  },[
+  }, [
     setAnimationScenes,
     setTotalVideoDuration,
     dispatchSceneControls,
@@ -116,11 +141,11 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
   ]);
 
   /** Resets the entire app state to default ("closes" the project). */
-  const closeProject = useCallback(() => {
+  const resetProjectState = useCallback(() => {
     const defaultProject: ProjectData = {
       id: '', name: '', ownerId: '', createdAt: 0,
       animationState: {
-        animationScenes: [],
+        animationScenes: [defaultScene],
         totalVideoDuration: DEFAULT_TOTAL_DURATION,
       },
       sceneState: DEFAULT_SCENE_CONTROLS,
@@ -132,9 +157,22 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     };
     reinflateState(defaultProject);
     setActiveProject(null);
+    setLoadedProjectData(null);
   }, [reinflateState, setModel]);
-  
-  
+
+
+  const closeProject = useCallback(() => {
+    if (isDirty) {
+      const confirmed = window.confirm(
+        "You have unsaved changes. Are you sure you want to start a new project? All current changes will be lost."
+      );
+      if (!confirmed) {
+        return; // User clicked "Cancel"
+      }
+    }
+    resetProjectState(); // Proceed with closing
+  }, [isDirty, resetProjectState]);
+
   // --- 6. HIGH-LEVEL API FUNCTIONS ---
 
   const fetchProjects = useCallback(async () => {
@@ -150,23 +188,51 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
   }, [storageGetProjects]);
 
   const loadProject = useCallback(async (projectId: string, name: string) => {
+    if (isDirty) {
+      const confirmed = window.confirm(
+        "You have unsaved changes. Are you sure you want to load a new project? All current changes will be lost."
+      );
+      if (!confirmed) {
+        return; // User clicked "Cancel"
+      }
+    }
+
     const project = await storageLoadProject(projectId);
     if (project) {
       reinflateState(project);
       setActiveProject({ id: projectId, name });
+      setLoadedProjectData(project); // <-- MUST SET THIS
     }
-  }, [storageLoadProject, reinflateState]);
+  }, [storageLoadProject, reinflateState, isDirty]);
 
   const saveCurrentProject = useCallback(async () => {
     if (!activeProject) return;
     const { animationState, sceneState, assetState } = gatherCurrentState();
-    await updateProject(
-      activeProject.id,
-      activeProject.name,
-      animationState,
-      sceneState,
-      assetState
-    );
+
+    try {
+      await updateProject(
+        activeProject.id,
+        activeProject.name,
+        animationState,
+        sceneState,
+        assetState
+      );
+
+      // --- ADD THIS ---
+      // After a successful save, update our "last saved" state
+      setLoadedProjectData(prevData => ({
+        ...prevData!, // It must exist if we have an activeProject
+        id: activeProject.id,
+        name: activeProject.name,
+        animationState,
+        sceneState,
+        assetState,
+      }));
+      // ---
+    } catch (e) {
+      // Don't update loaded data if save failed
+      console.error("Save failed:", e);
+    }
   }, [activeProject, gatherCurrentState, updateProject]);
 
   const saveAsNewProject = useCallback(async (name: string): Promise<string | null> => {
@@ -177,20 +243,68 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
       sceneState,
       assetState
     );
-    
+
     if (newProjectId) {
+      // --- ADD THIS ---
+      // The new project is now our "last saved" state
+      const newProjectData: ProjectData = {
+        id: newProjectId,
+        name: name,
+        ownerId: user!.uid, // createProject ensures user exists
+        createdAt: Date.now(), // Close enough for dirty check
+        animationState,
+        sceneState,
+        assetState,
+      };
+      setLoadedProjectData(newProjectData);
+      // ---
+
       setActiveProject({ id: newProjectId, name });
       fetchProjects(); // Refresh the list
     }
     return newProjectId;
-  }, [gatherCurrentState, createProject, fetchProjects]);
+  }, [gatherCurrentState, createProject, fetchProjects, user]);
 
   const deleteProject = useCallback(async (projectId: string) => {
     await storageDeleteProject(projectId);
-    fetchProjects(); // Refresh the list
-  }, [storageDeleteProject, fetchProjects]);
-  
 
+    // --- UPDATE THIS BLOCK ---
+    if (activeProject && activeProject.id === projectId) {
+      // We just deleted the active project.
+      // Reset the state *without* a warning.
+      resetProjectState(); // <-- Call the UNSAFE reset
+    }
+    // ---
+    fetchProjects(); // Refresh the list
+  }, [
+    storageDeleteProject,
+    fetchProjects,
+    activeProject,
+    resetProjectState // <-- Use the unsafe reset
+  ]);
+
+  useEffect(() => {
+    // This is the function that runs when the user tries to leave
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      // Check for signed-in user AND unsaved changes
+      if (user && isDirty) {
+        // This is the standard way to trigger the browser's "Leave site?" popup
+        event.preventDefault();
+        event.returnValue = ''; // Required for most browsers
+        return ''; // Required for some older browsers
+      }
+    };
+
+    // Add the event listener when the component mounts
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    // This is the cleanup function that removes the listener
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [user, isDirty]);
+
+  // --- 7. UPDATE THE RETURN VALUE ---
   const value = {
     activeProject,
     projects,
@@ -199,11 +313,12 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     saveCurrentProject,
     saveAsNewProject,
     deleteProject,
-    closeProject,
+    closeProject, // <-- This is now the SAFE function
     isProjectLoading: isLoading,
     isProjectSaving: isSaving,
     isListLoading,
     projectError: error,
+    isDirty, // <-- EXPOSE THE 'isDirty' FLAG
   };
 
   return (

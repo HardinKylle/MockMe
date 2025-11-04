@@ -3,15 +3,15 @@
 
 import { useState, useEffect } from 'react';
 import { useModal } from '@/contexts/ModalContext';
-import { useProject } from '@/contexts/ProjectContext'; // <-- 1. IMPORT THE NEW HOOK
+import { useProject } from '@/contexts/ProjectContext';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
-import { X, Loader, Save, FolderDown, Trash2 } from 'lucide-react';
+import { X, Loader, FolderDown, Trash2, Save, Check } from 'lucide-react';
 
 export const MyProjectsModal = () => {
   const { isProjectsModalOpen, closeProjectsModal } = useModal();
-  
+
   // --- 2. GET ALL STATE AND FUNCTIONS FROM THE NEW HOOK ---
   const {
     activeProject,
@@ -29,6 +29,7 @@ export const MyProjectsModal = () => {
 
   // This state is just for the "Save As" input field
   const [newProjectName, setNewProjectName] = useState('');
+  const [showSaved, setShowSaved] = useState(false);
 
   // Fetch projects when modal opens
   useEffect(() => {
@@ -50,11 +51,16 @@ export const MyProjectsModal = () => {
       setNewProjectName(''); // Clear input on success
     }
   };
-  
+
   const handleSaveUpdate = async () => {
     await saveCurrentProject();
-    // You could show a "Saved!" message here
-    // For now, it just updates the project
+
+    // Check projectError from the context
+    if (!projectError) { // Only show on success
+      setShowSaved(true);
+      // Hide the "Saved!" message after 2 seconds
+      setTimeout(() => setShowSaved(false), 2000);
+    }
   };
 
   const handleLoad = async (projectId: string, name: string) => {
@@ -63,18 +69,18 @@ export const MyProjectsModal = () => {
       closeProjectsModal();
     }
   };
-  
+
   const handleDelete = async (projectId: string) => {
     // You could add a window.confirm here
     // const isConfirmed = confirm("Are you sure you want to delete this project?");
     // if (isConfirmed) {
-      await deleteProject(projectId);
+    await deleteProject(projectId);
     // }
   };
 
   const handleClose = () => {
     // Block close if any operation is in progress
-    if (isProjectSaving || isProjectLoading) return; 
+    if (isProjectSaving || isProjectLoading) return;
     closeProjectsModal();
   };
 
@@ -105,84 +111,75 @@ export const MyProjectsModal = () => {
         {/* Main Content: Load Existing Projects */}
         <div className="p-6 h-128 overflow-y-auto space-y-3">
           {/* Use 'isListLoading' from context */}
-          {isListLoading && (
+          {isListLoading ? (
             <div className="flex justify-center items-center h-full">
               <Loader className="h-8 w-8 animate-spin text-white" />
             </div>
-          )}
+          ) : (
+            <>
+              {/* 2. Show empty message OR project list */}
+              {projects.length === 0 && (
+                <div className="flex justify-center items-center h-full">
+                  <p className="text-slate-400">You have no saved projects.</p>
+                </div>
+              )}
 
-          {/* Use 'projectError' from context (for fetch error) */}
-          {!isListLoading && projectError && (
-            <div className="flex justify-center items-center h-full">
-              <p className="text-slate-400">{projectError}</p>
-            </div>
-          )}
-
-          {/* Use 'projects' from context */}
-          {!isListLoading && !projectError && projects.length === 0 && (
-            <div className="flex justify-center items-center h-full">
-              <p className="text-slate-400">You have no saved projects.</p>
-            </div>
-          )}
-
-          {/* Use 'projects' from context */}
-          {!isListLoading &&
-            !projectError &&
-            projects.map((project) => (
-              <div
-                key={project.id}
-                className={`flex justify-between items-center p-4 rounded-lg bg-slate-800/30 hover:bg-slate-800/60 transition-colors
+              {projects.map((project) => (
+                <div
+                  key={project.id}
+                  className={`flex justify-between items-center p-4 rounded-lg bg-slate-800/30 hover:bg-slate-800/60 transition-colors
                   ${activeProject?.id === project.id ? 'ring-2 ring-blue-500' : ''}
                 `}
-              >
-                <div>
-                  <p className="text-base font-medium text-white">
-                    {project.name}
-                    {activeProject?.id === project.id && (
-                      <span className="ml-2 text-xs font-normal text-blue-400">(Loaded)</span>
-                    )}
-                  </p>
-                  <p className="text-xs text-slate-400">
-                    Saved: {new Date(project.createdAt).toLocaleString()}
-                  </p>
-                </div>
-                
-                <div className="flex gap-2">
-                  <Button
-                    variant="secondary"
-                    size="md"
-                    onClick={() => handleLoad(project.id, project.name)}
-                    // Disable if this one is active, or any action is in progress
-                    disabled={activeProject?.id === project.id || isProjectLoading || isProjectSaving}
-                  >
-                    {/* Use 'isProjectLoading' for the load button */}
-                    {isProjectLoading ? (
-                      <Loader className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <>
-                        <FolderDown className="h-4 w-4 mr-2" />
-                        Load
-                      </>
-                    )}
-                  </Button>
+                >
+                  <div>
+                    <p className="text-base font-medium text-white">
+                      {project.name}
+                      {activeProject?.id === project.id && (
+                        <span className="ml-2 text-xs font-normal text-blue-400">(Loaded)</span>
+                      )}
+                    </p>
+                    <p className="text-xs text-slate-400">
+                      Saved: {new Date(project.createdAt).toLocaleString()}
+                    </p>
+                  </div>
 
-                  <Button
-                    variant="danger"
-                    size="md"
-                    className="px-3"
-                    onClick={() => handleDelete(project.id)}
-                    disabled={isProjectLoading || isProjectSaving}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="secondary"
+                      size="md"
+                      onClick={() => handleLoad(project.id, project.name)}
+                      // Disable if this one is active, or any action is in progress
+                      disabled={activeProject?.id === project.id || isProjectLoading || isProjectSaving}
+                    >
+                      {/* Use 'isProjectLoading' for the load button */}
+                      {isProjectLoading ? (
+                        <Loader className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <>
+                          <FolderDown className="h-4 w-4 mr-2" />
+                          Load
+                        </>
+                      )}
+                    </Button>
+
+                    <Button
+                      variant="danger"
+                      size="md"
+                      className="px-3"
+                      onClick={() => handleDelete(project.id)}
+                      disabled={isProjectLoading || isProjectSaving}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </>
+          )}
         </div>
-
         {/* --- 5. REDESIGNED FOOTER --- */}
         <div className="p-6 border-t border-slate-700/50 bg-slate-900/50 rounded-b-lg">
-          
+
           {/* --- SECTION 1: "SAVE" (UPDATE) --- */}
           {/* This only shows if a project is open */}
           {activeProject && (
@@ -197,11 +194,16 @@ export const MyProjectsModal = () => {
                 variant="primary"
                 size="md"
                 onClick={handleSaveUpdate}
-                disabled={isProjectSaving || isProjectLoading}
+                // Disable if saving, loading, or if "Saved!" is showing
+                disabled={isProjectSaving || isProjectLoading || showSaved}
               >
-                {/* Use 'isProjectSaving' for save buttons */}
                 {isProjectSaving ? (
                   <Loader className="h-4 w-4 animate-spin" />
+                ) : showSaved ? (
+                  <>
+                    <Check className="h-4 w-4 mr-2" />
+                    Saved!
+                  </>
                 ) : (
                   <>
                     <Save className="h-4 w-4 mr-2" />
@@ -211,7 +213,7 @@ export const MyProjectsModal = () => {
               </Button>
             </div>
           )}
-          
+
           {/* --- SECTION 2: "SAVE AS" (CREATE) --- */}
           <form onSubmit={handleSaveAs} className="flex items-end gap-3">
             <div className="flex-1 space-y-1.5">
@@ -242,7 +244,7 @@ export const MyProjectsModal = () => {
               )}
             </Button>
           </form>
-          
+
           {/* Show general project error (e.g., from a failed save) */}
           {projectError && <p className="text-sm text-red-400 mt-2">{projectError}</p>}
         </div>

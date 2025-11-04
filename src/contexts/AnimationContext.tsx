@@ -23,7 +23,7 @@ const getCurrentSceneState = (): AnimationScene['startView'] => ({
 });
 
 // Default initial scene
-const defaultScene: AnimationScene = {
+export const defaultScene: AnimationScene = {
   id: generateId(),
   name: 'Default Spin',
   duration: 3,
