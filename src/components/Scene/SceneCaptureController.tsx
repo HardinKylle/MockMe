@@ -103,7 +103,7 @@ export const SceneCaptureController = forwardRef<SceneApi>((props, ref) => {
     },
 
     // Start recording a WebM video of the scene at the specified aspect ratio
-    startRecording: (aspectRatio: string) => {
+   startRecording: (aspectRatio: string, onReady: () => void) => { 
       gl.getSize(originalSizeRef.current);
       if (camera instanceof THREE.PerspectiveCamera) {
         originalAspectRef.current = camera.aspect;
@@ -139,7 +139,8 @@ export const SceneCaptureController = forwardRef<SceneApi>((props, ref) => {
       gl.setSize(width, height, false);
 
       const canvas = gl.domElement;
-      const stream = canvas.captureStream(60);
+      
+      const stream = canvas.captureStream(60); 
 
       if (!MediaRecorder.isTypeSupported('video/webm; codecs=vp9')) {
         console.error('video/webm; codecs=vp9 not supported');
@@ -147,7 +148,7 @@ export const SceneCaptureController = forwardRef<SceneApi>((props, ref) => {
 
       recorderRef.current = new MediaRecorder(stream, {
         mimeType: 'video/webm; codecs=vp9',
-        videoBitsPerSecond: 25000000,
+        videoBitsPerSecond: 25000000, 
       });
 
       recordedChunksRef.current = [];
@@ -158,8 +159,13 @@ export const SceneCaptureController = forwardRef<SceneApi>((props, ref) => {
         }
       };
 
+      recorderRef.current.onstart = () => {
+        console.log(`Recording started at ${width}x${height}, 60fps, 25Mbps`);
+        onReady(); 
+      };
+
       recorderRef.current.start();
-      console.log(`Recording started at ${width}x${height}, 60fps, 15Mbps`);
+      
     },
 
     // Stop recording and download the video file

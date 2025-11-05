@@ -43,7 +43,7 @@ export interface SceneApi {
   capture: (aspectRatio: string) => string | undefined;
   setView: (position: readonly [number, number, number], target: readonly [number, number, number]) => void;
   getView: () => SceneState | null;
-  startRecording: (aspectRatio: string) => void;
+  startRecording: (aspectRatio: string, onReady: () => void) => void;
   stopRecording: () => void;
 }
 
@@ -344,7 +344,7 @@ function SceneContent({
           fov: camera instanceof THREE.PerspectiveCamera ? camera.fov : 50,
           modelPosition: modelRef.current.position.toArray() as [number, number, number],
           modelRotation: [modelRef.current.rotation.x, modelRef.current.rotation.y, modelRef.current.rotation.z],
-          modelScale: modelRef.current.scale.x, 
+          modelScale: modelRef.current.scale.x,
         });
       }
     }
@@ -406,7 +406,7 @@ function SceneContent({
 }
 
 export default forwardRef<SceneApi, SceneProps>(function Scene(
-  props, 
+  props,
   ref
 ) {
   const {
@@ -431,7 +431,7 @@ export default forwardRef<SceneApi, SceneProps>(function Scene(
     directionalPosition,
     environmentIntensity,
     screenReflection,
-    onLiveCameraChange, 
+    onLiveCameraChange,
   } = props;
 
   return (

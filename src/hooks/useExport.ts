@@ -57,12 +57,11 @@ export const useExport = ({
     setCurrentTime(0.0);
     setHasFinished(false);
 
-    //Delay before recording ( might check later that cause the bug in first frame recording)
-    setTimeout(() => {
-        sceneRef.current?.startRecording(aspectRatio);
+
+    sceneRef.current?.startRecording(aspectRatio, () => {
         setCurrentTime(0.0);
-        setIsPlaying(true);
-    }, 100);
+        setIsPlaying(true); // Start the animation
+    });
   };
 
   //When user cancel export 
