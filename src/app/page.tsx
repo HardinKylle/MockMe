@@ -25,9 +25,9 @@ import { ViewPresetsPanel } from '@/components/Panels/ViewPresetsPanel';
 import { BrowserWarningModal } from '@/components/Modals/BrowserWarningModal';
 import { useSceneSync } from '@/hooks/useSceneSync'
 import { useAsset } from '@/contexts/AssetContext';
-import { HeaderAuth } from '@/components/HeaderAuth';
+import { HeaderAuth } from '@/components/Accounts/HeaderAuth';
 import { SignInModal } from '@/components/Modals/SignInModal';
-import { VerifyEmailPage } from '@/components/VerifyEmailPage';
+import { VerifyEmailPage } from '@/components/Accounts/VerifyEmailPage';
 import { Loader } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { MyProjectsModal } from '@/components/Modals/MyProjectsModal';

@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useModal } from '@/contexts/ModalContext'; // Using the name we discussed
-import { Button } from '@/components/ui/Button'; // Using lowercase
+import { useModal } from '@/contexts/ModalContext'; 
+import { Button } from '@/components/ui/Button'; 
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { X, Loader } from 'lucide-react';

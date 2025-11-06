@@ -1,4 +1,3 @@
-// src/components/Modals/MyProjectsModal.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -12,7 +11,6 @@ import { X, Loader, FolderDown, Trash2, Save, Check } from 'lucide-react';
 export const MyProjectsModal = () => {
   const { isProjectsModalOpen, closeProjectsModal } = useModal();
 
-  // --- 2. GET ALL STATE AND FUNCTIONS FROM THE NEW HOOK ---
   const {
     activeProject,
     projects,
@@ -38,10 +36,8 @@ export const MyProjectsModal = () => {
       // Clear the input field every time modal is opened
       setNewProjectName('');
     }
-    // fetchProjects is memoized with useCallback, so this is safe
   }, [isProjectsModalOpen, fetchProjects]);
 
-  // --- 3. HANDLERS ARE NOW MUCH SIMPLER ---
 
   const handleSaveAs = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,11 +67,8 @@ export const MyProjectsModal = () => {
   };
 
   const handleDelete = async (projectId: string) => {
-    // You could add a window.confirm here
-    // const isConfirmed = confirm("Are you sure you want to delete this project?");
-    // if (isConfirmed) {
+
     await deleteProject(projectId);
-    // }
   };
 
   const handleClose = () => {
@@ -88,7 +81,6 @@ export const MyProjectsModal = () => {
     return null;
   }
 
-  // --- 4. THE JSX IS UPDATED TO REFLECT THE NEW LOGIC ---
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div
@@ -117,7 +109,7 @@ export const MyProjectsModal = () => {
             </div>
           ) : (
             <>
-              {/* 2. Show empty message OR project list */}
+              {/* Show empty message OR project list */}
               {projects.length === 0 && (
                 <div className="flex justify-center items-center h-full">
                   <p className="text-slate-400">You have no saved projects.</p>
@@ -180,7 +172,7 @@ export const MyProjectsModal = () => {
         {/* --- 5. REDESIGNED FOOTER --- */}
         <div className="p-6 border-t border-slate-700/50 bg-slate-900/50 rounded-b-lg">
 
-          {/* --- SECTION 1: "SAVE" (UPDATE) --- */}
+          {/* --- "SAVE" (UPDATE) --- */}
           {/* This only shows if a project is open */}
           {activeProject && (
             <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-700/50">
@@ -214,7 +206,7 @@ export const MyProjectsModal = () => {
             </div>
           )}
 
-          {/* --- SECTION 2: "SAVE AS" (CREATE) --- */}
+          {/* ---"SAVE AS" (CREATE) --- */}
           <form onSubmit={handleSaveAs} className="flex items-end gap-3">
             <div className="flex-1 space-y-1.5">
               <Label htmlFor="project-name" className="text-xs text-slate-300">
@@ -230,7 +222,7 @@ export const MyProjectsModal = () => {
             </div>
             <Button
               type="submit"
-              variant={activeProject ? "secondary" : "primary"} // Make it primary if it's the only option
+              variant={activeProject ? "secondary" : "primary"} 
               size="md"
               disabled={isProjectSaving || isProjectLoading || newProjectName.trim() === ''}
             >
