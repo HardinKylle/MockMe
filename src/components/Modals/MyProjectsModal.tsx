@@ -169,10 +169,10 @@ export const MyProjectsModal = () => {
             </>
           )}
         </div>
-        {/* --- 5. REDESIGNED FOOTER --- */}
+        {/* --- FOOTER --- */}
         <div className="p-6 border-t border-slate-700/50 bg-slate-900/50 rounded-b-lg">
 
-          {/* --- "SAVE" (UPDATE) --- */}
+          {/* --- "SAVE" --- */}
           {/* This only shows if a project is open */}
           {activeProject && (
             <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-700/50">
@@ -206,7 +206,7 @@ export const MyProjectsModal = () => {
             </div>
           )}
 
-          {/* ---"SAVE AS" (CREATE) --- */}
+          {/* ---"SAVE AS" --- */}
           <form onSubmit={handleSaveAs} className="flex items-end gap-3">
             <div className="flex-1 space-y-1.5">
               <Label htmlFor="project-name" className="text-xs text-slate-300">
@@ -237,7 +237,7 @@ export const MyProjectsModal = () => {
             </Button>
           </form>
 
-          {/* Show general project error (e.g., from a failed save) */}
+          {/* Show general project error */}
           {projectError && <p className="text-sm text-red-400 mt-2">{projectError}</p>}
         </div>
       </div>

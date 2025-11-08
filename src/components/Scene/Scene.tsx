@@ -13,29 +13,12 @@ import { type OrbitControls as OrbitControlsType } from 'three-stdlib';
 import { AnimationScene, SceneState, AnimationType } from '@/types/animation';
 import { presetAnimationMap, isPresetAnim } from '@/types/animation-presets';
 import { useAsset } from '@/contexts/AssetContext';
+import { useAnimation } from '@/contexts/AnimationContext';
+import { useScene } from '@/contexts/SceneContext';
 
 interface SceneProps {
   backgroundColor: string;
-  isRecording: boolean
-  isPlaying: boolean;
-  setIsPlaying: (isPlaying: boolean) => void;
-  isScrubbing: boolean;
-  scenes: AnimationScene[];
-  currentTime: number;
-  setCurrentTime: (time: number | ((prevTime: number) => number)) => void;
-  totalVideoDuration: number;
-  setHasFinished: (hasFinished: boolean) => void;
-  cameraPosition: [number, number, number];
-  cameraTarget: [number, number, number];
-  cameraFov: number;
-  modelPosition: [number, number, number];
-  modelRotation: [number, number, number];
-  modelScale: number;
-  ambientIntensity: number;
-  directionalIntensity: number;
-  directionalPosition: [number, number, number];
-  environmentIntensity: number;
-  screenReflection: boolean;
+  isRecording: boolean;
   onLiveCameraChange: (newState: SceneState) => void;
 }
 
@@ -91,32 +74,11 @@ const lerp = (start: number, end: number, t: number) => {
 };
 
 function SceneContent({
+  // These are the only props we need now
   backgroundColor,
-  isPlaying,
-  setIsPlaying,
   isRecording,
-  isScrubbing,
-  scenes,
-  currentTime,
-  setCurrentTime,
-  totalVideoDuration,
-  setHasFinished,
-  cameraPosition,
-  cameraTarget,
-  cameraFov,
-  modelPosition,
-  modelRotation,
-  modelScale,
-  ambientIntensity,
-  directionalIntensity,
-  directionalPosition,
-  environmentIntensity,
-  screenReflection,
   onLiveCameraChange,
-}: Omit<SceneProps, 'backgroundColor' | 'isScrubbing'> & {
-  backgroundColor: string;
-  isScrubbing: boolean;
-}) {
+}: SceneProps) {
   const { gl, camera, controls } = useThree();
   const modelRef = useRef<THREE.Group>(null);
 
@@ -125,6 +87,33 @@ function SceneContent({
     uploadedFileType,
     selectedModel
   } = useAsset();
+
+  const {
+    animationScenes: scenes,
+    totalVideoDuration,
+    isPlaying,
+    setIsPlaying,
+    currentTime,
+    setCurrentTime,
+    setHasFinished,
+    isScrubbing,
+  } = useAnimation();
+
+  const {
+    sceneControls: {
+      cameraPosition,
+      cameraTarget,
+      cameraFov,
+      modelPosition,
+      modelRotation,
+      modelScale,
+      ambientIntensity,
+      directionalIntensity,
+      directionalPosition,
+      environmentIntensity,
+      screenReflection,
+    }
+  } = useScene();
 
   // OrbitControls ref for imperative updates
   const controlsRef = useRef<OrbitControlsType>(controls as OrbitControlsType);
@@ -412,28 +401,8 @@ export default forwardRef<SceneApi, SceneProps>(function Scene(
   const {
     backgroundColor,
     isRecording,
-    isPlaying,
-    setIsPlaying,
-    isScrubbing,
-    scenes,
-    currentTime,
-    setCurrentTime,
-    totalVideoDuration,
-    setHasFinished,
-    cameraPosition,
-    cameraTarget,
-    cameraFov,
-    modelPosition,
-    modelRotation,
-    modelScale,
-    ambientIntensity,
-    directionalIntensity,
-    directionalPosition,
-    environmentIntensity,
-    screenReflection,
     onLiveCameraChange,
   } = props;
-
   return (
     <Canvas
       gl={{
@@ -447,28 +416,8 @@ export default forwardRef<SceneApi, SceneProps>(function Scene(
       <SceneContent
         backgroundColor={backgroundColor}
         isRecording={isRecording}
-        isPlaying={isPlaying}
-        setIsPlaying={setIsPlaying}
-        isScrubbing={isScrubbing}
-        scenes={scenes}
-        currentTime={currentTime}
-        setCurrentTime={setCurrentTime}
-        totalVideoDuration={totalVideoDuration}
-        setHasFinished={setHasFinished}
-        cameraPosition={cameraPosition}
-        cameraTarget={cameraTarget}
-        cameraFov={cameraFov}
-        modelPosition={modelPosition}
-        modelRotation={modelRotation}
-        modelScale={modelScale}
-        ambientIntensity={ambientIntensity}
-        directionalIntensity={directionalIntensity}
-        directionalPosition={directionalPosition}
-        environmentIntensity={environmentIntensity}
-        screenReflection={screenReflection}
         onLiveCameraChange={onLiveCameraChange}
       />
-
       <SceneCaptureController ref={ref} />
     </Canvas>
   );

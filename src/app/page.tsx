@@ -55,20 +55,6 @@ export default function App() {
     setIsScrubbing,
   } = useAnimation();
 
-  const {
-    cameraPosition,
-    cameraTarget,
-    cameraFov,
-    modelPosition,
-    modelRotation,
-    modelScale,
-    ambientIntensity,
-    directionalIntensity,
-    directionalPosition,
-    environmentIntensity,
-    screenReflection,
-  } = sceneControls;
-
   const sceneRef = useRef<SceneApi>(null);
   const [backgroundColor, setBackgroundColor] = useState('#ffffff');
   const [aspectRatio, setAspectRatio] = useState('16:9');
@@ -198,39 +184,20 @@ export default function App() {
           ref={sceneRef}
           backgroundColor={sceneControls.backgroundColor}
           isRecording={isRecording}
-          isPlaying={isPlaying}
-          setIsPlaying={setIsPlaying}
-          isScrubbing={isScrubbing}
-          scenes={animationScenes}
-          currentTime={currentTime}
-          setCurrentTime={setCurrentTime}
-          setHasFinished={setHasFinished}
-          totalVideoDuration={totalVideoDuration}
-          cameraPosition={cameraPosition}
-          cameraTarget={cameraTarget}
-          cameraFov={cameraFov}
-          modelPosition={modelPosition}
-          modelRotation={modelRotation}
-          modelScale={modelScale}
-          ambientIntensity={ambientIntensity}
-          directionalIntensity={directionalIntensity}
-          directionalPosition={directionalPosition}
-          environmentIntensity={environmentIntensity}
-          screenReflection={screenReflection}
           onLiveCameraChange={handleLiveCameraChange}
         />
       </div>
 
       {/* Top-Right Container */}
       <div className="fixed top-4 right-7 z-10 flex items-end gap-3">
-       <BackgroundPicker
-         color={sceneControls.backgroundColor} 
+        <BackgroundPicker
+          color={sceneControls.backgroundColor}
           onChange={(newColor) =>
             dispatchSceneControls({
               type: 'UPDATE_RAW',
               payload: { backgroundColor: newColor },
             })
-          } 
+          }
         />
         <ModelSelector
           allModels={allModels}
@@ -271,7 +238,7 @@ export default function App() {
       {/* Modals and Panels */}
       {capturedImageUrl && (
         <PreviewModal
-          imageUrl={capturedImageUrl }
+          imageUrl={capturedImageUrl}
           onClose={handleClosePreview}
         />
       )}
