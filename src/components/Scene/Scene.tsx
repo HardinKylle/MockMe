@@ -15,6 +15,8 @@ import { useAsset } from '@/contexts/AssetContext';
 import { useAnimation } from '@/contexts/AnimationContext';
 import { useScene } from '@/contexts/SceneContext';
 import { useAnimationLoop } from '@/hooks/useAnimationLoop';
+import { SceneEnvironment } from './SceneEnvironment';
+
 interface SceneProps {
   backgroundColor: string;
   isRecording: boolean;
@@ -35,7 +37,6 @@ models.forEach(model => useGLTF.preload(model.path));
 const vec3 = new THREE.Vector3();
 
 function SceneContent({
-  // These are the only props we need now
   backgroundColor,
   isRecording,
   onLiveCameraChange,
@@ -52,7 +53,7 @@ function SceneContent({
   const {
     isPlaying,
     currentTime,
-    isScrubbing, // isScrubbing is needed for OrbitControls `enabled` prop
+    isScrubbing, 
   } = useAnimation();
 
   const {
@@ -63,11 +64,7 @@ function SceneContent({
       modelPosition,
       modelRotation,
       modelScale,
-      ambientIntensity,
-      directionalIntensity,
-      directionalPosition,
-      environmentIntensity,
-      screenReflection,
+      screenReflection, 
     }
   } = useScene();
 
@@ -128,13 +125,7 @@ function SceneContent({
 
   return (
     <>
-      <ambientLight intensity={ambientIntensity} />
-      <directionalLight
-        position={directionalPosition}
-        intensity={directionalIntensity}
-      />
-      <Environment preset="studio" environmentIntensity={environmentIntensity} />
-
+      <SceneEnvironment />
       <group ref={modelRef}>
         <PhoneModel
           modelUrl={selectedModel.path}
