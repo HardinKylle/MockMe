@@ -23,7 +23,6 @@ export const HeaderAuth = () => {
     openProjectsModal();
   }
 
-  // --- 4. ADD NEW HANDLER ---
   const handleCloseProject = () => {
     setIsMenuOpen(false);
     closeProject();

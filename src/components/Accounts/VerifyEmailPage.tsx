@@ -6,6 +6,15 @@ import { Button } from '@/components/ui/Button';
 import { sendEmailVerification } from 'firebase/auth';
 import { Loader, MailCheck } from 'lucide-react';
 
+/**
+ * VerifyEmailPage
+ *
+ * Shown to users who need to verify their email.
+ * - Displays the current user's email.
+ * - Allows resending the verification email.
+ * - Provides a sign-out action.
+ */
+
 export const VerifyEmailPage = () => {
   const { user, signOut } = useAuth();
   const [isSending, setIsSending] = useState(false);
@@ -61,6 +70,7 @@ export const VerifyEmailPage = () => {
             Sign out
           </Button>
         </div>
+        {/* Feedback message (success or error) */}
         {message && (
           <p className="mt-4 text-sm text-green-400">{message}</p>
         )}

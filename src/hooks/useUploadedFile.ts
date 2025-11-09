@@ -7,7 +7,7 @@ export function useUploadedFile() {
   const [uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null);
   const [uploadedFileType, setUploadedFileType] = useState<'image' | 'video' | null>(null);
   const [videoDuration, setVideoDuration] = useState<number | null>(null);
-  const [internalFile, setInternalFile] = useState<File | null>(null); // Keep track of the file itself
+  const [internalFile, setInternalFile] = useState<File | null>(null); 
 
   // Handles file upload and sets state
   const handleFileUpload = (file: File | null) => {

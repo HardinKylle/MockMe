@@ -48,8 +48,6 @@ const lerp = (start: number, end: number, t: number) => {
   return start + (end - start) * t;
 };
 
-// --- Hook Props ---
-
 interface UseAnimationLoopProps {
   modelRef: RefObject<THREE.Group | null>;
   controlsRef: RefObject<OrbitControlsType | null>;
@@ -74,7 +72,6 @@ export const useAnimationLoop = ({
     isScrubbing,
   } = useAnimation();
 
-  // This is the entire animation loop, moved from Scene.tsx
   useFrame((state, delta) => {
     const controls = controlsRef.current;
     if (!controls) return;
