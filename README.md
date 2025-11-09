@@ -1,39 +1,30 @@
-# 📱 MockMe
+# MockMe
 
-**MockMe** is a 3D device mockup web app built with **Next.js**, **React Three Fiber**, and **TypeScript**. It lets you upload an app UI (**image or video**), view it inside a realistic 3D model, animate a full scene sequence, and capture stunning visual assets for design showcases, social media, or portfolios.
+MockMe is a 3D device mockup web application built with Next.js, React Three Fiber, and TypeScript. It allows you to upload an app UI as an image or video, view it inside a realistic 3D model, animate a full scene sequence, and capture visual assets for design showcases and portfolios.
 
----
+## Features
 
-## 🚀 Features
+- **File Handling:** Upload image or video content to be placed onto the 3D device screen.
+- **Full Animation Timeline:** Create complex animated sequences by defining, reordering, and editing multiple scenes. Supports custom camera transitions and preset animations.
+- **Granular Controls:** Fine tune camera position, field of view (FOV), model transformations, and detailed lighting including ambient, directional, and environment light.
+- **High Quality Capture:** Export high quality PNG screenshots of your mockups.
+- **Realistic 3D Models:** Uses React Three Fiber for accurate 3D rendering and scene management.
 
-- 📤 **File Handling:** Upload **Image or Video** content and place it onto the 3D device screen.
-- 🎬 **Full Animation Timeline:** Create complex animated sequences by defining, reordering, and editing multiple scenes.
-    * Supports custom camera transitions (`startView`/`endView`) and preset animations.
-- 🎨 **Modern Dark UI/UX:** All controls, panels, and the timeline feature a consistent, clean, and highly functional dark-themed 'glassy' aesthetic.
-- ⚙️ **Granular Controls:** Fine-tune camera position, field of view (FOV), model transformations, and detailed lighting controls (ambient, directional, environment intensity).
-- 📸 **High-Quality Capture:** Export high-quality screenshots (PNG) of your final mockups.
-- 📱 **Realistic 3D Models:** Utilize Three.js + React Three Fiber for accurate 3D rendering and scene management.
+## Tech Stack
 
----
+- Next.js  
+- React Three Fiber (R3F)  
+- @react-three/drei  
+- Three.js  
+- TypeScript  
 
-## 🧰 Tech Stack
+## Getting Started
 
-| Technology | Purpose |
-|-----------:|:--------|
-| **Next.js 14+** | App framework for React |
-| **React Three Fiber (R3F)** | 3D rendering and scene management |
-| **@react-three/drei** | Useful 3D helpers and presets |
-| **TypeScript** | Type safety and better DX |
-| **Three.js** | Core 3D engine |
----
+### Clone the repository
 
-## 🛠️ Getting Started
-
-1. Clone the repository
-```bash
+1. bash
 git clone https://github.com/HardinKylle/MockMe.git
 cd mockme
-```
 
 2. Install dependencies
 ```bash
@@ -51,11 +42,11 @@ npm run dev
 
 ---
 
-## 🎯 Intended Users
+## Intended Users
 
-- 🎨 Designers — create beautiful device mockups of app UIs.  
-- 📱 Developers — showcase mobile apps or UI prototypes.  
-- 📣 Marketers — produce high-quality visuals for social media.
+- Designers — create beautiful device mockups of app UIs.  
+- Developers — showcase mobile apps or UI prototypes.  
+- Marketers — produce high-quality visuals for social media.
 
 ---
 
