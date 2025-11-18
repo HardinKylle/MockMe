@@ -99,14 +99,13 @@ function SceneContent({
   }, [isPlaying, isScrubbing, cameraPosition, cameraTarget]);
 
   // Apply model transforms from sliders
-  useEffect(() => {
-    if (modelRef.current) {
+useEffect(() => {
+    if (modelRef.current && !isPlaying && !isScrubbing) {
       modelRef.current.position.set(...modelPosition);
       modelRef.current.rotation.set(...modelRotation);
       modelRef.current.scale.set(modelScale, modelScale, modelScale);
     }
-  }, [modelPosition, modelRotation, modelScale]);
-
+  }, [modelPosition, modelRotation, modelScale, isPlaying, isScrubbing]);
   // Set background color or transparency
   useEffect(() => {
     if (backgroundColor === 'transparent') {
