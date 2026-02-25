@@ -3,7 +3,8 @@
 import React, { useLayoutEffect, useRef, useEffect, useMemo } from 'react';
 import { useGLTF, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
-import { useThree } from '@react-three/fiber';
+import { useThree, useFrame } from '@react-three/fiber';
+import { useAnimation } from '@/contexts/AnimationContext';
 
 interface PhoneModelProps {
     modelUrl: string;
@@ -84,6 +85,28 @@ const PhoneModel: React.FC<PhoneModelProps> = ({
             video.currentTime = currentTime;
         }
     }, [currentTime, videoTexture]);
+
+    // Register/unregister the video element so the export loop can seek it
+    const { isExportingRef, exportVideoRef } = useAnimation();
+    useEffect(() => {
+        if (!videoTexture) {
+            exportVideoRef.current = null;
+            return;
+        }
+        const video = videoTexture.image as HTMLVideoElement;
+        exportVideoRef.current = video || null;
+        return () => {
+            exportVideoRef.current = null;
+        };
+    }, [videoTexture, exportVideoRef]);
+
+    // During export, force the video texture to re-upload each frame.
+    // VideoTexture relies on requestVideoFrameCallback which doesn't fire
+    // for paused+seeking videos, so we bypass it here.
+    useFrame(() => {
+        if (!isExportingRef.current || !videoTexture) return;
+        videoTexture.needsUpdate = true;
+    });
 
     // Choose texture based on file type
     const texture = uploadedFileType === 'video' ? videoTexture : imageTexture;

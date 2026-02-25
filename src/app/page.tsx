@@ -53,6 +53,8 @@ export default function App() {
     setHasFinished,
     isScrubbing,
     setIsScrubbing,
+    isRecordingRef,
+    setIsExporting,
   } = useAnimation();
 
   const sceneRef = useRef<SceneApi>(null);
@@ -82,10 +84,11 @@ export default function App() {
   } = useExport({
     sceneRef,
     aspectRatio,
-    hasFinished,
+    totalVideoDuration,
     setIsPlaying,
     setCurrentTime,
-    setHasFinished,
+    setIsExporting,
+    isRecordingRef,
   });
 
   const {

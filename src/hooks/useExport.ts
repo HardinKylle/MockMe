@@ -1,75 +1,68 @@
 // Hook for handling video export/recording logic and confirmation UI.
 
 
-import { useEffect, useState, RefObject } from "react";
+import { useState, RefObject } from "react";
 import { SceneApi } from "@/components/Scene/Scene";
 
 interface UseExportProps {
   sceneRef: RefObject<SceneApi | null>;
   aspectRatio: string;
-  hasFinished: boolean;
+  totalVideoDuration: number;
   setIsPlaying: (isPlaying: boolean) => void;
   setCurrentTime: (time: number) => void;
-  setHasFinished: (hasFinished: boolean) => void;
+  setIsExporting: (value: boolean) => void;
+  isRecordingRef: React.MutableRefObject<boolean>;
 }
 
 export const useExport = ({
   sceneRef,
   aspectRatio,
-  hasFinished,
+  totalVideoDuration,
   setIsPlaying,
   setCurrentTime,
-  setHasFinished,
+  setIsExporting,
+  isRecordingRef,
 }: UseExportProps) => {
   const [isRecording, setIsRecording] = useState(false);
   const [showExportConfirm, setShowExportConfirm] = useState(false);
   const [showBrowserWarning, setShowBrowserWarning] = useState(false);
 
-  //Effect to stop recording when animation finishes
-  useEffect(() => {
-    if (hasFinished && isRecording) {
-      sceneRef.current?.stopRecording();
-      setIsRecording(false);
-    }
-  }, [hasFinished, isRecording, sceneRef]);
-
-  // Checks browser support for MediaRecorder and shows confirmation or warnings
+  // Checks browser support for VideoEncoder and shows confirmation or warnings
   const handleExport = () => {
     if (isRecording) return;
-    const mimeType = "video/webm; codecs=vp9";
-    if (
-      typeof MediaRecorder === "undefined" ||
-      !MediaRecorder.isTypeSupported(mimeType)
-    ) {
+    if (typeof VideoEncoder === 'undefined') {
       setShowBrowserWarning(true);
       return;
     }
     setShowExportConfirm(true);
   };
 
-  //Starts the recording
+  // Starts the offline WebCodecs export
   const handleConfirmExport = () => {
-    if(!sceneRef.current || isRecording) return;
+    if (!sceneRef.current || isRecording) return;
 
     setShowExportConfirm(false);
     setIsRecording(true);
+    isRecordingRef.current = true;
     setIsPlaying(false);
-    setCurrentTime(0.0);
-    setHasFinished(false);
+    setCurrentTime(0);
+    setIsExporting(true);
 
-
-    sceneRef.current?.startRecording(aspectRatio, () => {
-        setCurrentTime(0.0);
-        setIsPlaying(true); // Start the animation
+    sceneRef.current.startRecording(aspectRatio, totalVideoDuration, () => {
+      // onComplete callback — export loop has finished
+      setIsExporting(false);
+      setIsRecording(false);
+      isRecordingRef.current = false;
+      setCurrentTime(0);
     });
   };
 
-  //When user cancel export 
+  // When user cancels export confirmation
   const handleCancelExport = () => {
     setShowExportConfirm(false);
   };
 
-  return{
+  return {
     isRecording,
     showExportConfirm,
     showBrowserWarning,
@@ -77,6 +70,5 @@ export const useExport = ({
     handleExport,
     handleConfirmExport,
     handleCancelExport
-  }
-
+  };
 };

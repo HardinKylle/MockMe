@@ -42,3 +42,7 @@ next-env.d.ts
 
 #env.local
 .env.local
+
+# claude
+.claude/
+CLAUDE.md

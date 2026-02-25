@@ -27,7 +27,7 @@ export interface SceneApi {
   capture: (aspectRatio: string) => string | undefined;
   setView: (position: readonly [number, number, number], target: readonly [number, number, number]) => void;
   getView: () => SceneState | null;
-  startRecording: (aspectRatio: string, onReady: () => void) => void;
+  startRecording: (aspectRatio: string, totalDuration: number, onComplete: () => void) => void;
   stopRecording: () => void;
 }
 
@@ -180,8 +180,12 @@ export default forwardRef<SceneApi, SceneProps>(function Scene(
     isRecording,
     onLiveCameraChange,
   } = props;
+
+  const { isExporting } = useAnimation();
+
   return (
     <Canvas
+      frameloop={isExporting ? 'never' : 'always'}
       gl={{
         outputColorSpace: THREE.SRGBColorSpace,
         preserveDrawingBuffer: true,

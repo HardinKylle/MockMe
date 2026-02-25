@@ -2,7 +2,7 @@
 
 // Provides global state for animation scenes, timeline, playback, and scene management.
 
-import { createContext, useContext, useState, ReactNode, Dispatch, SetStateAction } from 'react';
+import { createContext, useContext, useState, useRef, useCallback, MutableRefObject, ReactNode, Dispatch, SetStateAction } from 'react';
 import { AnimationScene, SceneState } from '@/types/animation';
 import { DEFAULT_SCENE_CONTROLS } from './SceneContext';
 
@@ -46,6 +46,12 @@ interface AnimationContextType {
   setHasFinished: Dispatch<SetStateAction<boolean>>;
   isScrubbing: boolean;
   setIsScrubbing: Dispatch<SetStateAction<boolean>>;
+  isRecordingRef: MutableRefObject<boolean>;
+  isExporting: boolean;
+  setIsExporting: (value: boolean) => void;
+  isExportingRef: MutableRefObject<boolean>;
+  exportTimeRef: MutableRefObject<number>;
+  exportVideoRef: MutableRefObject<HTMLVideoElement | null>;
   handleAddScene: (currentState: SceneState) => void;
 }
 
@@ -65,6 +71,19 @@ export const AnimationProvider = ({ children }: { children: ReactNode }) => {
   const [currentTime, setCurrentTime] = useState(0);
   const [hasFinished, setHasFinished] = useState(false);
   const [isScrubbing, setIsScrubbing] = useState(false);
+  // Ref so useFrame can read recording state synchronously (not stale from closure)
+  const isRecordingRef = useRef(false);
+
+  // Export state: both React state (for re-renders) and ref (for useFrame access)
+  const [isExporting, setIsExportingState] = useState(false);
+  const isExportingRef = useRef(false);
+  const exportTimeRef = useRef(0);
+  // Shared ref to the screen video element so the export loop can seek + await
+  const exportVideoRef = useRef<HTMLVideoElement | null>(null);
+  const setIsExporting = useCallback((value: boolean) => {
+    setIsExportingState(value);
+    isExportingRef.current = value;
+  }, []);
 
   // Adds a new scene to the timeline using the current camera/model state
   const handleAddScene = (currentState: SceneState) => {
@@ -96,6 +115,12 @@ export const AnimationProvider = ({ children }: { children: ReactNode }) => {
         setHasFinished,
         isScrubbing,
         setIsScrubbing,
+        isRecordingRef,
+        isExporting,
+        setIsExporting,
+        isExportingRef,
+        exportTimeRef,
+        exportVideoRef,
         handleAddScene
       }}
     >

@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, RefObject } from 'react';
+import { RefObject } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { type OrbitControls as OrbitControlsType } from 'three-stdlib';
@@ -48,6 +48,9 @@ const lerp = (start: number, end: number, t: number) => {
   return start + (end - start) * t;
 };
 
+// Fixed timestep for recording: 1/60s ensures smooth, consistent frame pacing in exported video
+const RECORDING_FRAME_DELTA = 1 / 60;
+
 interface UseAnimationLoopProps {
   modelRef: RefObject<THREE.Group | null>;
   controlsRef: RefObject<OrbitControlsType | null>;
@@ -70,6 +73,9 @@ export const useAnimationLoop = ({
     setCurrentTime,
     setHasFinished,
     isScrubbing,
+    isRecordingRef,
+    isExportingRef,
+    exportTimeRef,
   } = useAnimation();
 
   useFrame((state, delta) => {
@@ -77,9 +83,12 @@ export const useAnimationLoop = ({
     if (!controls) return;
 
     let videoJustFinished = false;
-    // Advance time if playing
-    if (isPlaying) {
-      const frameDelta = delta;
+    // During export, time is driven externally via exportTimeRef — skip delta advancement
+    if (isPlaying && !isExportingRef.current) {
+      // During recording, use a fixed timestep so the animation advances at a steady rate
+      // regardless of actual render performance. This prevents lag from causing frame skips
+      // in the exported video.
+      const frameDelta = isRecordingRef.current ? RECORDING_FRAME_DELTA : delta;
       setCurrentTime((prevTime) => {
         const newTime = prevTime + frameDelta;
         if (newTime >= totalVideoDuration) {
@@ -108,18 +117,18 @@ export const useAnimationLoop = ({
       }
     }
 
-    // Animate camera/model if playing or scrubbing
-    if (isPlaying || isScrubbing) {
+    // Animate camera/model if playing, scrubbing, or exporting
+    if (isPlaying || isScrubbing || isExportingRef.current) {
+      // During export, use the externally-driven export time instead of React state
+      const effectiveTime = isExportingRef.current ? exportTimeRef.current : currentTime;
       let timeSoFar = 0;
-      let sceneFound = false;
 
       for (const scene of scenes) {
         const sceneStartTime = timeSoFar;
         const sceneEndTime = sceneStartTime + scene.duration;
 
-        if (currentTime >= sceneStartTime && currentTime <= sceneEndTime) {
-          sceneFound = true;
-          const timeInScene = currentTime - sceneStartTime;
+        if (effectiveTime >= sceneStartTime && effectiveTime <= sceneEndTime) {
+          const timeInScene = effectiveTime - sceneStartTime;
           const sceneProgress = scene.duration > 0 ? timeInScene / scene.duration : 0;
           const easedProgress = easeInOutCubic(sceneProgress);
 
