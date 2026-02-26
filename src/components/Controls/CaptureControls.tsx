@@ -55,12 +55,6 @@ export default function CaptureControls({
             className="absolute bottom-full right-0 mb-2 w-32 rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 backdrop-blur-xl z-20 p-1.5"
             style={{ animation: 'slideUp 0.2s ease-out' }}
           >
-            <style>{`
-              @keyframes slideUp {
-                from { opacity: 0; transform: translateY(10px); }
-                to { opacity: 1; transform: translateY(0); }
-              }
-            `}</style>
             <div className="space-y-1">
               {aspectRatios.map((ratio) => (
                 <Button

@@ -3,17 +3,14 @@
 // Main entry point for the mock-me editor UI. Handles scene, timeline, panels, and global state.
 
 import FileUpload from '@/components/Controls/FileUpload';
-import { useUploadedFile } from '@/hooks/useUploadedFile';
 import Scene, { SceneApi } from '@/components/Scene/Scene';
 import CaptureControls from '@/components/Controls/CaptureControls';
 import { useRef, useState, useEffect } from 'react';
 import PreviewModal from '@/components/Modals/PreviewModal';
-import { useModelSwitcher } from '@/hooks/useModelSwitcher';
 import ModelSelector from '@/components/Controls/ModelSelector';
 import BackgroundPicker from '@/components/Controls/BackgroundPicker';
 import { useWindowSize } from '@/hooks/useWindowSize';
 import TimelinePanel from '@/components/Timeline/TimelinePanel';
-import { AnimationScene, SceneState } from '@/types/animation';
 import SceneEditorPanel from '@/components/Panels/SceneEditorPanel';
 import ContentEditorPanel from '@/components/Panels/ContentEditorPanel';
 import CameraControlsPanel from '@/components/Controls/CameraControlsPanel';
@@ -39,26 +36,15 @@ export default function App() {
   // --- Core Hooks ---
   const { sceneControls, dispatchSceneControls } = useScene();
   const {
-    animationScenes,
-    setAnimationScenes,
-    selectedSceneId,
-    setSelectedSceneId,
     totalVideoDuration,
     setTotalVideoDuration,
-    isPlaying,
     setIsPlaying,
-    currentTime,
     setCurrentTime,
-    hasFinished,
-    setHasFinished,
-    isScrubbing,
-    setIsScrubbing,
     isRecordingRef,
     setIsExporting,
   } = useAnimation();
 
   const sceneRef = useRef<SceneApi>(null);
-  const [backgroundColor, setBackgroundColor] = useState('#ffffff');
   const [aspectRatio, setAspectRatio] = useState('16:9');
   const [showTimeline, setShowTimeline] = useState(false);
   const { width: windowWidth, height: windowHeight } = useWindowSize();
@@ -186,7 +172,6 @@ export default function App() {
         <Scene
           ref={sceneRef}
           backgroundColor={sceneControls.backgroundColor}
-          isRecording={isRecording}
           onLiveCameraChange={handleLiveCameraChange}
         />
       </div>
@@ -258,7 +243,6 @@ export default function App() {
         {selectedScene && (
           <SceneEditorPanel
             isVisible={showTimeline}
-            sceneRef={sceneRef}
           />
         )}
       </div>

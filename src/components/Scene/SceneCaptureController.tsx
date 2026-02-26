@@ -184,9 +184,6 @@ export const SceneCaptureController = forwardRef<SceneApi>((props, ref) => {
 
       const canvas = gl.domElement;
       const totalFrames = Math.ceil(totalDuration * FPS);
-      const hasVideo = !!exportVideoRef.current;
-
-      console.log(`Export started: ${width}x${height}, ${FPS}fps, ${totalFrames} frames, video content: ${hasVideo}`);
 
       // Offline render loop
       for (let frame = 0; frame < totalFrames; frame++) {
@@ -255,7 +252,6 @@ export const SceneCaptureController = forwardRef<SceneApi>((props, ref) => {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      console.log('Export complete.');
 
       // Restore original canvas size
       if (camera instanceof THREE.PerspectiveCamera) {

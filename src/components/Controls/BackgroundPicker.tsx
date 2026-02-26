@@ -4,9 +4,10 @@ import { useState, useRef, useEffect } from 'react';
 import { Palette, Check, Pipette } from 'lucide-react';
 import { HexColorPicker } from 'react-colorful';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input'; 
-import { Label } from '@/components/ui/Label'; 
-import { cn } from '@/lib/utils'; 
+import { Input } from '@/components/ui/Input';
+import { Label } from '@/components/ui/Label';
+import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 // Props for the color picker component
 interface PickerProps {
@@ -106,7 +107,7 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
     ).EyeDropper;
 
     if (!eyeDropperApi) {
-      alert("Your browser doesn't support the EyeDropper API.");
+      toast.error("Your browser doesn't support the EyeDropper API.");
       return;
     }
 
@@ -115,12 +116,8 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
       const { sRGBHex } = await eyeDropper.open();
       handleColorChange(sRGBHex);
       setIsOpen(false);
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        console.warn(`EyeDropper cancelled or failed: ${e.message}`);
-      } else {
-        console.warn('EyeDropper cancelled or failed:', e);
-      }
+    } catch {
+      // User cancelled the EyeDropper — no action needed
     }
   };
 
@@ -157,10 +154,6 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
         >
           {/* Custom styles for react-colorful */}
           <style>{`
-            @keyframes slideUp {
-              from { opacity: 0; transform: translateY(10px); }
-              to { opacity: 1; transform: translateY(0); }
-            }
             .react-colorful {
               --colorful-bg-hsl: 240, 10%, 15%;
               --colorful-border-hsl: 240, 10%, 30%;

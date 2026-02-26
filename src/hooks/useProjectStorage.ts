@@ -140,7 +140,6 @@ export const useProjectStorage = (): UseProjectStorageReturn => {
         setIsSaving(false);
         return newProjectRef.id;
       } catch (err) {
-        console.error(err);
         setError((err as Error).message);
         setIsSaving(false);
         return null;
@@ -194,7 +193,6 @@ export const useProjectStorage = (): UseProjectStorageReturn => {
 
         setIsSaving(false);
       } catch (err) {
-        console.error(err);
         setError((err as Error).message);
         setIsSaving(false);
       }
@@ -228,7 +226,6 @@ export const useProjectStorage = (): UseProjectStorageReturn => {
         setIsLoading(false);
         return project; // Return the data
       } catch (err) {
-        console.error(err);
         setError((err as Error).message);
         setIsLoading(false);
         return null;
@@ -253,7 +250,6 @@ export const useProjectStorage = (): UseProjectStorageReturn => {
       );
       return projects.sort((a, b) => b.createdAt - a.createdAt);
     } catch (err) {
-      console.error(err);
       throw err;
     }
   }, [user]);
@@ -284,15 +280,14 @@ export const useProjectStorage = (): UseProjectStorageReturn => {
             try {
               const fileStorageRef = ref(storage, fileUrl);
               await deleteObject(fileStorageRef);
-            } catch (storageError) {
-              console.warn("Could not delete file from storage:", storageError);
+            } catch {
+              // Storage file deletion failed — non-critical, project doc still deleted
             }
           }
         }
 
         await deleteDoc(projectRef);
       } catch (err) {
-        console.error(err);
         setError((err as Error).message);
       } finally {
         setIsLoading(false);

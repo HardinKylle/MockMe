@@ -8,7 +8,6 @@ import { Input } from '../ui/Input';
 import { Label } from '../ui/Label';
 import { Select } from '../ui/Select';
 import { CameraIcon, SunsetIcon, ViewIcon, CheckIcon, Trash2Icon, ArrowLeft, ArrowRight, CameraOff } from 'lucide-react';
-import { SceneApi } from '@/components/Scene/Scene';
 import React, { useState, useEffect } from 'react';
 import { useScene } from '@/contexts/SceneContext';
 import { useAnimation } from '@/contexts/AnimationContext'
@@ -64,7 +63,6 @@ const formatView = (view: SceneState | undefined | null): React.ReactNode => {
 // Props for SceneEditorPanel
 interface SceneEditorPanelProps {
   isVisible: boolean;
-  sceneRef: React.RefObject<SceneApi | null>;
 }
 
 // Helper to reorder scenes in array
@@ -77,7 +75,6 @@ function reorder<T>(list: T[], startIndex: number, endIndex: number): T[] {
 
 export default function SceneEditorPanel({
   isVisible,
-  sceneRef,
 }: SceneEditorPanelProps) {
   // Animation context values
   const {
@@ -101,11 +98,12 @@ export default function SceneEditorPanel({
   );
 
   // Sync duration input with selected scene
+  const selectedDuration = selectedScene?.duration;
   useEffect(() => {
-    if (selectedScene) {
-      setDurationInput(selectedScene.duration.toString());
+    if (selectedDuration !== undefined) {
+      setDurationInput(selectedDuration.toString());
     }
-  }, [selectedScene?.duration]);
+  }, [selectedDuration]);
 
   // Hide panel if not visible or no scene selected
   if (!isVisible || !selectedScene) return null;

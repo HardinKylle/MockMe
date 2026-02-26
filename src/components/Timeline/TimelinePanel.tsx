@@ -7,7 +7,7 @@ import { useAnimation } from '@/contexts/AnimationContext'
 import { Button } from '@/components/ui/Button' ;
 import { Plus, Play, Pause, Download, Loader } from 'lucide-react';
 import { AnimationScene, SceneState } from '@/types/animation';
-import { useRef, useState, useEffect, useCallback } from 'react';
+import { useRef, useEffect, useCallback } from 'react';
 import ContentTrack from './ContentTrack';
 import AnimationTrack from './AnimationTrack';
 

@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import { Upload, X, UploadCloud } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { toast } from 'sonner';
 
 // Props for file upload component
 interface FileUploadProps {
@@ -25,9 +26,9 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, previewUrl }) => 
   }, [previewUrl]);
 
   // Validate and handle file upload
-  const handleFileChange = (file: File | null) => {
+  const handleFileChange = useCallback((file: File | null) => {
     if (file && file.size > MAX_FILE_SIZE) {
-      alert(`File is too large. Please upload a file 25MB or less.`);
+      toast.error('File is too large. Please upload a file 25MB or less.');
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -42,18 +43,47 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, previewUrl }) => 
     } else if (file === null) {
       onFileUpload(null); // Notify parent to clear
     } else if (file) {
-      alert('Please upload a valid image or video file.');
+      toast.error('Please upload a valid image or video file.');
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
     }
-  };
+  }, [onFileUpload]);
 
   // Handle file input change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
     handleFileChange(file);
   };
+
+  // Handle file drop event
+  const handleDrop = useCallback((e: DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    const file = e.dataTransfer?.files?.[0] ?? null;
+    handleFileChange(file);
+  }, [handleFileChange]);
+
+  // Handle drag over event
+  const handleDragOver = useCallback((e: DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  }, []);
+
+  // Handle drag leave event
+  const handleDragLeave = useCallback((e: DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (
+      e.relatedTarget &&
+      (e.currentTarget as Node).contains(e.relatedTarget as Node)
+    ) {
+      return;
+    }
+    setIsDragging(false);
+  }, []);
 
   // Add/remove drag event listeners for drag-and-drop
   useEffect(() => {
@@ -65,36 +95,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, previewUrl }) => 
       window.removeEventListener('dragleave', handleDragLeave);
       window.removeEventListener('drop', handleDrop);
     };
-  }, []);
-
-  // Handle file drop event
-  const handleDrop = (e: DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-    const file = e.dataTransfer?.files?.[0] ?? null;
-    handleFileChange(file);
-  };
-
-  // Handle drag over event
-  const handleDragOver = (e: DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(true);
-  };
-
-  // Handle drag leave event
-  const handleDragLeave = (e: DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (
-      e.relatedTarget &&
-      (e.currentTarget as Node).contains(e.relatedTarget as Node)
-    ) {
-      return;
-    }
-    setIsDragging(false);
-  };
+  }, [handleDrop, handleDragOver, handleDragLeave]);
 
   // Remove uploaded file
   const handleRemove = () => {

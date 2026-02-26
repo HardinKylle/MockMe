@@ -17,13 +17,6 @@ export const BrowserWarningModal = ({ onClose }: BrowserWarningModalProps) => {
         className="w-full max-w-md rounded-lg border shadow-xl p-6 space-y-4 bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50"
         style={{ animation: 'slideUp 0.2s ease-out' }}
       >
-        {/* Slide up animation for modal */}
-        <style>{`
-            @keyframes slideUp {
-              from { opacity: 0; transform: translateY(10px); }
-              to { opacity: 1; transform: translateY(0); }
-            }
-          `}</style>
         <h3 className="text-xl font-semibold text-white">
           Browser Not Supported
         </h3>

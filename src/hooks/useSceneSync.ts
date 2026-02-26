@@ -9,7 +9,7 @@ import { SceneState} from "@/types/animation";
 
 export const useSceneSync = (isResetting: React.RefObject<boolean>) => {
   const { dispatchSceneControls } = useScene();
-  const { selectedSceneId, animationScenes, isPlaying, isScrubbing } =
+  const { selectedSceneId, animationScenes } =
     useAnimation();
 
   const selectedScene = animationScenes.find((s) => s.id === selectedSceneId);

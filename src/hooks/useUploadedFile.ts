@@ -7,8 +7,6 @@ export function useUploadedFile() {
   const [uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null);
   const [uploadedFileType, setUploadedFileType] = useState<'image' | 'video' | null>(null);
   const [videoDuration, setVideoDuration] = useState<number | null>(null);
-  const [internalFile, setInternalFile] = useState<File | null>(null); 
-
   // Handles file upload and sets state
   const handleFileUpload = (file: File | null) => {
     // Revoke previous URL if it exists, before setting new state
@@ -18,8 +16,6 @@ export function useUploadedFile() {
         useTexture.clear(uploadedFileUrl);
       }
     }
-
-    setInternalFile(file); // Update internal file state
 
     if (file) {
       const fileUrl = URL.createObjectURL(file);
@@ -36,7 +32,6 @@ export function useUploadedFile() {
           setVideoDuration(video.duration);
         };
         video.onerror = () => {
-          console.error("Error loading video metadata.");
           setVideoDuration(null); // Reset duration on error
         };
         video.src = fileUrl; // Use the same URL created above
@@ -46,7 +41,6 @@ export function useUploadedFile() {
         setUploadedFileType(null);
         setVideoDuration(null);
         URL.revokeObjectURL(fileUrl); // Clean up the URL if type is invalid
-        setInternalFile(null); // Reset internal file state too
       }
     } else {
       // File is null (cleared)
@@ -65,7 +59,6 @@ export function useUploadedFile() {
     // Return the cleanup function
     return () => {
       if (currentUrl) {
-        console.log("Cleaning up URL:", currentUrl);
         URL.revokeObjectURL(currentUrl);
         if (currentType === 'image') {
           useTexture.clear(currentUrl); // Clear drei cache if it was an image

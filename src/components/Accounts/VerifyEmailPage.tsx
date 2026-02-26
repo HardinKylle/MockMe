@@ -27,8 +27,8 @@ export const VerifyEmailPage = () => {
     try {
       await sendEmailVerification(user);
       setMessage('A new verification email has been sent.');
-    } catch (error) {
-      console.error('Error resending verification email:', error);
+    } catch {
+      // Resend failed — user sees error message below
       setMessage('Failed to send email. Please try again in a moment.');
     }
     setIsSending(false);

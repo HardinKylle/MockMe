@@ -20,8 +20,8 @@ export const useCapture = (
         if (dataUrl){
             setCapturedImageUrl(dataUrl);
         }
-    }catch(error){
-        console.log('Error during capture', error);
+    }catch{
+        // Capture failed silently — no user-facing notification needed
     } finally{
         setIsLoading(false);
     }

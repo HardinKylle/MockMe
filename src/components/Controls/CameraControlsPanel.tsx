@@ -16,7 +16,6 @@ interface CameraControlsPanelProps {
 // Number input for scalar values (e.g. FOV, scale, intensity)
 const NumberInput = ({
   label,
-  id,
   value,
   onChange,
   step = 0.1,
@@ -24,7 +23,6 @@ const NumberInput = ({
   max,
 }: {
   label: string;
-  id: string;
   value: number;
   onChange: (value: number) => void;
   step?: number;
@@ -32,11 +30,10 @@ const NumberInput = ({
   max?: number;
 }) => (
   <div className="grid grid-cols-3 items-center gap-2">
-    <Label htmlFor={id} className="text-xs text-slate-300 truncate">
+    <Label className="text-xs text-slate-300 truncate">
       {label}
     </Label>
     <Input
-      id={id}
       type="number"
       value={value}
       onChange={(e) => onChange(parseFloat(e.target.value))}
@@ -51,12 +48,10 @@ const NumberInput = ({
 // Vector input for 3D values (e.g. position, rotation)
 const VectorInput = ({
   label,
-  id,
   value,
   onChange,
 }: {
   label: string;
-  id: string;
   value: [number, number, number];
   onChange: (value: [number, number, number]) => void;
 }) => (
@@ -126,13 +121,6 @@ export default function CameraControlsPanel({
           className="absolute top-full right-0 mt-2 w-72 h-[75vh] overflow-y-auto overflow-x-hidden rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 backdrop-blur-xl z-20 p-4"
           style={{ animation: 'slideUp 0.2s ease-out' }}
         >
-          {/* Slide up animation for panel */}
-          <style>{`
-            @keyframes slideUp {
-              from { opacity: 0; transform: translateY(10px); }
-              to { opacity: 1; transform: translateY(0); }
-            }
-          `}</style>
           <div className="space-y-4">
             {/* Panel header with reset button */}
             <div className="flex justify-between items-center">
@@ -154,7 +142,7 @@ export default function CameraControlsPanel({
             </h4>
             <VectorInput
               label="Position"
-              id="cam-pos"
+
               value={cameraPosition}
               onChange={(val) =>
                 dispatchSceneControls({
@@ -165,7 +153,7 @@ export default function CameraControlsPanel({
             />
             <VectorInput
               label="Target (Look At)"
-              id="cam-target"
+
               value={cameraTarget}
               onChange={(val) =>
                 dispatchSceneControls({
@@ -176,7 +164,7 @@ export default function CameraControlsPanel({
             />
             <NumberInput
               label="Field of View"
-              id="cam-fov"
+
               value={cameraFov}
               onChange={(val) =>
                 dispatchSceneControls({
@@ -195,7 +183,7 @@ export default function CameraControlsPanel({
             </h4>
             <VectorInput
               label="Position"
-              id="model-pos"
+
               value={modelPosition}
               onChange={(val) =>
                 dispatchSceneControls({
@@ -206,7 +194,7 @@ export default function CameraControlsPanel({
             />
             <VectorInput
               label="Rotation (XYZ)"
-              id="model-rot"
+
               value={modelRotation}
               onChange={(val) =>
                 dispatchSceneControls({
@@ -217,7 +205,7 @@ export default function CameraControlsPanel({
             />
             <NumberInput
               label="Scale"
-              id="model-scale"
+
               value={modelScale}
               onChange={(val) =>
                 dispatchSceneControls({
@@ -234,7 +222,7 @@ export default function CameraControlsPanel({
             </h4>
             <NumberInput
               label="Ambient Light"
-              id="light-ambient"
+
               value={ambientIntensity}
               onChange={(val) =>
                 dispatchSceneControls({
@@ -247,7 +235,7 @@ export default function CameraControlsPanel({
             />
             <NumberInput
               label="Directional Light"
-              id="light-dir"
+
               value={directionalIntensity}
               onChange={(val) =>
                 dispatchSceneControls({
@@ -260,7 +248,7 @@ export default function CameraControlsPanel({
             />
             <VectorInput
               label="Light Position"
-              id="light-pos"
+
               value={directionalPosition}
               onChange={(val) =>
                 dispatchSceneControls({
@@ -271,7 +259,7 @@ export default function CameraControlsPanel({
             />
             <NumberInput
               label="Environment"
-              id="light-env"
+
               value={environmentIntensity}
               onChange={(val) =>
                 dispatchSceneControls({

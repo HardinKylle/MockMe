@@ -181,7 +181,6 @@ const PhoneModel: React.FC<PhoneModelProps> = ({
                     if (material.name === screenMaterialName) {
                         originalMaterials.set(child, material);
                         const mat = material as THREE.MeshStandardMaterial;
-                        // console.log(`Mesh: "${child.name}", Material: "${child.material.name}"`);
                         originalMapRef.current = mat.map || mat.emissiveMap || null;
                         const physicalMat = new THREE.MeshPhysicalMaterial({
                             color: 0x000000,
@@ -216,7 +215,7 @@ const PhoneModel: React.FC<PhoneModelProps> = ({
             screenMaterialRef.current = null;
             originalMapRef.current = null;
         };
-    }, [scene, screenMaterialName, modelUrl]);
+    }, [scene, screenMaterialName, modelUrl, screenReflection]);
 
     // Update screen reflection property dynamically
     useEffect(() => {

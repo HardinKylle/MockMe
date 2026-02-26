@@ -150,7 +150,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     reinflateState(defaultProject);
     setActiveProject(null);
     setLoadedProjectData(null);
-  }, [reinflateState, setModel]);
+  }, [reinflateState]);
 
 
   const closeProject = useCallback(() => {
@@ -171,8 +171,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     try {
       const projectList = await storageGetProjects();
       setProjects(projectList);
-    } catch (e) {
-      console.error(e);
+    } catch {
       setProjects([]);
     }
     setIsListLoading(false);
@@ -219,9 +218,8 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         assetState,
       }));
       // ---
-    } catch (e) {
-      // Don't update loaded data if save failed
-      console.error("Save failed:", e);
+    } catch {
+      // Save failed — error is surfaced via useProjectStorage's error state
     }
   }, [activeProject, gatherCurrentState, updateProject]);
 

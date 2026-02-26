@@ -1,13 +1,12 @@
 'use client';
 
 import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
-import { 
-  Auth, 
-  User, 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
-  signOut as firebaseSignOut, 
-  onAuthStateChanged, 
+import {
+  User,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut as firebaseSignOut,
+  onAuthStateChanged,
   sendEmailVerification,
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
@@ -41,33 +40,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Sign-up function
     const signUp = async (email: string, pass: string) => {
-        try {
-            const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-            await sendEmailVerification(userCredential.user);
-            return userCredential.user;
-        } catch (error) {
-            console.error("Error signing up:", error);
-            throw error; 
-        }
+        const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+        await sendEmailVerification(userCredential.user);
+        return userCredential.user;
     };
 
     // Sign-in function
     const signIn = async (email: string, pass: string) => {
-        try {
-            const userCredential = await signInWithEmailAndPassword(auth, email, pass);
-            return userCredential.user;
-        } catch (error) {
-            console.error("Error signing in:", error);
-            throw error;
-        }
+        const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+        return userCredential.user;
     };
 
     const signOut = async () => {
         try {
             await firebaseSignOut(auth);
             setUser(null);
-        } catch (error) {
-            console.error('Error signing out', error);
+        } catch {
+            // Sign out failed — Firebase session may still be active
         }
     };
 

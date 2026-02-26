@@ -3,14 +3,14 @@
 // Main 3D scene component for rendering phone model, camera controls, and animation
 
 import { forwardRef, useEffect, useRef } from 'react';
-import { Canvas, useThree, useFrame } from '@react-three/fiber';
-import { OrbitControls, Environment, useGLTF } from '@react-three/drei';
+import { Canvas, useThree } from '@react-three/fiber';
+import { OrbitControls, useGLTF } from '@react-three/drei';
 import PhoneModel from '@/components/Scene/PhoneModel';
 import * as THREE from 'three';
 import { SceneCaptureController } from './/SceneCaptureController';
-import { ModelData, models } from '@/configs/models';
+import { models } from '@/configs/models';
 import { type OrbitControls as OrbitControlsType } from 'three-stdlib';
-import { AnimationScene, SceneState, AnimationType } from '@/types/animation';
+import { SceneState } from '@/types/animation';
 import { useAsset } from '@/contexts/AssetContext';
 import { useAnimation } from '@/contexts/AnimationContext';
 import { useScene } from '@/contexts/SceneContext';
@@ -19,7 +19,6 @@ import { SceneEnvironment } from './SceneEnvironment';
 
 interface SceneProps {
   backgroundColor: string;
-  isRecording: boolean;
   onLiveCameraChange: (newState: SceneState) => void;
 }
 
@@ -38,7 +37,6 @@ const vec3 = new THREE.Vector3();
 
 function SceneContent({
   backgroundColor,
-  isRecording,
   onLiveCameraChange,
 }: SceneProps) {
   const { gl, camera, controls } = useThree();
@@ -177,7 +175,6 @@ export default forwardRef<SceneApi, SceneProps>(function Scene(
 ) {
   const {
     backgroundColor,
-    isRecording,
     onLiveCameraChange,
   } = props;
 
@@ -196,7 +193,6 @@ export default forwardRef<SceneApi, SceneProps>(function Scene(
     >
       <SceneContent
         backgroundColor={backgroundColor}
-        isRecording={isRecording}
         onLiveCameraChange={onLiveCameraChange}
       />
       <SceneCaptureController ref={ref} />

@@ -5,6 +5,7 @@
 import { useState } from 'react';
 import { X, Download, Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import Image from 'next/image';
 
 // Props for PreviewModal
 interface PreviewModalProps {
@@ -42,31 +43,15 @@ export default function PreviewModal({ imageUrl, onClose }: PreviewModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md bg-slate-950/70"
       onClick={handleBackdropClick}
-      style={{
-        background: 'rgba(2, 6, 23, 0.7)', // Dark backdrop (slate-900/70)
-      }}
     >
       <div
         className="w-full max-w-3xl relative rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 backdrop-blur-xl"
         style={{
-          animation: 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+          animation: 'slideUpModal 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
         }}
       >
-        {/* Slide up animation for modal */}
-        <style>{`
-          @keyframes slideUp {
-            from {
-              opacity: 0;
-              transform: translateY(20px) scale(0.96);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0) scale(1);
-            }
-          }
-        `}</style>
 
         {/* Header with close button */}
         <div className="relative px-6 pt-6 pb-4 border-b border-slate-700/50">
@@ -90,10 +75,13 @@ export default function PreviewModal({ imageUrl, onClose }: PreviewModalProps) {
           <div className="relative mb-6 group">
             <div className="relative rounded-lg overflow-hidden border border-slate-700/50 bg-slate-800/50">
               <div className="max-h-[60vh] flex items-center justify-center">
-                <img
+                <Image
                   src={imageUrl}
                   alt="Capture preview"
                   className="max-w-full max-h-[60vh] w-auto h-auto object-contain"
+                  width={1920}
+                  height={1080}
+                  unoptimized
                 />
               </div>
             </div>

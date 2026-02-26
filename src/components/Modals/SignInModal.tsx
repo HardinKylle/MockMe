@@ -28,8 +28,16 @@ export const SignInModal = () => {
 
     // --- Client-side validation for Sign Up ---
     if (mode === 'signUp') {
-      if (password.length < 6) {
-        setError('Password must be at least 6 characters.');
+      if (password.length < 8) {
+        setError('Password must be at least 8 characters.');
+        return;
+      }
+      if (!/[A-Z]/.test(password)) {
+        setError('Password must contain at least one uppercase letter.');
+        return;
+      }
+      if (!/[0-9]/.test(password)) {
+        setError('Password must contain at least one number.');
         return;
       }
       if (password !== confirmPassword) {
@@ -55,7 +63,7 @@ export const SignInModal = () => {
             setError('This email address is already in use.');
             break;
           case 'auth/weak-password':
-            setError('Password must be at least 6 characters.');
+            setError('Password is too weak. Use 8+ characters with uppercase and numbers.');
             break;
           case 'auth/invalid-credential':
             setError('Invalid email or password.');
@@ -91,13 +99,6 @@ export const SignInModal = () => {
         className="w-full max-w-sm rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50"
         style={{ animation: 'slideUp 0.2s ease-out' }}
       >
-        <style>{`
-          @keyframes slideUp {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-          }
-        `}</style>
-        
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700/50">
           <h3 className="text-lg font-medium text-white">
@@ -152,8 +153,14 @@ export const SignInModal = () => {
                   />
                 </div>
                 <ul className="text-xs text-slate-400 list-disc list-inside space-y-1">
-                  <li className={password.length >= 6 ? 'text-green-400' : ''}>
-                    At least 6 characters
+                  <li className={password.length >= 8 ? 'text-green-400' : ''}>
+                    At least 8 characters
+                  </li>
+                  <li className={/[A-Z]/.test(password) ? 'text-green-400' : ''}>
+                    One uppercase letter
+                  </li>
+                  <li className={/[0-9]/.test(password) ? 'text-green-400' : ''}>
+                    One number
                   </li>
                   <li className={password === confirmPassword && password.length > 0 ? 'text-green-400' : ''}>
                     Passwords must match
