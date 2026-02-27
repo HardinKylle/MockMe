@@ -220,6 +220,19 @@ export default function App() {
         </div>
       </div>
 
+      {/* Export overlay */}
+      {isRecording && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-4 rounded-xl border border-slate-700/50 bg-slate-900/90 px-10 py-8 shadow-2xl">
+            <Loader className="h-8 w-8 animate-spin text-white" />
+            <div className="text-center">
+              <p className="text-sm font-semibold text-white">Exporting video…</p>
+              <p className="mt-1 text-xs text-slate-400">Please wait, do not close the tab</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <SignInModal />
       <MyProjectsModal />
 

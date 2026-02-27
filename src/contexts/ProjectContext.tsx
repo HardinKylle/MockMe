@@ -269,6 +269,14 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     resetProjectState // 
   ]);
 
+  // When user logs out, clear all project state
+  useEffect(() => {
+    if (!user) {
+      resetProjectState();
+      setProjects([]);
+    }
+  }, [user, resetProjectState]);
+
   useEffect(() => {
     // This is the function that runs when the user tries to leave
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {

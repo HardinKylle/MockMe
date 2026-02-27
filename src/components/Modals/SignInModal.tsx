@@ -2,12 +2,13 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useModal } from '@/contexts/ModalContext'; 
-import { Button } from '@/components/ui/Button'; 
+import { useModal } from '@/contexts/ModalContext';
+import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { X, Loader } from 'lucide-react';
 import { FirebaseError } from 'firebase/app';
+import { toast } from 'sonner';
 type AuthMode = 'signIn' | 'signUp';
 
 export const SignInModal = () => {
@@ -51,10 +52,12 @@ export const SignInModal = () => {
     try {
       if (mode === 'signIn') {
         await signIn(email, password);
+        toast.success('Signed in successfully');
       } else {
         await signUp(email, password);
+        toast.success('Account created! Check your email to verify.');
       }
-      handleClose(); 
+      handleClose();
     } catch (err) {
       // --- Handle specific Firebase errors ---
       if (err instanceof FirebaseError) {

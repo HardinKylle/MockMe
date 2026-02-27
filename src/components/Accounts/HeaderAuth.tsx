@@ -6,6 +6,7 @@ import { useProject } from '@/contexts/ProjectContext';
 import { Button } from '@/components/ui/Button';
 import { Loader, User, LogOut, Folder, XCircle } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 export const HeaderAuth = () => {
   const { user, authLoading, signOut } = useAuth();
@@ -16,6 +17,7 @@ export const HeaderAuth = () => {
   const handleSignOut = () => {
     setIsMenuOpen(false);
     signOut();
+    toast.success('Signed out');
   };
 
   const handleOpenProjects = () => {

@@ -1,7 +1,7 @@
 // Hook for handling video export/recording logic and confirmation UI.
 
-
 import { useState, RefObject } from "react";
+import { toast } from "sonner";
 import { SceneApi } from "@/components/Scene/Scene";
 
 interface UseExportProps {
@@ -54,6 +54,7 @@ export const useExport = ({
       setIsRecording(false);
       isRecordingRef.current = false;
       setCurrentTime(0);
+      toast.success('Video exported!');
     });
   };
 

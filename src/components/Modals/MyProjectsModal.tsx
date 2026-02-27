@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { X, Loader, FolderDown, Trash2, Save, Check } from 'lucide-react';
+import { toast } from 'sonner';
 
 export const MyProjectsModal = () => {
   const { isProjectsModalOpen, closeProjectsModal } = useModal();
@@ -44,7 +45,8 @@ export const MyProjectsModal = () => {
     if (newProjectName.trim() === '') return;
     const newProjectId = await saveAsNewProject(newProjectName);
     if (newProjectId) {
-      setNewProjectName(''); // Clear input on success
+      setNewProjectName('');
+      toast.success('Project saved!');
     }
   };
 
@@ -67,8 +69,8 @@ export const MyProjectsModal = () => {
   };
 
   const handleDelete = async (projectId: string) => {
-
     await deleteProject(projectId);
+    toast.success('Project deleted');
   };
 
   const handleClose = () => {
