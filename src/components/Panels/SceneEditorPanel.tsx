@@ -313,7 +313,7 @@ export default function SceneEditorPanel({
 
         {/* Custom animation type dropdown */}
         {activeCategory === 'custom' && (
-          <div className="space-y-1.5 animate-in fade-in-0 duration-200">
+          <div className="space-y-1.5 pt-1 border-t border-slate-700/50 animate-in fade-in-0 duration-200">
             <Label htmlFor="scene-custom-animation" className="text-xs">
               Custom Type
             </Label>
@@ -334,7 +334,7 @@ export default function SceneEditorPanel({
 
         {/* Preset animation type dropdown */}
         {activeCategory === 'preset' && (
-          <div className="space-y-1.5 animate-in fade-in-0 duration-200">
+          <div className="space-y-1.5 pt-1 border-t border-slate-700/50 animate-in fade-in-0 duration-200">
             <Label htmlFor="scene-preset-animation" className="text-xs">
               Preset Type
             </Label>
@@ -373,8 +373,6 @@ export default function SceneEditorPanel({
                   variant="danger"
                   size="sm"
                   onClick={() => handleClearView('startView')}
-                  tooltip="Clear View"
-                  tooltipSide="right"
                 >
                   <CameraOff className="h-3.5 w-3.5" />
                 </Button>
@@ -408,9 +406,7 @@ export default function SceneEditorPanel({
                     variant="danger"
                     size="sm"
                     onClick={() => handleClearView('startView')}
-                    tooltip="Clear Start View"
-                    tooltipSide="right"
-                  >
+                    >
                     <CameraOff className="h-3.5 w-3.5" />
                   </Button>
                 )}
@@ -439,8 +435,6 @@ export default function SceneEditorPanel({
                     variant="danger"
                     size="sm"
                     onClick={() => handleClearView('endView')}
-                    tooltip="Clear End View"
-                    tooltipSide="right"
                   >
                     <CameraOff className="h-3.5 w-3.5" />
                   </Button>
@@ -463,7 +457,6 @@ export default function SceneEditorPanel({
               size="sm"
               onClick={() => handleMove('left')}
               disabled={currentIndex === 0}
-              tooltip="Move Left"
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
@@ -472,7 +465,6 @@ export default function SceneEditorPanel({
               size="sm"
               onClick={() => handleMove('right')}
               disabled={currentIndex === animationScenes.length - 1}
-              tooltip="Move Right"
             >
               <ArrowRight className="h-4 w-4" />
             </Button>

@@ -13,6 +13,8 @@ import { toast } from 'sonner';
 interface PickerProps {
   color: string;
   onChange: (color: string) => void;
+  isOpen: boolean;
+  onToggle: () => void;
 }
 
 // EyeDropper API types
@@ -34,9 +36,7 @@ const presetColors = [
 ];
 
 // Main background color picker component
-export default function BackgroundColorPicker({ color, onChange }: PickerProps) {
-  // Local state for picker open/close and input value
-  const [isOpen, setIsOpen] = useState(false);
+export default function BackgroundColorPicker({ color, onChange, isOpen, onToggle }: PickerProps) {
   const [inputValue, setInputValue] = useState(color);
 
   // Refs for detecting outside clicks
@@ -58,12 +58,12 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
         buttonRef.current &&
         !buttonRef.current.contains(event.target as Node)
       ) {
-        setIsOpen(false);
+        onToggle();
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isOpen]);
+  }, [isOpen, onToggle]);
 
   // Handle color change from picker or preset
   const handleColorChange = (newColor: string) => {
@@ -115,7 +115,7 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
       const eyeDropper = new eyeDropperApi();
       const { sRGBHex } = await eyeDropper.open();
       handleColorChange(sRGBHex);
-      setIsOpen(false);
+      onToggle();
     } catch {
       // User cancelled the EyeDropper — no action needed
     }
@@ -127,7 +127,7 @@ export default function BackgroundColorPicker({ color, onChange }: PickerProps) 
       {/* Picker open/close button */}
       <Button
         ref={buttonRef}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={onToggle}
         variant="secondary"
         size="default"
         tooltip="Background Color"

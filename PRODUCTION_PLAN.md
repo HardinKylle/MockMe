@@ -7,8 +7,8 @@
 - [x] **1.1 Verify .env.local not in git** — Confirmed `.env.local` is properly gitignored and not tracked. No API keys in source code.
 - [x] **1.2 Strengthen password validation** — Upgraded from 6 chars to 8+ with uppercase + number requirements. Updated UI indicators.
 - [x] **1.3 Add security headers** — Added X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, X-DNS-Prefetch-Control via `next.config.ts`.
-- [ ] **1.4 Audit Firebase rules** — Verify Firestore Security Rules restrict read/write to authenticated users' own data. Verify Storage Rules mirror client-side file validation (25MB, image/video only).
-- [ ] **1.5 Add Firebase App Check** — Prevent API abuse from unauthorized clients.
+- [x] **1.4 Audit Firebase rules** — Verify Firestore Security Rules restrict read/write to authenticated users' own data. Verify Storage Rules mirror client-side file validation (25MB, image/video only).
+- [x] **1.5 Add Firebase App Check** — Prevent API abuse from unauthorized clients.
 
 ### Code Cleanup
 

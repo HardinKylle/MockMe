@@ -2,7 +2,6 @@
 
 // Model selector dropdown for switching between available models
 
-import { useState } from 'react';
 import { Smartphone, ChevronUp } from 'lucide-react';
 import { ModelData } from '@/configs/models';
 import { Button } from '@/components/ui/Button';
@@ -12,20 +11,21 @@ interface ModelSelectorProps {
   allModels: ModelData[]; // List of all available models
   selectedModel: ModelData; // Currently selected model
   onModelSelect: (modelName: string) => void; // Handler for model selection
+  isOpen: boolean;
+  onToggle: () => void;
 }
 
 export default function ModelSelector({
   allModels,
   selectedModel,
   onModelSelect,
+  isOpen,
+  onToggle,
 }: ModelSelectorProps) {
-  // State for dropdown open/close
-  const [isOpen, setIsOpen] = useState(false);
-
   // Handle model selection from dropdown
   const handleSelect = (modelName: string) => {
     onModelSelect(modelName);
-    setIsOpen(false);
+    onToggle();
   };
 
   return (
@@ -60,7 +60,7 @@ export default function ModelSelector({
 
       {/* Button to open/close model dropdown */}
       <Button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={onToggle}
         variant="secondary"
         size="default"
         tooltip="Switch Model"

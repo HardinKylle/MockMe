@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { SlidersHorizontal, RotateCcw } from 'lucide-react';
 import { Toggle } from '@/components/ui/Toggle';
@@ -11,6 +10,8 @@ import { useScene } from '@/contexts/SceneContext';
 // Props for CameraControlsPanel
 interface CameraControlsPanelProps {
   onReset: () => void; // Callback to reset all controls
+  isOpen: boolean;
+  onToggle: () => void;
 }
 
 // Number input for scalar values (e.g. FOV, scale, intensity)
@@ -80,9 +81,9 @@ const VectorInput = ({
 // Main camera controls panel component
 export default function CameraControlsPanel({
   onReset,
+  isOpen,
+  onToggle,
 }: CameraControlsPanelProps) {
-  // Panel open/close state
-  const [isOpen, setIsOpen] = useState(false);
 
   // Get scene controls and dispatcher from context
   const { sceneControls, dispatchSceneControls } = useScene();
@@ -105,7 +106,7 @@ export default function CameraControlsPanel({
     <div className="relative">
       {/* Button to open/close panel */}
       <Button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={onToggle}
         variant="primary"
         size="default"
         tooltip="Scene Controls"

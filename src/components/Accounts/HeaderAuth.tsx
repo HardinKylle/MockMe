@@ -5,28 +5,31 @@ import { useModal } from '@/contexts/ModalContext';
 import { useProject } from '@/contexts/ProjectContext';
 import { Button } from '@/components/ui/Button';
 import { Loader, User, LogOut, Folder, XCircle } from 'lucide-react';
-import { useState } from 'react';
 import { toast } from 'sonner';
 
-export const HeaderAuth = () => {
+interface HeaderAuthProps {
+  isOpen: boolean;
+  onToggle: () => void;
+}
+
+export const HeaderAuth = ({ isOpen, onToggle }: HeaderAuthProps) => {
   const { user, authLoading, signOut } = useAuth();
   const { openSignInModal, openProjectsModal } = useModal();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { activeProject, closeProject } = useProject();
 
   const handleSignOut = () => {
-    setIsMenuOpen(false);
+    onToggle();
     signOut();
     toast.success('Signed out');
   };
 
   const handleOpenProjects = () => {
-    setIsMenuOpen(false);
+    onToggle();
     openProjectsModal();
   }
 
   const handleCloseProject = () => {
-    setIsMenuOpen(false);
+    onToggle();
     closeProject();
   }
 
@@ -52,14 +55,14 @@ export const HeaderAuth = () => {
       <Button
         variant="primary"
         size="default"
-        onClick={() => setIsMenuOpen(!isMenuOpen)}
-        isActive={isMenuOpen}
+        onClick={onToggle}
+        isActive={isOpen}
       >
         <User className="h-6 w-6" />
       </Button>
 
       {/* Dropdown Menu */}
-      {isMenuOpen && (
+      {isOpen && (
         <div
           className="absolute top-full right-0 mt-2 w-56 rounded-lg border shadow-xl bg-linear-to-br from-slate-900/95 to-slate-800/95 border-slate-700/50 backdrop-blur-xl z-30 p-1.5"
           style={{ animation: 'slideUp 0.2s ease-out' }}

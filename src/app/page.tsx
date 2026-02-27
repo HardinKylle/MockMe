@@ -47,6 +47,8 @@ export default function App() {
   const sceneRef = useRef<SceneApi>(null);
   const [aspectRatio, setAspectRatio] = useState('16:9');
   const [showTimeline, setShowTimeline] = useState(false);
+  const [activePanel, setActivePanel] = useState<string | null>(null);
+  const togglePanel = (id: string) => setActivePanel(prev => prev === id ? null : id);
   const { width: windowWidth, height: windowHeight } = useWindowSize();
   const [wrapperBg, setWrapperBg] = useState('bg-white');
   const isResetting = useRef(false);
@@ -186,18 +188,33 @@ export default function App() {
               payload: { backgroundColor: newColor },
             })
           }
+          isOpen={activePanel === 'bg'}
+          onToggle={() => togglePanel('bg')}
         />
         <ModelSelector
           allModels={allModels}
           selectedModel={selectedModel}
           onModelSelect={handleModelChange}
+          isOpen={activePanel === 'model'}
+          onToggle={() => togglePanel('model')}
         />
 
-        <CameraControlsPanel onReset={handleResetSceneControls} />
+        <CameraControlsPanel
+          onReset={handleResetSceneControls}
+          isOpen={activePanel === 'camera'}
+          onToggle={() => togglePanel('camera')}
+        />
 
-        <ViewPresetsPanel sceneRef={sceneRef} />
+        <ViewPresetsPanel
+          sceneRef={sceneRef}
+          isOpen={activePanel === 'views'}
+          onToggle={() => togglePanel('views')}
+        />
 
-        <HeaderAuth />
+        <HeaderAuth
+          isOpen={activePanel === 'auth'}
+          onToggle={() => togglePanel('auth')}
+        />
 
       </div>
 
